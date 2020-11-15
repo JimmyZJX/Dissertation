@@ -1,0 +1,160 @@
+\section{Introduction}
+
+\tom{This section spans 3 pages. Shall we add subsections to break the
+     wall of text?}
+
+Most statically typed functional languages support some form 
+of \emph{(implicit) parametric polymorphism}~\cite{reynolds1983types}. Traditionally
+functional languages have employed variants of the
+Hindley-Milner~\cite{hindley1969principal,milner1978theory,damas1982principal} type systems, which supports full type-inference
+without any type annotations. However the Hindley-Milner type system 
+only supports \emph{first-order polymorphism}, where all universal
+quantifiers can only occur at the top-level of a type.
+Modern functional programming languages such as Haskell go beyond 
+Hindley-Milner and support \emph{higher-order
+  polymorphism}. With higher-order polymorphism there is no
+restriction on where universal quantifiers are
+allowed. Higher-order polymorphism enables more reuse of code and more
+expressions to type-check, and has numerous applications~\cite{}.
+
+Unfortunatelly, with higher-order polymorphism full type-inference becomes
+undecidable~\cite{wells1999typability}. To recover decidability some type annotations 
+are necessary. A canonical example that requires 
+higher-order polymorphism in Haskell is:
+
+\begin{verbatim}
+-- id :: forall a . a -> a
+id = \x -> x
+
+-- hpoly :: (forall a . a -> a) -> (Int,Char)
+hpoly = (\f :: forall a . a -> a) -> (f 1, f 'c')
+
+-- test :: (Int,Char)
+test = hpoly id 
+\end{verbatim}
+
+The function \verb|id| is the polymorphic identity function. In a language 
+like Haskell no type annotation is necessary to define such
+function but here, for clarity, we provide the commented (optional) type-annotations   
+on top of each definition. Note that \verb|id| is an example of
+first-order polymorphism and can be type-checked in the 
+Hindley-Milner type system. However, the function \verb|hpoly| is
+example of a \emph{higher-order polymorphism}, and it cannot be
+type-checked in Hindley-Milner.  The type of \verb|hpoly| is 
+\verb|(forall a . a -> a) -> (Int, Char)|. The single universal quantifier
+does not appear at the top-level. Instead it is used to quantify a
+type variable \verb|a| used in the first argument of the
+function. This type is an example of higher-order polymorphism.
+Notably this function requires a type annotation for the first
+argument (\verb|forall a . a -> a|) in order to type-check. 
+Despite the additional annotations required for polymorphic arguments (such as \verb|f|),
+the type-inference algorithm employed by GHC Haskell~\cite{jones1993glasgow}, preserves 
+many of the desirable properties of Hindley-Milner. 
+Like in Hindley-Milner type instantiation is \emph{implicit}. That is 
+calling a polymorphic function never requires the programmer to 
+provide the instantiations of the type parameters.
+
+Central to type-inference with \emph{higher-order polymorphism} is an
+algorithm for higher-order polymorphic subtyping. 
+Such an algorithm
+allows us to check whether one type is more general than another,
+which is essential to detect valid instantiations of a polymorphic
+type. For example, the type \verb|forall a . a -> a| is more
+general than \verb|Int -> Int|. Similarly the type 
+\verb|(Int -> Int) -> (Int, Char)| 
+is more general than \verb|(forall a . a -> a) -> (Int, Char)|
+(due to contravariance of argument types in function the subtyping
+relation). A simple declarative specification of higher-order subtyping
+was proposed by Odersky and L\"aufer~\cite{odersky1996putting}. Since then, several
+algorithms have been proposed to implement such specification. Most
+notably, Peyton Jones et al. proposed an algorithm that is the basis
+for the implementation of type inference in the GHC compiler. 
+Dunfield and Krishnaswami~\cite{dunfield2013complete} provided a very elegant
+formalization of another sound and complete algorithm, which has 
+also inspired implementations of type-inference in some polymorphic 
+programming languages (such as PureScript or DDC\bruno{double-check}). 
+
+Unfortunately, while many aspects of programming 
+languages and type systems have been mechanically formalized in theorem provers, 
+there is little work on formalizing algorithms related to
+type-inference. Some exceptions to the rule include mechanical 
+formalizations of algorithm $\mathcal{W}$ and other aspects of
+Hindler-Milner style type-inference~\cite{}.  
+However, as far as we know there is no work on
+algorithms that are currently used by modern functional languages like
+Haskell, including a formalizations of higher-order polymorphic subtyping. 
+This is shame because recently there has been a lot of effort
+in promoting the use of theorem provers to check the meta-theory 
+of programming languages. Two well-known examples are the {\sc
+  POPLMark} challenge~\cite{aydemir2005mechanized} and the CompCert project~\cite{leroy2008compcert}.
+Mechanical formalizations are especially valuable for proving the
+correctness of non-trivial aspects of the semantics and type systems 
+of programming languages. Type-inference algorithms are arguably among
+the most non-trivial aspects of the implementations of programming
+languages. In particular the information discovery process required by 
+ many algorithms (through unification-like or constraint-based
+ approaches), is quite subtle and tricky to get right. Moreover,
+ extending type-inference algorithms with new programming language features is often quite 
+delicate. Studying the meta-theory for such extensions could be
+greatly aided by the existence of a mechanical
+formalization of the base language, which could then be extended by
+the language designer.
+
+In this paper we push the state-of-the-art forward by
+formalizing an algorithm specification for higher-order polymorphic 
+subtyping in the Abella theorem prover. We hope that this work 
+will encourage other researchers to start considering using theorem 
+provers for formalizing algorithms related to type-inference, with the
+ultimate goal of having complete type-inference algorithms
+mechanically checked in a theorem prover. We believe that there are
+two primary 
+reasons why theorem provers are still not widely adopted to formalize
+type-inference algorithms. Firstly,
+binding is, once again, a challenge because type-inference does not rely
+simply on local environements, but it instead requires some form of
+information propagation across judgements. However there is little 
+work on how to deal with such, more complex, forms of binding in
+theorem provers.
+Secondly, the structure of many older type-inference
+algorithms typically relies on the use of sets to collect information
+about constraints or substitutions for unification, 
+which is hard to model in a purely inductive style often required by theorem provers.
+
+To address the first problem we propose the use of \emph{worklist
+  judgments}. Worklist judgements are a new form of judgement, 
+that simplify the global propagation of information required by
+the unification process during subtyping
+\bruno{Any ideas how to explain better?}. To address the second
+problem we employ \emph{ordered contexts}~\cite{dunfield2013complete}, which have 
+been used in recent formulations of type-inference algorithms. 
+Using these two ideas we have built a complete formalization of
+higher-order polymorphic subtyping.
+The algorithm specification is shown to be
+\emph{sound}, \emph{complete} and \emph{decidable} with respect to the well-known 
+declarative formulation of higher-order polymorphic subtyping by
+Odersky and L\"aufer.
+While none of the meta-theoretical results is new, as far as we know 
+our work is the first to mechanically formalize them. 
+Furthermore our
+algorithmic specification differs from those currently in the
+literature due to the use of \emph{worklist judgements}, which are a
+novel contribution of this work. \tom{This has already been said.}
+Our formlization is conducted using the Abella theorem prover 
+and is available online\footnote{\url{http://}\bruno{fill me}}.
+
+In summary the contributions of this paper are:
+
+\begin{itemize}
+\item {\bf A mechanical formalization of an higher-order polymorphic subtyping
+    algorithm.} The algorithm is shown to be \emph{sound},
+  \emph{complete} and \emph{decidable} in the Abella theorem prover.
+
+\item {\bf Work list judgements:} a novel kind of judgement which is
+  suited for algorithms that require global propagation of
+  information, including our higher-order polymorphic subtyping
+    algorithm.
+
+\item {\bf Abella formalization and discussion.} We have a complete
+  Abella formalization of all the results, as well as discussions on
+  the advantages/disadvantages of using Abella for such formalization.
+\end{itemize}

@@ -1,0 +1,98 @@
+\section{The Choice of Abella}
+
+We have chosen the Abella (v2.0.5) proof assistant~\cite{AbellaDesc} to
+develop our formalization.
+Our development is only based on the reasoning logic of Abella, and does not make use of its specification logic.
+%Although Abella takes a two-level logic approach,
+%where the specification logic can be expressed separately from the
+%reasoning logic, we only make use of its reasoning logic, due to the
+%difficulty of expressing our algorithmic rules with only the
+%specification.
+Abella is particularly helpful due to its built-in support for variable bindings, and
+its $\lambda$-tree syntax~\cite{miller2000abstract} is a form of HOAS,
+which helps with the encoding and reasoning about substitutions.  For
+instance, the type $\forall x. x \to a$ is encoded as \abellae{all (x\  arrow x a)}, where \abellae{x\ arrow x a} is a lambda abstraction in
+Abella. An opening $[b/x](x\to a)$ is encoded as an application
+\abellae{(x\ arrow x a) b}, which can be simplified(evaluated) to
+\abellae{arrow b a}.
+Name supply and freshness conditions are controlled by the
+$\nabla$-quantifier.  The expression \abellae{nabla x, F} means that
+\abellae{x} is a unique variable in \abellae{F}, i.e. it is different
+from any other names occurring elsewhere.  Such variables are called
+nominal constants.  They can be of any type, in other words, every
+type may contain unlimited number of such atomic nominal constants.
+
+%\subsection{Encoding of Declarative System}
+
+\paragraph{Encoding of the Declarative System}
+As a concrete example, our declarative context and well-formedness rules are encoded as follows.
+\begin{abella}
+	Kind ty     type.
+	Type i      ty.                % the unit type
+	Type all    (ty -> ty) -> ty.    % forall-quantifier
+	Type arrow  ty -> ty -> ty.      % function type
+	Type bound  ty -> o.            % variable collection in contexts
+	
+	Define env : olist -> prop by
+		env nil;
+		nabla x, env (bound x :: E) := env E.
+	
+	Define wft : olist -> ty -> prop by
+		wft E i;
+		nabla x, wft (E x) x := nabla x, member (bound x) (E x);
+		wft E (arrow A B) := wft E A /\ wft E B;
+		wft E (all A) := nabla x, wft (bound x :: E) (A x).
+\end{abella}
+
+We use the type \abellae{olist} just as normal list of \abellae{o} with two constructors, namely \abellae{nil : olist} and \abellae{(::) : o -> olist -> olist}, where \abellae{o} purely means ``the element type of \abellae{olist}''. The \abellae{member : o -> olist -> prop} relation is also pre-defined.
+The second case of the relation \abellae{wft} states rule $\mathtt{wf_d var}$.
+The encoding \abellae{(E x)} basically means that the context \emph{may} contain \abellae{x}.
+If we write \abellae{(E x)} as \abellae{E}, then the context should not contain \abellae{x}, and both \abellae{wft E x} and \abellae{member (bound x) E} make no sense.
+Instead, we treat \abellae{E : ty -> olist} as an \emph{abstract structure} of a context, such as \abellae{x\ bound x :: bound a :: nil}.
+For the fourth case of the relation \abellae{wft}, the type $\forall x. A$ in our target language is expressed as \abellae{(all A)}, and its opening $A$, \abellae{(A x)}.
+
+\paragraph{Encoding of the Algorithmic System}
+In terms of the algorithmic system, notably, Abella handles the
+$\mathtt{{\le_a}instL}$ and $\mathtt{{\le_a}instR}$ rules in a nice way:
+\begin{abella}
+	% sub_alg_list : enva -> [subty_judgment] -> prop
+	Define subal : olist -> olist -> prop by
+		subal E nil;
+		subal E (subt i i :: Exp) := subal E Exp;
+		% some cases omitted ...
+		% <: instL
+		nabla x, subal (E x) (subt x (arrow A B) :: Exp x) :=
+			exists E1 E2 F, nabla x y z, append E1 (exvar x :: E2) (E x) /\
+				append E1 (exvar y :: exvar z :: E2) (F y z) /\
+				subal (F y z) (subt (arrow y z) (arrow A B) :: Exp (arrow y z));
+		% <: instR is symmetric to <: instL, omitted here
+		% other cases omitted ...
+\end{abella}
+Thanks to the way Abella deals with nominal constants, the pattern 
+\abellae{subt x (arrow A B)} implicitly states that $x\notin FV(A) \land x\notin FV(B)$.
+If the condition were not required, we would have encoded the pattern as 
+\abellae{subt x (arrow (A x) (B x))} instead.
+
+\subsection{Statistics and Discussion}\label{subsection:discussion}
+\begin{figure}[t]
+	\centering\begin{tabular}{|c|c|c|l|}\hline
+		File(s) & SLOC & \# of Theorems & Description\\\hline
+		olist.thm, nat.thm      &  303 & 55  & Basic data structures\\\hline
+		higher.thm, order.thm   &  164 & 15  & Declarative system\\\hline
+		higher\_alg.thm         &  618 & 44  & Algorithmic system\\\hline
+		trans.thm               &  411 & 46  & Transfer\\\hline
+		sound.thm               &  166 & 2   & Soundness theorem\\\hline
+		depth.thm               &  143 & 12  & Definition of depth\\\hline
+		complete.thm            &  626 & 28  & Lemmas and Completeness theorem\\\hline
+		decidable.thm           & 1077 & 53  & Lemmas and Decidability theorem\\\hline
+		Total                   & 3627 & 267 & (33 definitions in total)\\\hline
+	\end{tabular}
+	\caption{Statistics for the proof scripts}\label{fig:SLOC}
+\end{figure}
+
+Some basic statistics on our proof script are shown in Figure~\ref{fig:SLOC}.
+The proof consists of 3627 lines of code with a total of 33 definitions and 267 theorems.
+We have to mention that Abella provides few built-in tactics and does not support user-defined ones, and we would reduce significant lines of code if Abella provided more handy tactics.
+Moreover, the definition of natural numbers, the plus operation and less-than relation are defined within our proof due to Abella's lack of packages.
+However, the way Abella deals with name bindings
+is very helpful for type system formalizations and substitution-intensive formalizations, such as this one.

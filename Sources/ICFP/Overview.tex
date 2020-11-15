@@ -1,0 +1,672 @@
+\section{Overview}
+
+This section starts by introducing DK's declarative type system. Then
+it discusses several techniques that have been used in algorithmic
+formulations, and which have influenced our own algorithmic design.
+Finally we introduce the novelties of our new algorithm.
+In particular the support for inference judgments in
+worklist judgments, and a new form of worklist judgment
+that the unifies \emph{ordered contexts} and the worklists themselves. 
+
+\subsection{DK's Declarative System}
+% Subtyping and Typing. \jimmy{Can you prepare the figures. Subtyping is already in ITP.}
+
+\begin{figure}[t]
+\[
+\begin{array}{l@{\qquad}lcl}
+\text{Type variables}\qquad&a, b
+\\
+\text{Types}\qquad&A, B, C &::=&\quad 1 \mid a \mid \all A \mid A\to B\\
+\text{Monotypes}\qquad&\tau,\sigma &::=&\quad 1 \mid a \mid \tau\to \sigma
+\\
+\text{Expressions}\qquad&e &::=&\quad x \mid () \mid \lam e \mid e_1~e_2 \mid (e:A)
+\\
+\text{Contexts}\qquad&\Psi &::=&\quad \nil \mid \Psi, a \mid \Psi, x:A
+\end{array}
+\]
+\Description{Syntax of Declarative System}
+\caption{Syntax of Declarative System}\label{fig:decl:syntax}
+\end{figure}
+
+\paragraph{Syntax.}
+The syntax of DK's declarative system~\cite{dunfield2013complete} is shown in Figure~\ref{fig:decl:syntax}.
+A declarative type $A$ is either the unit type $1$, a type variable $a$,
+a universal quantification $\all A$ or a function type $A \to B$.
+Nested universal quantifiers are allowed for types,
+but monotypes $\tau$ do not have any universal quantifier.
+Terms include a unit term $()$, variables $x$, lambda-functions $\lam e$,
+applications $e_1~e_2$ and annotations $(e:A)$.
+Contexts $\Psi$ are sequences of type variable declarations and
+term variables with their types declared $x:A$.
+
+\paragraph{Well-formedness} Well-formedness of types and terms is 
+shown at the top of Figure~\ref{fig:decl:sub}. The rules are standard
+and simply ensure that variables in types and terms are well-scoped.  
+
+\begin{figure}[t]
+\centering \framebox{$\Psi \vdash A$} Well-formed declarative type
+\begin{gather*}
+\inferrule*[right=$\mathtt{wf_d unit}$]
+    {~}{\Psi\vdash 1}
+\qquad
+\inferrule*[right=$\mathtt{wf_d var}$]
+    {a\in\Psi}{\Psi\vdash a}
+\qquad
+\inferrule*[right=$\mathtt{wf_d{\to}}$]
+    {\Psi\vdash A\quad \Psi\vdash B}
+    {\Psi\vdash A\to B}
+\qquad
+\inferrule*[right=$\mathtt{wf_d\forall}$]
+    {\Psi, a\vdash A}
+    {\Psi\vdash \forall a. A}
+\end{gather*}
+
+\centering \framebox{$\Psi \vdash e$} Well-formed declarative expression
+\begin{gather*}
+\inferrule*[right=$\mathtt{wf_d tmvar}$]
+    {x:A\in\Psi}{\Psi\vdash x}
+\qquad
+\inferrule*[right=$\mathtt{wf_d tmunit}$]
+    {~}{\Psi\vdash ()}
+\qquad
+\inferrule*[right=$\mathtt{wf_d abs}$]
+    {\Psi,x:A\vdash e}
+    {\Psi\vdash \lam e}
+\\
+\inferrule*[right=$\mathtt{wf_d app}$]
+    {\Psi\vdash e_1 \quad \Psi\vdash e_2}
+    {\Psi\vdash e_1~e_2}
+\qquad
+\inferrule*[right=$\mathtt{wf_d anno}$]
+    {\Psi\vdash A \quad \Psi\vdash e}
+    {\Psi\vdash (e:A)}
+\end{gather*}
+
+\centering \framebox{$\Psi \vdash A \le B$} Declarative subtyping
+\begin{gather*}
+\inferrule*[right=$\mathtt{{\le}Var}$]
+    {a\in\Psi}{\Psi\vdash a\le a}
+\qquad
+\inferrule*[right=$\mathtt{{\le}Unit}$]
+    {~}{\Psi \vdash 1 \le 1}
+\qquad
+\inferrule*[right=$\mathtt{{\le}{\to}}$]
+    {\Psi \vdash B_1 \le A_1 \quad \Psi \vdash A_2 \le B_2}
+    {\Psi\vdash A_1\to A_2 \le B_1\to B_2}
+\\
+\inferrule*[right=$\mathtt{{\le}\forall L}$]
+    {\Psi\vdash \tau \quad \Psi\vdash [\tau/a] A \le B}
+    {\Psi\vdash \all A \le B}
+\qquad
+\inferrule*[right=$\mathtt{{\le}\forall R}$]
+    {\Psi, b\vdash A\le B}
+    {\Psi\vdash A \le \all[b]B}
+\end{gather*}
+\Description{Declarative Well-formedness and Subtyping}
+\caption{%Well-formedness of Declarative Types and 
+Declarative Well-formedness and Subtyping}\label{fig:decl:sub}
+\end{figure}
+
+%The DK subtyping relation was adopted from \citet{odersky1996putting}.
+
+\paragraph{Declarative Subtyping}
+The bottom of Figure~\ref{fig:decl:sub} shows DK's declarative subtyping judgment $\Psi \vdash A \le B$,
+which was adopted from \citet{odersky1996putting}. It compares the
+degree of polymorphism between $A$ and $B$ in DK's implicit polymorphic type system. 
+Essentially, if $A$ can always be instantiated to match any instantiation of $B$,
+then A is ``at least as polymorphic as'' $B$. We also 
+say that $A$ is ``more polymorphic than'' $B$ and write $A \le B$.
+
+Subtyping rules $\mathtt{{\le}Var}$, $\mathtt{{\le}Unit}$ and $\mathtt{{\le}{\to}}$
+handle simple cases that do not involve universal quantifiers.
+The subtyping rule for function types $\mathtt{{\le}{\to}}$ is standard,
+being covariant on the return type and contravariant on the argument type.
+Rule $\mathtt{{\le}\forall R}$ states that if $A$ is a subtype of $B$
+in the context $\Psi, a$, where $a$ is fresh in $A$, then $A\le\all B$.
+Intuitively, if $A$ is more general than $\all B$ (where the universal quantifier
+already indicates that $\all B$ is a general type),
+then $A$ must instantiate to $[\tau/a]B$ for every $\tau$.
+
+The most interesting rule is $\mathtt{{\le}\forall L}$.
+If some instantiation of $\all A$, $[\tau/a]A$, is a subtype of $B$,
+then $\all A \le B$.
+The monotype $\tau$ we used to instantiate $a$ is \emph{guessed} in this
+declarative rule, but the algorithmic system does not guess and defers the
+instantiation until it can determine the monotype deterministically.
+The fact that $\tau$ is a monotype rules out the possibility of
+polymorphic (or impredicative) instantiation.
+However this restriction ensures that the subtyping relation remains
+decidable. Allowing an arbitrary type (rather than a monotype) in rule $\mathtt{{\le}\forall L}$
+is known to give rise to an undecidable subtyping relation~\cite{tiuryn1996subtyping}.
+\citet{jones2007practical} also impose the restriction of
+predicative instantiation in their type system.
+Both systems are adopted by several practical programming languages.
+
+% \jimmy{Mention the implicit freshness conditions in the premises}
+Note that when we introduce a new binder in the premise, we implicitly pick a fresh one.
+This applies to rules such as $\mathtt{wf_d\forall}$, $\mathtt{wf_dabs}$, $\mathtt{{\le}\forall R}$,
+throughout the whole text.
+
+\begin{figure}[t]
+\begin{tabular}{rl}
+    \framebox{$\Psi \vdash e \Lto A$} & $e$ checks against input type $A$.\\[0.5mm]
+    \framebox{$\Psi \vdash e \To A$} & $e$ synthesizes output type $A$.\\[0.5mm]
+    \framebox{$\Psi \vdash \appInf{A}{e}{C}$} & Applying a function of type $A$ to $e$ synthesizes type $C$.
+\end{tabular}
+\begin{gather*}
+\inferrule*[right=$\mathtt{DeclVar}$]
+    {(x:A)\in\Psi}{\Psi\vdash x\To A}
+\qquad
+\inferrule*[right=$\mathtt{DeclSub}$]
+%e \neq \lam e' \quad B \neq \all B' \quad 
+    {\Psi\vdash e\To A \quad \Psi\vdash A\le B}
+    {\Psi \vdash e\Lto B}
+\\
+\inferrule*[right=$\mathtt{DeclAnno}$]
+    {\Psi \vdash A \quad \Psi\vdash e\Lto A}
+    {\Psi\vdash (e:A)\To A}
+\qquad
+\inferrule*[right=$\mathtt{Decl1I}$]
+    {~}{\Psi\vdash () \Lto 1}
+\qquad
+\inferrule*[right=$\mathtt{Decl1I{\To}}$]
+    {~}{\Psi\vdash () \To 1}
+\\
+\inferrule*[right=$\mathtt{Decl\forall I}$]
+    {\Psi,a \vdash e \Lto A}
+    {\Psi\vdash e\Lto \all A}
+\qquad
+\inferrule*[right=$\mathtt{Decl\forall App}$]
+    {\Psi \vdash \tau \quad \Psi\vdash \appInf{[\tau/a]A}{e}{C} }
+    {\Psi\vdash \appInf{\all A}{e}{C}}
+\\
+\inferrule*[right=$\mathtt{Decl{\to}I}$]
+    {\Psi,x:A \vdash e\Lto B}
+    {\Psi\vdash \lam e \Lto A \to B}
+\qquad
+\inferrule*[right=$\mathtt{Decl{\to}I{\To}}$]
+    {\Psi\vdash \sigma\to\tau \quad \Psi,x:\sigma \vdash e\Lto \tau}
+    {\Psi\vdash \lam e \To \sigma\to\tau}
+\\
+\inferrule*[right=$\mathtt{Decl{\to} E}$]
+    {\Psi\vdash e_1\To A \quad \Psi\vdash \appInf{A}{e_2}{C}}
+    {\Psi\vdash e_1~e_2 \To C}
+\qquad
+\inferrule*[right=$\mathtt{Decl{\to}App}$]
+    {\Psi\vdash e \Lto A}
+    {\Psi\vdash \appInf{A \to C}{e}{C}}
+\end{gather*}
+\Description{Declarative Typing}
+\caption{Declarative Typing}\label{fig:decl:typing}
+\end{figure}
+
+\paragraph{Declarative Typing}
+The bidirectional type system, shown in Figure~\ref{fig:decl:typing}, has three judgments.
+The checking judgment $\Psi\vdash e\Lto A$ checks expression $e$ against the type $A$ in the context $\Psi$.
+The synthesis judgment $\Psi\vdash e\To A$ synthesizes the type $A$ of expression $e$ in the context $\Psi$.
+The application judgment $\Psi\vdash \appInf{A}{e}{C}$ synthesizes the type $C$ of the application of a function of type $A$
+(which could be polymorphic) to the argument $e$.
+
+Many rules are standard.
+Rule $\mathtt{DeclVar}$ looks up term variables in the context.
+Rules $\mathtt{Decl1I}$ and $\mathtt{Decl1I{\To}}$ respectively check and synthesize the unit type.
+Rule $\mathtt{DeclAnno}$ synthesizes the annotated type $A$ of the annotated expression $(e:A)$
+and checks that $e$ has type $A$.
+Checking an expression $e$ against a polymorphic type $\all A$ in the context $\Psi$ succeeds
+if $e$ checks against $A$ in the extended context $(\Psi, a)$.
+The subsumption rule $\mathtt{DeclSub}$ depends on the subtyping relation,
+and changes mode from checking to synthesis: if $e$ synthesizes type $A$ and $A\le B$
+($A$ is more polymorphic than $B$), then $e$ checks against $B$.
+If a checking problem does not match any other rules,
+this rule can be applied to synthesize a type instead and then
+check whether the synthesized type entails the checked type.
+Lambda abstractions are the hardest construct of the bidirectional
+type system to deal with. 
+Checking $\lam e$ against function type $A\to B$ is easy:
+we check the body $e$ against $B$ in the context extended with $x:A$.
+However, synthesizing a lambda-function is a lot harder, and 
+this type system only synthesizes monotypes $\sigma\to\tau$.
+
+Application $e_1~e_2$ is handled by Rule $\mathtt{Decl{\to}E}$,
+which first synthesizes the type $A$ of the function $e_1$.
+If $A$ is a function type $B\to C$, Rule $\mathtt{Decl{\to}App}$ is applied;
+it checks the argument $e_2$ against $B$ and returns type $C$.
+The synthesized type of function $e_1$ can also be polymorphic, of the form $\all A$.
+In that case, we instantiate $A$ to $[\tau/a]A$ with a monotype $\tau$ % (which is also guessed)
+using according to Rule $\mathtt{Decl{\to}I{\To}}$.
+If $[\tau/a]A$ is a function type, Rule $\mathtt{Decl{\to}App}$ proceeds;
+if $[\tau/a]A$ is another universal quantified type,
+Rule $\mathtt{Decl{\to}I{\To}}$ is recursively applied.
+
+\paragraph{Overlapping Rules}
+Some of the declarative rules overlap with each other.
+Declarative subtyping rules $\mathtt{{\le}\forall L}$ and $\mathtt{{\le}\forall R}$
+both match the conclusion $\Psi\vdash \all A \le \all B$.
+In such case, choosing $\mathtt{{\le}\forall R}$ first is always better,
+since we introduce the type variable $a$ to the context earlier,
+which gives more flexibility on the choice of $\tau$.
+The declarative typing rule $\mathtt{DeclSub}$ overlaps with
+both $\mathtt{Decl\forall I}$ and $\mathtt{Decl{\to}I}$.
+However, we argue that more specific rules are always the best choices,
+i.e. $\mathtt{Decl\forall I}$ and $\mathtt{Decl{\to}I}$ should have
+higher priority than $\mathtt{DeclSub}$. We will come back to this
+topic in Section~\ref{sec:metatheory:non-overlapping}.
+\begin{comment}
+For example, $\Psi\vdash \lam x \Lto \all a\to a$ succeeds if derived from
+Rule $\mathtt{Decl\forall I}$, but fails when applied to $\mathtt{DeclSub}$:
+$$
+\inferrule*[right={$\mathtt{Decl\forall I}$}]
+	{\inferrule*[Right={$\mathtt{Decl\to I}$}]
+		{\Psi,a,x:a \vdash x \Lto a}
+		{\Psi,a \vdash \lam x \Lto a \to a}
+	}
+	{\Psi\vdash \lam x \Lto \all a \to a}
+$$
+$$
+\inferrule*[right={$\mathtt{DeclSub}$}]
+	{
+		\inferrule*[right=$\mathtt{Decl\to I\To}$]
+			{\Psi \vdash \blue\sigma\to \blue\tau \quad \Psi,x:\blue\sigma\vdash e \Lto \blue\tau}
+			{\Psi \vdash \lam x \To \blue\sigma\to \blue\tau}\quad
+		\inferrule*[Right=$\mathtt{{\le}\forall R}$]
+			{\inferrule*[Right=$\mathtt{{\le}{\to}}$]
+				{
+					\inferrule*[Right=$?$]
+						{\text{Impossible! }\blue\sigma \neq a}
+						{\Psi,a \vdash a \le \blue\sigma}
+					\quad \Psi,a \vdash \blue\tau \le a
+				}
+				{\Psi,a \vdash \blue\sigma\to \blue\tau \le a \to a}
+			}
+			{\Psi\vdash \blue\sigma\to \blue\tau\le \all a \to a}
+	}
+{\Psi\vdash \lam x \Lto \all a \to a}
+$$
+
+Rule $\mathtt{Decl\to I}$ is also better at handling higher-order types.
+When the lambda-expression to be inferred has a polymorphic input type,
+such as $\all a \to a$,
+$\mathtt{DeclSub}$ may not derive some judgments.
+For example, $\Psi,id:\all a\to a \vdash \lam[f] f~id~(f~()) \Lto (\all a\to a) \to 1$
+requires the argument of the lambda-expression to be a polymorphic type,
+otherwise it could not be applied to both $id$ and $()$.
+If Rule $\mathtt{DeclSub}$ was chosen for derivation,
+the type of its argument is restricted by Rule $\mathtt{Decl\to I\To}$,
+which is not a polymorphic type.
+By contrast,
+Rule $\mathtt{Decl\to I}$ keeps the polymorphic argument type $\all a\to a$,
+and will successfully derive the judgment.
+\end{comment}
+
+%-------------------------------------------------------------------------------
+\subsection{DK's Algorithm}\label{ssec:DK_Algorithm}
+
+DK's algorithm version revolves around their notion of \emph{algorithmic context}.
+\[
+\begin{array}{l@{\qquad}lcl}
+\text{Algorithmic Contexts}\qquad&\Gamma,\Delta,\Theta &::=&\quad \nil \mid
+\Gamma, a \mid \Gamma, x:A \mid \Gamma, \al \mid \Gamma, \al = \tau \mid
+\Gamma, \blacktriangleright_{\al}
+\end{array}
+\]
+In addition to the regular (universally quantified) type variables $a$, the
+algorithmic context also contains \emph{existential} type variables
+$\al$. These are placeholders for monotypes $\tau$ that are still to
+be determined by the inference algorithm. When the existential variable is
+``solved'', its entry in the context is replaced by the assignment
+$\al = \tau$.
+A context application on a type, denoted by $[\Gamma]A$,
+substitutes all solved existential type variables in $\Gamma$
+with their solutions on type $A$.
+
+All algorithmic judgments thread an algorithmic context. They have the form
+$\Gamma \vdash \ldots \dashv \Delta$, where $\Gamma$ is the input context and
+$\Delta$ is the output context:
+$\Gamma \vdash A \le B \dashv \Delta$  for subtyping, 
+$\Gamma \vdash e \Leftarrow A \dashv \Delta$  for type checking, and so on. 
+The output context is a functional update of the input context that records newly
+introduced existentials and solutions.
+
+Solutions are incrementally propagated by applying the algorithmic output
+context of a previous task as substitutions to the next task. This can be seen
+in the subsumption rule:
+\[
+\inferrule*[right=$\mathtt{DK\_Sub}$]
+  {\Gamma \vdash e \Rightarrow A \dashv \Theta \\ 
+   \Theta \vdash [\Theta]A \le [\Theta]B \dashv \Delta
+  }
+  { \Gamma \vdash e \Leftarrow B \dashv \Delta}
+\]
+The inference task yields an output context $\Theta$ which is applied as a substitution
+to the types $A$ and $B$ before performing the subtyping check to propagate any solutions
+of existential variables that appear in $A$ and $B$.
+
+\paragraph{Markers for scoping.}
+The sequential order of entries in the algorithmic context, in combination with
+the threading of contexts,  does not perfectly capture the scoping of all
+existential variables. For this reason the DK algorithm uses scope markers
+$\blacktriangleright_{\al}$ in a few places. An example is given in the following
+rule:
+\[
+\inferrule*[right=$\mathtt{DK\_{\le}\forall L}$]
+  {\Gamma,\blacktriangleright_{\al}, \al \vdash [\al/a]A \le B \dashv \Delta,\blacktriangleright_{\al},\Theta}
+  {\Gamma \vdash \all A \le B \dashv \Delta}
+\]
+To indicate that the scope of $\al$ is local to the subtyping check
+$[\al/a]A \le B$, the marker is pushed onto its input stack and popped
+from the output stack together with the subsequent part $\Theta$, which may
+refer to $\al$. 
+(Remember that later entries may refer to earlier
+ones, but not vice versa.) This way $\al$ does not escape its scope.
+\begin{comment}
+A type variable may have a similar functionality to the scoping markers.
+An example rule that checks an expression against a polymorphic type is as follows:
+$$
+\inferrule*
+{\Gm, a \vdash e \Lto A \dashv \Delta, a, \Theta}
+{\Gm \vdash e \Lto \all A \dashv \Delta}
+$$
+\end{comment}
+
+%Due to the complication of its scoping control method,
+%it is hard to argue the preciseness of scoping for each variable when designing algorithms.
+
+At first sight, the DK algorithm would seem a good basis for mechanization. After
+all it comes with a careful description and extensive manual proofs.
+Unfortunately, we ran into several obstacles that have prompted us to formulate
+a different, more mechanization-friendly algorithm.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\paragraph{Broken Metatheory} % Talk about the lemmas that are false, show counterexample.
+While going through the manual proofs of DK's algorithm, we found several
+problems.  Indeed, two proofs of lemmas---Lemma 19 (Extension Equality
+Preservation) and Lemma 14 (Subsumption)--- wrongly apply induction hypotheses
+in several cases. Fortunately, we have found simple workarounds that fix these
+proofs without affecting the appeals to these lemmas.
+
+% The proof of Lemma 19 (Extension Equality Preservation) applies a wrong
+% induction hypothesis for the ${\longrightarrow}\mathtt{Uvar}$ case.
+% Fortunately the lemma could be proven without the well-formedness conditions
+% $\Gm\vdash A$ and $\Gm\vdash B$.
+% Similar problem happens for Lemma 14 (Subsumption), where many applications of
+% induction hypotheses are not correct.
+% For manual proofs, induction hypotheses are not automatically generated by programs,
+% thus are easily misused.
+
+More seriously, we have also found a lemma that simply does not hold:
+Lemma 29 (Parallel Admissibility)\footnote{Ningning Xie found the issue with Lemma 29 in 2016 while
+  collaborating with the second author on an earlier attempt to mechanically
+  formalize DK's algorithm. The authors acknowledged the problem after we contacted them through email.
+  Although they briefly mentioned that it should be possible to use a weaker lemma instead they did
+  not go into details.}.
+See Appendix %~\ref{appendix:false_lemmas}
+for a detailed explanation
+and counterexample. This lemma is a cornerstone of the two metatheoretical results 
+of the algorithm, soundness and completeness with respect to the declarative system.
+In particular, both instantiation soundness (i.e. a part of subtyping
+soundness) and typing completeness directly require the broken lemma.
+Moreover, Lemma 54 (Typing Extension) also requires the broken lemma and is
+itself used 13 times in the proof of typing soundness and completeness.
+Unfortunately, we have not yet found a way to fix this problem.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\paragraph{Complex Scoping and Propagation}
+
+Besides the problematic lemmas in DK's metatheory, there are other reasons to
+look for an alternative algorithmic formulation of the type system that is more
+amenable to mechanization. Indeed, two aspects that are particularly
+challenging to mechanize are the scoping of universal and existential type
+variables, and the propagation of the instantiation of existential type
+variables across judgments. 
+DK is already quite disciplined on these accounts, in particular compared to
+traditional constraint-based type-inference algorithms like Algorithm $\mathcal{W}$~\cite{milner1978theory} which
+features an implicit global scope for all type variables. Indeed, DK uses its
+explicit and ordered context $\Gamma$ that tracks the relative scope of universal and
+existential variables and it is careful to only instantiate existential
+variables in a well-scoped manner.
+
+Moreover, DK's algorithm carefully propagates instantiations by recording them
+into the context and threading this context through all judgments. 
+% two This means that every judgments takes two contexts---an input and an output
+% context---rather than the conventional single context. The output context
+% records any new variable instantations; to propagate these instantiations to
+% the remaining judgments, their predecessor's output context---which is their
+% input context---is applied to them as a substitution.
+While this works well on paper, this approach is still fairly involved and thus
+hard to reason about in a mechanized setting. Indeed, the instantiations have
+to be recorded in the context and are applied incrementally to each remaining
+judgment in turn, rather than immediately to all remaining judgments at once.
+Also, as we have mentioned above, the stack discipline of the ordered contexts
+does not mesh well with the use of output contexts; explicit marker entries are
+needed in two places to demarcate the end of an existential variable's scope.
+Actually we found a scoping issue related to the subsumption rule $\mathtt{DK\_Sub}$,
+which might cause existential variables to leak across judgments.
+In Section~\ref{sec:discussion:scoping} we give a detailed discussion.
+%A detailed discussion on this issue with a possible fix is .
+
+The complications of scoping and propagation are compelling reasons
+to look for another algorithm that is easier to
+reason about in a mechanized setting.
+
+
+%-------------------------------------------------------------------------------
+\subsection{Judgment Lists}\label{sec:overview:list}
+To avoid the problem of incrementally applying a substitution to remaining
+tasks, we can find inspiration in the formulation of constraint solving
+algorithms. For instance, the well-known unification
+algorithm by \citet{unification} decomposes the problem of unifying two terms $s \stackrel{.}{=} t$ into a number
+of related unification problems between pairs of terms $s_i \stackrel{.}{=} t_i$. These smaller
+problems are not tackled independently, but kept together in a set $S$. 
+The algorithm itself is typically formulated as a small-step-style state
+transition system $S \rightarrowtail S'$ that rewrites the set of unification
+problems until it is in solved form or until a contradiction has been found.
+For instance, the variable elimination rule is written as:
+\[
+   x \stackrel{.}{=} t, S  ~~\rightarrowtail~~  x \stackrel{.}{=} t, [t/x]S   \qquad\qquad{if}~x \not\in t~\text{and}~{x \in S}
+\]
+Because the whole set is explicitly available, the variable $x$ can be
+simultaneously substituted.
+
+In the above unification problem, all variables are implicitly bound in the same
+global scope. 
+Some constraint solving algorithms for Hindley-Milner type
+  inference use similar ideas, but are more careful tracking the
+  scopes of variables~\cite{remy-attapl}. However they have separate phases for 
+constraint generation and solving.
+Recent unification algorithms for dependently-typed languages
+are also more explicit about scopes. For instance, \citet{Reed2009} represents a unification
+problem as $\Delta \vdash P$ where $P$ is a set of equations to be solved and $\Delta$ is
+a (modal) context. \citet{Abel2011higher} even use multiple contexts within a unification problem.
+Such a problem is denoted $\Delta \Vdash \mathcal{K}$ where the meta-context
+$\Delta$ contains all the typings of meta-variables in the constraint set
+$\mathcal{K}$. The latter consists of constraints like $\Psi \vdash M = N : C$
+that are equipped with their individual context $\Psi$. While accurately tracking
+the scoping of regular and meta-variables, this approach is not ideal because it
+repeatedly copies contexts when decomposing a unification problem, and
+later it has to 
+substitute solutions into these copies.
+
+% %-------------------------------------------------------------------------------
+% \subsection{Small-Step Unification}
+% % Mention some algorithms for unification for 
+% % dependent types that use a small-step approach. Credit them later for some ideas that 
+% % we also employ.
+% There are literals that make use of small-step unification for dependently typed
+% inference and reconstruction algorithms~\cite{Reed2009,Abel2011higher}.
+% These approaches collect a list of constraints and process one at a time.
+% Similar to DK's algorithm, unification variables are used to represent the types to guess.
+% In order to solve unification variables to correctly scoped types
+% (typically constrained by the context when the variable is introduced),
+% the context information should be kept with the variables.
+% Judgments that represent unifications of terms might also require such a context
+% to keep the constraint collection well-formed.
+% 
+% As an example, Abel et al. defines their constraint $K$ by
+% \begin{gather*}
+% \begin{aligned}
+% K &::= {\top} \mid {\bot} &&\text{Trivial constraint and inconsistency.}\\
+%     & \ \mid \  \Psi\vdash M = N : C &&\text{Unify term $M$ with $N$.}\\
+%     & \ \mid \  \Psi\mid R:A \vdash E = E' &&\text{Unify evaluation context $E$ with $E'$.}\\
+%     & \ \mid \  \Psi\vdash u\leftarrow M: C &&\text{Solution for $u$ (metavariable) found.}
+% \end{aligned}
+% \end{gather*}
+% where the unification constraints and metavariable solutions are bound by a proper context.
+% A unification problem in their system is described by $\Delta \Vdash \overline{K}$,
+% where $\Delta$ is a collection of metavariables with their defined scopes.
+% This approach clearly states the scroping of each unification problem,
+% therefore rules out invalid instantiations to metavariables.
+% 
+% However, such ``duplicated contexts'' are not ideal for our formalization.
+% Following DK's algorithm, an existential variable $\al$ defined in the context
+% could be decomposed into a function type $\al[1] \to \al[2]$,
+% so the declaration of $\al$ should be replaced by two declarations $\al[1], \al[2]$.
+% Such operation causes all the context that contains $\al$ to change,
+% which brings difficulty on the synchronization of multiple contexts,
+% as variable declarations are not centralized.
+% 
+% We find a way of encoding multiple contexts by ``compressing'' them into a single worklist.
+% As our type inference rules applied to a judgment,
+% we typically keep the context or add variable declarations to the old context
+% before analysing its sub-judgment(s).
+% This enables us to write the worklist judgment in such a form:
+% $$\Gm, \{\text{variable declarations}\}, \{\text{judgment}\},
+% \{\text{variable declarations}\}, \{\text{judgment}\}, \ldots .$$
+% Typically, we simplify the right-most judgment and push back smaller tasks,
+% where the old ``context'' automatically gets inherited.
+% When some rules solve or partially solve an existential variable,
+% we could easily propagate the solution to all the judgments,
+% and safely modify its declaration, such as remove from the worklist.
+% New judgment(s) may also introduce new \emph{local} variables by declaring
+% that variable right before the new judgment(s).
+% After the new judgments are satisfied, these local variables are properly recycled.
+% 
+% % \jimmy{TODO explain the duplicated context with some examples (their judgment form)}
+% % Some issues to point out: Duplicated contexts (rather than shared contexts), which make 
+% % the formalization harder since requires ``synchronizing'' things ...
+% 
+%-------------------------------------------------------------------------------
+\subsection{Single-Context Worklist Algorithm for Subtyping}
+
+In recent work, \citet{itp2018} have shown how to mechanize a variant of DK's
+subtyping algorithm and shown it correct with respect to DK's declarative
+subtyping judgment. This approach overcomes some problems in DK's formulation
+by using a \emph{worklist}-based judgment of the form $$\Gamma \vdash \Omega$$
+where $\Omega$ is a worklist (or sequence) of subtyping problems of the
+form $A \leq B$.  The judgment is defined by case analysis on the first
+element of $\Omega$ and recursively processes the worklist until it is empty.
+Using both a single common ordered context $\Gamma$ and a worklist $\Omega$ greatly
+simplifies propagating the instantiation of type variables in one
+subtyping problem to the remaining ones.
+
+Unfortunately, this work does not solve all problems. In particular, it has two
+major limitations that prevent it from scaling to the whole DK system. 
+
+\paragraph{Scoping Garbage} Firstly, the single common ordered context 
+$\Gamma$ does not accurately reflect the type and unification variables
+currently in scope. Instead, it is an overapproximation that steadily accrues
+variables, and only drops those unification variables that are instantiated.
+In other words, $\Gamma$ contains ``garbage'' that is no longer in scope.
+This complicates establishing the relation with the declarative system.
+
+
+\paragraph{No Inference Judgments} 
+Secondly, and more importantly, the approach only deals with a judgment for
+\emph{checking} whether one type is the subtype of another. While this may not
+be so difficult to adapt to the \emph{checking} mode of term typing $\Gamma
+\vdash e \Leftarrow A$, it clearly lacks the functionality to support the
+\emph{inference} mode of term typing $\Gamma \vdash e \Rightarrow A$. Indeed,
+the latter requires not only the communication of unification variable
+instantiations from one typing problem to another, but also an inferred type.
+
+%-------------------------------------------------------------------------------
+\subsection{Algorithmic Type Inference for Higher-Ranked Types: Key Ideas}
+
+Our new algorithmic type system builds on the work above, but
+addresses the open problems.
+
+\paragraph{Scope Tracking}
+We avoid scoping garbage by blending the ordered context and the
+worklist into a single syntactic sort $\Gamma$, our algorithmic worklist. This
+algorithmic worklist interleaves (type and term) variables with \emph{work}
+like checking or inferring types of expressions. The interleaving keeps track
+of the variable scopes in the usual, natural way: each variable is in scope of
+anything in front of it in the worklist. If there is nothing in front, the
+variable is no longer needed and can be popped from the worklist. This way, no
+garbage (i.e. variables out-of-scope) builds up.
+
+%\jimmy{Comment A is not satisfied with the term "continuation passing style" for our definition.}
+
+$$\begin{aligned}
+\text{Algorithmic judgment chain}\qquad&\jg &::=&\quad A \le B \mid e\Lto A \mid e\To_{a} \jg \mid \appInfAlg{A}{e}\\
+\text{Algorithmic worklist}\qquad&\Gm &::=&\quad \nil \mid \Gm, a \mid \Gm, \al \mid \Gm, x: A \mid \Gm \Vdash \jg\\
+\end{aligned}$$
+
+For example, suppose that the top judgment of the following worklist
+checks the identity function against $\all a \to a$:
+$$\Gm \Vdash \lam x \Lto \all a \to a$$
+To proceed, two auxiliary variables $a$ and $x$ are introduced to help the type checking:
+$$\Gm, a, x:a \Vdash x \Lto a$$
+which will be satisfied after several steps, and the worklist becomes
+$$\Gm, a, x:a$$
+Since the variable declarations $a, x:a$ are only used for a judgment already processed,
+they can be safely removed, leaving the remaining worklist $\Gm$ to be further reduced.
+
+Our worklist can be seen as an all-in-one stack,
+containing variable declarations and subtyping/ typing judgments.
+The stack is an enriched form of ordered context,
+and it has a similar variable scoping scheme.
+%The well-formedness condition, shown in Figure~\ref{fig:alg:syntax},
+%states that every variable must be declared prior to it usage.
+%Therefore, if any variable declaration is the top element,
+%then no usage should appear in the rest of the worklist, so it can be removed.
+
+% $$\Gm \Vdash \all a \to a \le \all a \to a$$
+% $$\Gm, a, \al \Vdash \al \to \al \le a \to a$$
+
+\paragraph{Inference Judgments}
+To express the DK's inference judgments, we use a novel form of work entries in
+the worklist: our algorithmic judgment chains $\omega$. In its simplest form,
+such a judgment chain is just a check, like a subtyping check $A \leq B$ or a
+term typecheck $e \Leftarrow A$. 
+However, the non-trivial forms of chains capture an
+inference task together with the work that depends on its outcome. For
+instance, a type inference task takes the form $e \Rightarrow_a \omega$.
+This form expresses that we need to infer the type, say $A$, for expression $e$ and use it
+in the chain $\omega$ by substituting it for the placeholder type variable $a$.
+Notice that such $a$ binds a fresh type variable for the inner chain $\jg$,
+which behaves similarly to the variable declarations in the context.
+%\bruno{Removed CPS mention here. But if we remove it here should we remove it
+%everywhere? Tom, your input would be good regarding this.}
+
+Take the following worklist as an example
+$$\al \Vdash \underline{(\lam x)~() \To_a a \le \al} , x:\al, \bt \Vdash \underline{\al \le \bt} \Vdash \underline{\bt \le 1}$$
+There are three (underlined) judgment chains in the worklist,
+where the first and second judgment chains (from the right) are two subtyping judgments,
+and the third judgment chain, $(\lam x)~() \To_a a \le \al$,
+is a sequence of an inference judgment followed by a subtyping judgment.
+
+The algorithm first analyses the two subtyping judgments and
+will find the best solutions $\al = \bt = 1$
+(please refer to Figure~\ref{fig:alg} for detailed derivations).
+Then we substitute every instance of $\al$ and $\bt$ with $1$,
+so the variable declarations can be safely removed from the worklist.
+Now we reduce the worklist to the following state
+$$\nil \Vdash \underline{(\lam x)~() \To_a a \le 1}, x:1$$
+which has a term variable declaration as the top element.
+%Because no judgments before the declaration refer to $x$,
+%as a basic property of an ordered context
+%(Figure~\ref{fig:alg:syntax} shows its well-formedness criteria),
+%we remove all declarations before the first judgment chain to collect unused variables.
+%As a result all garbage variables are collected
+%once the judgment chains refering to them are processed,
+%just as what we have mentioned above about the scope tracking.
+After removing the garbage term variable declaration from the worklist, we process the last remaining
+inference judgment $(\lam x)~()\To~?$, with the unit type $1$ as its result.
+Finally the last judgment becomes $1 \le 1$, a trivial base case.
+
+
+% Our algorithm borrows some ideas from previous work, while adding new ones. 
+% A small-step style processing worklists; \emph{Judgment Chains}; others. 
+
+% Importantly we now deal with inference judgment.
+

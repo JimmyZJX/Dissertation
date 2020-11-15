@@ -1,0 +1,311 @@
+
+This section introduces Odersky and L\"aufer declarative subtyping rules, and discusses the challenges in formalizing a corresponding
+algorithmic version. Then the key ideas of our approach that address
+those challenges are introduced.
+
+%{Polymorpic Subtyping}
+% introduction, a bit about history
+
+\begin{comment}
+The subtyping relation is typically
+used by the subsumption rule for type inference, e.g.
+$$\inferrule*[right=Sub]
+  {\Gamma\vdash t : A \quad A\le B}
+  {\Gamma\vdash t : B}
+$$
+where $t$ represents a term, and the relation $\Gamma\vdash t : A$
+reads ``term $t$ has type $A$ under context $\Gamma$''.
+\end{comment}
+
+%-------------------------------------------------------------------------------
+\subsection{Declarative Polymorphic Subtyping}\label{declarative_subtyping}
+
+\begin{figure}[t]
+\[
+\begin{array}{l@{\qquad}lcl}
+\text{Type variables}\qquad&a, b\\[3mm]
+\text{Types}\qquad&A, B, C &::=&\quad 1 \mid a \mid \forall a. A \mid A\to B\\
+\text{Monotypes}\qquad&\tau &::=&\quad 1 \mid a \mid \tau_1\to \tau_2\\
+\text{Contexts}\qquad&\Psi &::=&\quad \cdot \mid \Psi, a\\
+%\text{Judgments}\qquad&\exps &::=&\quad \cdot \mid A \le B : \exps
+\end{array}
+\]
+\caption{Syntax of Declarative System}\label{fig:decl:syntax}
+\end{figure}
+
+
+In implicitly polymorphic type systems, the subtyping relation
+compares the degree of polymorphism of types. In short, if a
+polymorphic type $A$ can always be instantiated to any instantiation
+of $B$, then $A$ is ``at least as polymorphic as'' $B$, or we just say
+that $A$ is ``more polymorphic than'' $B$, or $A\le B$.  
+%For example,
+%by instantiating \verb|a| with \verb|Int|, \verb|forall a. a -> a|
+%becomes \verb|Int -> Int|, thus \verb|forall a. a -> a| is a subtype
+%of \verb|Int -> Int|.
+
+There is a very simple declarative formulation of
+polymorphic subtyping due to Odersky and La\"ufer~\cite{odersky1996putting}. The syntax
+of this declarative system is shown in Figure~\ref{fig:decl:syntax}. Types,
+represented by $A, B, C$, are the unit type $1$, type variables
+$a, b$, universal quantification $\forall a. A$ and function type
+$A\to B$. We allow nested universal quantifiers to appear in
+types, but not in monotypes. Contexts $\Psi$ collect a list
+of type variables.
+
+
+\begin{figure}[t]
+\centering \framebox{$\Psi \vdash A$}
+\begin{gather*}
+\inferrule*[right=$\mathtt{wf_d unit}$]
+	{~}{\Psi\vdash 1}
+\qquad
+\inferrule*[right=$\mathtt{wf_d var}$]
+	{a\in\Psi}{\Psi\vdash a}
+\qquad
+\inferrule*[right=$\mathtt{wf_d{\to}}$]
+	{\Psi\vdash A\quad \Psi\vdash B}
+	{\Psi\vdash A\to B}
+\qquad
+\inferrule*[right=$\mathtt{wf_d\forall}$]
+	{\Psi, a\vdash A}
+	{\Psi\vdash \forall a. A}
+\end{gather*}
+
+\centering \framebox{$\Psi \vdash A \le B$}
+\begin{gather*}
+\inferrule*[right=$\mathtt{{\le}Var}$]
+	{a\in\Psi}{\Psi\vdash a\le a}
+\qquad
+\inferrule*[right=$\mathtt{{\le}Unit}$]
+	{~}{\Psi \vdash 1 \le 1}
+\qquad
+\inferrule*[right=$\mathtt{{\le}{\to}}$]
+	{\Psi \vdash B_1 \le A_1 \quad \Psi \vdash A_2 \le B_2}
+	{\Psi\vdash A_1\to A_2 \le B_1\to B_2}
+\\
+\inferrule*[right=$\mathtt{{\le}\forall L}$]
+	{\Psi\vdash \tau \quad \Psi\vdash [\tau/a] A \le B}
+	{\Psi\vdash \forall a. A \le B}
+\qquad
+\inferrule*[right=$\mathtt{{\le}\forall R}$]
+	{\Psi, a\vdash A\le B}
+	{\Psi\vdash A \le \forall a. B}
+\end{gather*}
+\caption{Well-formedness of Declarative Types and Declarative Subtyping}\label{fig:decl:wf_sub}
+\end{figure}
+
+In Figure~\ref{fig:decl:wf_sub}, we give the well-formedness and
+subtyping relation for the declarative system. The cases without 
+universal quantifiers are handled by Rules~$\mathtt{{\le}Var}$,
+$\mathtt{{\le}Unit}$ and $\mathtt{{\le}{\to}}$. The subtyping rule 
+for function types ($\mathtt{{\le}{\to}}$) is standard, 
+being contravariant on the argument types.
+Rule~$\mathtt{{\le}\forall R}$ says that if $A$ is a subtype of $B$
+under the context extended with $a$, where $a$ is fresh in $A$, then
+$A\le \forall a. B$. Intuitively, if $A$ is more general than
+the universally quantified type $\forall a. B$, then $A$ must
+instantiate to $[\tau/a]B$ for every $\tau$. 
+%With $A\le B$, where $A$ is
+%instantiated to $B$, which is opened by a fresh variable, we can
+%conclude that for all $\tau$, $A$ have the potential to instantiate to
+%$[\tau/a]B$, therefore $A\le \forall a. B$.
+
+Finally, the most interesting rule is $\mathtt{{\le}\forall L}$, which instantiates $\forall a. A$ to
+$[\tau/a]A$, and concludes the subtyping $\forall a. A \le B$
+if the instantiation is a subtype of $B$. Notice that $\tau$ is
+\emph{guessed}, 
+and the algorithmic system should provide the means to compute this
+guess. Furthermore, the guess is a \emph{monotype}, which rules 
+out the possibility of polymorphic (or impredicative)
+instantiation. The restriction to monotypes and predicative
+instantiation is used by both Peyton Jones et al.~\cite{jones2007practical} and Dunfield and 
+Krishnaswami's~\cite{dunfield2013complete} algorithms, which are
+adopted by several practical implementations of programming languages.
+
+\begin{comment}
+The conclusions of the declarative subtyping rules do not overlap with
+each other, except for the judgments with a shape of
+$\forall a. A \le \forall a. B$. In this case, an eager application of
+Rule~$\mathtt{{\le}\forall R}$ introduces type variable into the context
+earlier, which results in an easier problem than the application of
+Rule~$\mathtt{{\le}\forall L}$.
+\end{comment}
+
+%-------------------------------------------------------------------------------
+\subsection{Finding Solutions for Variable Instantiation}
+
+The declarative system specifies the behavior of subtyping relations,
+but is not directly implementable: the rule $\mathtt{{\le}\forall L}$
+requires guessing a monotype $\tau$.
+The core problem that an algorithm for polymorphic 
+subtyping needs to solve is to find an algorithmic way to compute the 
+monotypes, instead of guessing them. An additional challenge is that
+the declarative rule $\mathtt{{\le}{\to}}$ splits one judgment
+into two, and the (partial) solutions found for existential variables when
+processing the first judgment should be transfered to the second judgement.
+%Traditionaly algorithms address this problem using techniques 
+%similar to unification. Basically existential (unification) variables
+%are introduced through the derivation and solved while traversing the
+%types and discovering information. The solutions for those existential
+%variables are then propagated across branches of derivation.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\paragraph{Dunfield and Krishnaswami's Approach}
+An elegant algorithmic solution to computing the monotypes is 
+presented by Dunfield and Krishnaswami~\cite{dunfield2013complete}. 
+Their algorithmic subtyping judgement has the form:
+
+\[\Psi \vdash A \le B \dashv \Phi\]
+
+\noindent 
+A notable difference to the declarative judgement is the presence of a
+so-called \emph{output context} $\Phi$, which refines the \emph{input
+context} $\Psi$ with solutions for existential variables found while
+processing the two types being compared for subtyping. 
+Both $\Psi$ and $\Phi$ are \emph{ordered contexts} with the
+same structure. Ordered contexts are particularly useful to keep track
+of the correct scoping for variables, and
+are a notable different to older type-inference algorithms~\cite{damas1982principal} that use global
+unification variables or constraints collected in a set. 
+
+Output contexts
+are useful to transfer information across judgements in Dunfield and
+Krishnaswami's approach. For example, the algorithmic rule
+corresponding to $\mathtt{{\le}{\to}}$ in their approach is:
+$$\inferrule*[right=$\mathtt{{<:}{\to}}$]
+	{\Psi\vdash B_1 <: A_1 \dashv \Phi\quad \Phi \vdash [\Phi]A_2 <: [\Phi]B_2\dashv \Phi'}
+	{\Psi\vdash A_1\to A_2 <: B_1\to B_2 \dashv \Phi'}
+$$
+\noindent The information gathered by the output context when comparing the
+input types of the functions for subtyping is transfered to the second
+judgement by becoming the new input context, while any solution derived from the first judgment is applied to the types of the second judgment.
+
+\paragraph{Example} If we want to show that $\forall a. a\to a$ is a subtype
+of $1\to 1$, the declarative system will guess the proper $\tau=1$ for
+Rule $\mathtt{{\le}\forall L}$: $$\frac{\cdot\vdash 1\quad \cdot\vdash 1
+\to 1 \le 1\to 1} {\cdot\vdash \forall a. a\to a \le 1
+\to 1}\ \mathtt{{\le}\forall L}$$
+
+\noindent Dunfield and Krishnaswami introduce an \emph{existential variable}---denoted
+with $\alpha,\beta$---whenever a monotype $\tau$ needs to be guessed. Below is a sample
+derivation of their algorithm; we omit the full set of algorithmic rules due to
+lack of space:
+$$\inferrule*[right=$\mathtt{{<:}\forall L}$]
+{\inferrule*[right=$\mathtt{{<:}{\to}}$]
+	{
+		\inferrule*[right=$\mathtt{InstRSolve}$]{~}
+		{\alpha\vdash 1\le \alpha \dashv \alpha=1}
+		\quad
+		\inferrule*[right=$\mathtt{{<:}Unit}$]{~}
+		{\alpha=1\vdash 1\le 1\vdash \alpha=1}
+	}
+	{\alpha\vdash \alpha\to\alpha \le 1\to 1\dashv \alpha = 1}
+}
+{\cdot\vdash \forall a. a\to a \le 1 \to 1 \dashv \cdot}$$
+
+\noindent 
+The first step applies Rule $\mathtt{{<:}\forall L}$, which introduces a
+fresh existential variable, $\alpha$, and opens the left-hand-side
+$\forall$-quantifier with it. Next, Rule $\mathtt{{<:}{\to}}$
+splits the judgment in two. For the first branch, Rule
+$\mathtt{InstRSolve}$ satisfies $1\le \alpha$ by solving $\alpha$ to
+$1$, and stores the solution in its output context. The output context
+of the first branch is used as the input context of the second branch,
+and the judgment is updated according to current solutions. Finally,
+the second branch becomes a base case, and Rule $\mathtt{{<:}Unit}$
+finishes the derivation, makes no change to the input context and
+propagates the output context back.
+
+Dunfield and Krishnaswami's algorithmic specification is elegant
+and contains several useful ideas for a mechanical
+formalization of polymorphic subtyping. For example 
+\emph{ordered contexts} and \emph{existential variables} enable a purely inductive formulation 
+of polymorphic subtyping. However the binding/scoping structure of their 
+algorithmic judgement is still fairly complicated and poses 
+challenges when porting their approach to a theorem prover. 
+
+\subsection{The Worklist Approach}
+%However, our worklist approach aims at eager
+%propagation, which applies any solution or partial
+%solution immediately to all the judgments.
+We inherit Dunfield and Krishnaswami's ideas of ordered contexts,
+existential variables and the idea of solving those variables, but
+drop output contexts. Instead our algorithmic rule has the form:
+
+\[\Gamma \vdash \exps\]
+
+\noindent where $\exps$ is a list of judgments $A \le B$ instead of a
+single one. This judgement form, which we call \emph{worklist judgement},
+simplifies two aspects of Dunfield and
+Krishnaswami's approach.
+
+%\jimmy{Mention the relation to constraint solving, e.g. in unification. Possibly talk about nondeterminism.}
+
+Firstly, as already stated, there are no output
+contexts. Secondly the form of the ordered contexts become simpler.
+The transfer of information across judgements is simplified because 
+all judgements share the input context. Moreover the order of the
+judgements in the list allows information discovered when processing
+the earlier judgements to be easily transfered to the later judgements.
+In the worklist approach the rule for function types is:
+\[\inferrule*[right=$\mathtt{{\le_a}{\to}}$]
+  {\Gamma \vdash \jcons{B_1\le A_1}{\jcons{A_2\le B_2}{\exps}}}
+  {\Gamma \vdash \jcons{A_1\to A_2\le B_1\to B_2}{\exps}}\]
+
+
+The derivation of the previous example with the worklist approach is:
+\begin{equation*}
+\inferrule*[Right=$\mathtt{{\le_a}\forall L}$]
+{\inferrule*[Right=$\mathtt{{\le_a}{\to}}$]
+	{\inferrule*[Right=$\mathtt{{\le_a}solve\_ex}$]
+		{\inferrule*[Right=$\mathtt{{\le_a}unit}$]
+			{\inferrule*[Right=$\mathtt{a\_nil}$]
+				{~}
+				{\cdot \vdash \cdot}
+			}
+			{\cdot \vdash \jcons{1 \le 1}{\cdot}}
+		}
+		{\alpha \vdash \jcons{1\le \alpha}{\jcons{\alpha \le 1}{\cdot}}}
+	}
+	{\alpha \vdash \jcons{\alpha \to \alpha \le 1\to 1}{\cdot}}
+}
+{\cdot \vdash \jcons{\forall a. a\to a\le 1\to 1}{\cdot}}
+\end{equation*}
+
+\begin{comment}
+When Rule $\mathtt{{<:}{\to}}$ is applied in their algorithm, we
+simply add a judgment to the judgment list and let the algorithm
+continue focusing on the first branch. When an existential variable
+can be solved to some monotype, we substitute the variable by its
+solution to each of the judgments.
+\end{comment}
+
+To derive $\cdot\vdash \forall a. a\to a \le 1\to 1$
+with the worklist approach, we first introduce an existential variable
+and change the judgement to
+$\jcons{\alpha\vdash \alpha\to\alpha \le 1\to 1}{\cdot}$. Then, we
+split the judgment in two for the function types and the derivation
+comes to $\jcons{\alpha\vdash 1\le \alpha}{\jcons{\alpha \le 1}{\cdot}}$. When the first
+judgment is solved with $\alpha = 1$, we immediately remove $\alpha$
+from the context, while propagating the solution as a substitution to
+the rest of the judgment list, resulting in $\jcons{\cdot\vdash 1 \le 1}{\cdot}$,
+which finishes the derivation in two trivial steps.
+
+With this form of eager propagation, solutions no longer
+need to be recorded in contexts, simplifying the encoding and
+reasoning in a proof assistant.
+
+\paragraph{Key Results}
+Both the declarative and algorithmic systems are formalized in Abella.
+We have proven 3 important properties for this algorithm: 
+\emph{decidability}, ensuring that the algorithm always terminates; and \emph{soundness} and
+\emph{completeness}, showing the equivalence of the declarative and algorithmic systems. 
+
+%----------------------------------------------------------------------------------------
+%\subsection{Worklist Algorithm}
+% key ideas: replace tree of judgments by a list of judgements...
+
+%\subsection{The Choice of Abella}
+
+

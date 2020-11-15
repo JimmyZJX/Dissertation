@@ -1,0 +1,212 @@
+\section{Metatheory}\label{metatheory}
+
+This section presents the 3 main meta-theoretical results that we have proved
+in Abella. The first two are soundness and 
+completeness of our algorithm with respect to Odersky and L\"aufer's declarative
+subtyping. The third result is our algorithm's decidability. 
+
+% The formalization of our higher-order polymorphism is developed in 
+% Abella. Abella offers great flexibility on variable bindings and
+% variable substitutions, which significantly decreases the difficulty
+% of handling freshness and substitutions on the judgment list.
+
+%-------------------------------------------------------------------------------
+\subsection{Transfer to the Declarative System}
+
+To state the correctness of the algorithmic subtyping rules,
+Figure~\ref{fig:transfer} 
+introduces two \textit{transfer} judgements to
+relate the declarative and the algorithmic system. 
+The first judgement, transfer of contexts $\Gamma \to \Psi$, removes
+existential variables from the algorithmic context $\Gamma$ to obtain a
+declarative context $\Psi$.
+The second judgement, transfer of the judgement list $\Gamma \mid \exps \rightsquigarrow \exps'$,
+replaces all occurrences of existential variables in $\exps$  by well-scoped mono-types.
+Notice that this judgment is not decidable, i.e. a pair of
+$\Gamma$ and $\exps$ may be related with multiple $\exps'$. However, if there
+exists some substitution that transforms $\exps$ to $\exps'$, and each
+subtyping judgment in $\exps'$ holds, we know that $\exps$ is potentially
+satisfiable.
+
+\begin{figure}[t]
+\centering \framebox{$\Gamma \to \Psi$}
+$$
+\inferrule*[right=$\mathtt{{\to}\cdot}$]
+	{~}{\cdot\to \cdot}
+\qquad
+\inferrule*[right=$\mathtt{{\to}var}$]
+	{\Gamma\to \Psi}
+	{\Gamma, a\to \Psi, a}
+\qquad
+\inferrule*[right=$\mathtt{{\to}exvar}$]
+	{\Gamma\to \Psi}
+	{\Gamma, \alpha\to \Psi}
+\qquad
+$$
+\framebox{$\Gamma \mid \exps \rightsquigarrow \exps'$}
+$$
+\inferrule*[right=$\mathtt{{\rightsquigarrow}\cdot}$]
+	{~}{\cdot \mid \exps\rightsquigarrow \exps}
+\qquad
+\inferrule*[right=$\mathtt{{\rightsquigarrow}var}$]
+	{\Gamma \mid \exps \rightsquigarrow \exps'}
+	{\Gamma, a \mid \exps \rightsquigarrow \exps'}
+\qquad
+\inferrule*[right=$\mathtt{{\rightsquigarrow}exvar}$]
+	{\Gamma\to \Psi \quad \Psi\vdash \tau\quad
+		\Gamma \mid [\tau/\alpha]\exps \rightsquigarrow \exps'}
+	{\Gamma, \alpha \mid \exps \rightsquigarrow \exps'}
+$$
+\caption{Transfer Rules}
+\label{fig:transfer}
+\end{figure}
+
+The following two lemmas generalize Rule~$\mathtt{{\rightsquigarrow}exvar}$ from substituting the first
+existential variable to substituting any existential variable.
+
+\begin{lemma}[Insert]
+If $\Gamma\to\Psi$ and $\Psi\vdash \tau$ and $\Gamma, \Gamma_1 \mid [\tau/\alpha]\exps \rightsquigarrow \exps'$
+, then $\Gamma, \alpha, \Gamma_1\mid \exps \rightsquigarrow \exps'$.
+% \[
+% \inferrule
+%   {\Gamma\to\Psi \\ \Psi\vdash \tau \\ \Gamma, \Gamma_1 \mid [\tau/\alpha]\exps \rightsquigarrow \exps'}
+%   {\Gamma, \alpha, \Gamma_1\mid \exps \rightsquigarrow \exps'}
+% \]
+\end{lemma}
+\begin{lemma}[Extract]
+	If $\Gamma, \alpha, \Gamma_1\mid \exps \rightsquigarrow \exps'$, then $\exists\tau$ s.t. $\Gamma\to\Psi, \Psi\vdash \tau$ and $\Gamma, \Gamma_1 \mid [\tau/\alpha]\exps \rightsquigarrow \exps'$.
+\end{lemma}
+
+In order to match the shape of algorithmic subtyping relation for the following proofs, we define a relation $\Psi\vdash \exps$ for the declarative system, meaning that all the declarative judgments hold under context $\Psi$.
+\begin{definition}[Declarative Subtyping Worklist]
+	$$\Psi\vdash\exps := \forall (A\le B)\in \exps, \Psi\vdash A\le B$$
+\end{definition}
+
+%The transfer rules play a role of an axiom which specifies the relation between our algorithmic system and declarative system.
+
+%-------------------------------------------------------------------------------
+\subsection{Soundness}
+Our algorithm is sound with respect to the
+declarative specification. For any derivation of a list of algorithmic
+judgments $\Gamma\vdash\exps$, we can find a valid transfer
+$\Gamma\mid\exps\rightsquigarrow\exps'$ such that all judgments in $\exps'$ hold
+in $\Psi$, with $\Gamma \to \Psi$.
+
+\begin{theorem}[Soundness]
+	If $\Gamma\vdash \exps$ and $\Gamma \to \Psi$, then there exists $\exps'$, s.t. $\Gamma \mid \exps\rightsquigarrow \exps'$ and $\Psi\vdash \exps'$.
+\end{theorem}
+The proof proceeds by induction on the derivation
+of $\Gamma\vdash\exps$, finished off by appropriate applications of the insertion and
+extraction lemmas.
+
+%\tom{Say something about the corollary, e.g., why it's important.}
+%\begin{corollary}[Soundness\_decl]
+%	If $\Gamma = \Psi, A = A', B = B'$, $\Gamma\vdash A\le B : \cdot$, then $\Psi\vdash A'\le B'$.
+%\end{corollary}
+
+%-------------------------------------------------------------------------------
+\subsection{Completeness}
+
+Completeness of the algorithm means that any declarative derivation has an
+algorithmic counterpart. 
+% More specifically, for any derivation of declarative
+% judgments $\Psi\vdash\exps'$ and any extended environment $\Gamma$, any
+% algorithmic judgments that satisfies the transfer relation
+% $\Gamma\mid\exps\rightsquigarrow\exps'$, we can successfully derive
+% $\Gamma\vdash\exps$.
+\begin{theorem}[Completeness]
+	If $\Psi\vdash \exps'$ and $\Gamma \to \Psi$ and $\Gamma \mid \exps\rightsquigarrow \exps'$, then $\Gamma\vdash \exps$.
+\end{theorem}
+
+The proof proceeds by induction on the derivation of $\Psi\vdash\exps'$. As the
+declarative system does not involve information propagation across judgments,
+the induction can focus on the subtyping derivation of the first judgment
+without affecting other judgments.
+The difficult cases correspond to the $\mathtt{{\le_a}instL}$ and
+$\mathtt{{\le_a}instR}$ rules.  When the proof by induction on $\Psi\vdash
+\exps'$ reaches the $\mathtt{{\le}{\to}}$ case, the first declarative
+judgment has a shape like $A_1\to A_2 \le B_1\to B_2$. 
+One of the possibile cases for the first corresponding algorithmic judgement
+is $\alpha\le A\to B$. However, the case analysis does not indicate
+that $\alpha$ is fresh in $A$ and $B$. Thus we cannot apply
+Rule~$\mathtt{{\le_a}instL}$ and make use of the induction hypothesis.
+The following lemma helps us out in those cases:
+it rules out subtypings with infinite types as solutions (e.g. $\alpha \le 1
+\to \alpha$) and guarantees that $\alpha$ is free in $A$ and $B$.
+\begin{lemma}[Prune Transfer for Instantiation]
+	If $\Psi \vdash \jcons{A_1\to A_2 \le B_1\to B_2}{\exps'}$ and $\Gamma\to \Psi$ and $\Gamma\mid (\jcons{\alpha \le A\to B}{\exps}) \rightsquigarrow
+	(\jcons{A_1\to A_2 \le B_1\to B_2}{\exps'})$
+	% or $\Gamma\mid A\to B \le \alpha : \exps \rightsquigarrow A_1\to A_2 \le B_1\to B_2 : \exps'$
+	, then $\alpha \notin FV(A)\cup FV(B)$. 
+\end{lemma}
+A similar lemma holds for the symmetric case $(\jcons{A \to B \le \alpha}{\Omega})$.
+%\tom{Say something about the corollary, e.g., why it's important.}
+%\begin{corollary}[Completeness\_decl]
+%	If $\Gamma = \Psi, A = A', B = B'$, $\Psi\vdash A'\le B'$, then $\Gamma\vdash A\le B$.
+%\end{corollary}
+
+%-------------------------------------------------------------------------------
+\subsection{Decidability}
+
+The third key result for our algorithm is decidability.
+\begin{theorem}[Decidability]
+	Given any well-formed judgment list $\exps$ under $\Gamma$, it is decidable whether $\Gamma\vdash \exps$ or not.
+\end{theorem}
+
+\noindent We have proven this theorem by means of a lexicographic group of induction
+measurements $\left\langle|\Omega|_\forall,|\Gamma|_\alpha, |\Omega|_\to\right\rangle$ on the worklist $\Omega$
+and algorithmic context $\Gamma$. 
+The worklist measures $|\cdot|_\forall$ and $|\cdot|_\to$ count the
+number of universal quantifiers and function types respectively.
+\begin{definition}[Worklist Measures]
+\[
+\begin{array}{rcl@{\hspace{-10mm}}rclrcl} 
+|1|_\forall = |a|_\forall = |\alpha|_\forall &=& 0      &|1|_\to = |a|_\to = |\alpha|_\to &=& 0        \\
+|A\to B|_\forall &=& |A|_\forall + |B|_\forall  &|A\to B|_\to &=& |A|_\to + |B|_\to + 1\\
+|\forall x. A|_\forall &=& |A|_\forall + 1              &|\forall x. A|_\to &=& |A|_\to                        \\
+|\exps|_\forall &=& \sum_{A \le B\in \exps} |A|_\forall + |B|_\forall       &|\exps|_\to &=& \sum_{A \le B \in \exps} |A|_\to + |B|_\to
+\end{array}
+\]
+\end{definition}
+
+\noindent The context measure $|\cdot|_\alpha$ counts the number of unsolved existential variables.
+\begin{definition}[Context Measure]
+$$|\cdot|_\alpha = 0\qquad
+|\Gamma,a|_\alpha = |\Gamma|_\alpha\qquad
+|\Gamma,\alpha|_\alpha = |\Gamma|_\alpha + 1$$
+\end{definition}
+
+It is not difficult to see that all but two of the algorithm's rules decrease
+one of the three measures. The two exceptions are the Rules $\mathtt{{\le_a}instL}$ and $\mathtt{{\le_a}instR}$; both increment the number of existential
+variables and the number of function types without affecting the number of
+universal quantifiers.
+To handle these rules, we handle a special class of judgements, which
+we call \emph{instantiation judgements} $\exps_i$, separately. They 
+take the form:
+\begin{definition}[$\exps_i$]
+$$\exps_i := \cdot \mid \jcons{\alpha\le A}{\exps_i'} \mid \jcons{A\le \alpha}{\exps_i'}
+\quad\text{where } \alpha\notin FV(A)\cup FV(\exps_i')$$
+\end{definition}
+These instantiation judgements are these ones consumed and
+produced by the Rules $\mathtt{{\le_a}instL}$ and $\mathtt{{\le_a}instR}$.
+The following lemma handles their decidability.
+\begin{lemma}[Instantiation Decidability]
+	For any context $\Gamma$ and judgment list $\exps_i, \exps$, it is decidable whether $\Gamma\vdash \exps_i,\exps$ if both of the conditions hold
+\begin{enumerate}[1)]
+	\item $\forall \Gamma', \exps'$ s.t. $|\exps'|_\forall < |\exps_i,\exps|_\forall$, it is decidable whether $\Gamma'\vdash \exps'$.
+	\item $\forall \Gamma', \exps'$ s.t. $|\exps'|_\forall = |\exps_i,\exps|_\forall$ and $|\Gamma'|_\alpha = |\Gamma|_\alpha - |\exps_i|$, it is decidable whether $\Gamma'\vdash \exps'$.
+\end{enumerate}
+\label{lemma:inst_decidable}
+\end{lemma}
+In other words, for any instantiation judgment prefix $\exps_i$, the algorithm
+either reduces the number of $\forall$'s or solves one existential variable per
+instantiation judgment. The proof of this lemma is by induction on the measure
+$2*|\exps_i|_{\to} + |\exps_i|$ of the instantiation judgment list.
+
+In summary, the decidability theorem can be shown through a lexicographic group
+of induction measurements $\left\langle|\Omega|_\forall, |\Omega|_\alpha,
+|\Omega|_\to\right\rangle$. The critical case is that, whenever we
+encounter an instantiation judgment at the front of the worklist, we refer to
+Lemma~\ref{lemma:inst_decidable}, which reduces the number of unsolved
+variables by consuming that instantiation judgment, or reduces the number of
+$\forall$-quantifiers. Other cases are relatively straightforward.

@@ -1,0 +1,297 @@
+%% For double-blind review submission, w/o CCS and ACM Reference (max
+%% submission space)
+%\documentclass[acmsmall,review]{acmart}\settopmatter{printfolios=true}
+%%\documentclass[acmsmall,review,anonymous]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
+%% For double-blind review submission, w/ CCS and ACM Reference
+%\documentclass[acmsmall,review,anonymous]{acmart}\settopmatter{printfolios=true}
+%% For single-blind review submission, w/o CCS and ACM Reference (max submission space)
+%\documentclass[acmsmall,review]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
+%% For single-blind review submission, w/ CCS and ACM Reference
+%\documentclass[acmsmall,review]{acmart}\settopmatter{printfolios=true}
+%% For final camera-ready submission, w/ required CCS and ACM Reference
+\documentclass[acmsmall,screen]{acmart}
+
+%% Remove almost every footnotes and page numbers, for grammar check use.
+%\documentclass[acmsmall,anonymous]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
+%\settopmatter{printacmref=false} % Removes citation information below abstract
+%\renewcommand\footnotetextcopyrightpermission[1]{} % removes footnote with conference information in first column
+%\pagestyle{plain} % removes running headers
+%\pagenumbering{gobble}
+
+
+%% Journal information
+%% Supplied to authors by publisher for camera-ready submission;
+%% use defaults for review submission.
+%\acmJournal{PACMPL}
+%\acmVolume{1}
+%\acmNumber{ICFP} % CONF = POPL or ICFP or OOPSLA
+%\acmArticle{1}
+%\acmYear{2018}
+%\acmMonth{1}
+%\acmDOI{} % \acmDOI{10.1145/nnnnnnn.nnnnnnn}
+%\startPage{1}
+
+%% Copyright information
+%% Supplied to authors (based on authors' rights management selection;
+%% see authors.acm.org) by publisher for camera-ready submission;
+%% use 'none' for review submission.
+%\setcopyright{none}
+%\setcopyright{acmcopyright}
+%\setcopyright{acmlicensed}
+%\setcopyright{rightsretained}
+%\copyrightyear{2018}           %% If different from \acmYear
+
+%% Bibliography style
+\bibliographystyle{ACM-Reference-Format}
+%% Citation style
+%% Note: author/year citations are required for papers published as an
+%% issue of PACMPL.
+\citestyle{acmauthoryear}   %% For author/year citations
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Note: Authors migrating a paper from PACMPL format to traditional
+%% SIGPLAN proceedings format must update the '\documentclass' and
+%% topmatter commands above; see 'acmart-sigplanproc-template.tex'.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% Some recommended packages.
+\usepackage{booktabs}   %% For formal tables:
+                        %% http://ctan.org/pkg/booktabs
+\usepackage{subcaption} %% For complex figures with subfigures/subcaptions
+                        %% http://ctan.org/pkg/subcaption
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amstext}
+\usepackage{enumerate}
+%\usepackage{enumitem}
+
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{color}
+
+\usepackage{xparse}
+\usepackage{listings}
+\usepackage{lstabella}
+
+\usepackage{mathpartir}
+\usepackage{comment}
+
+\usepackage{mathtools}
+\usepackage{graphicx}
+
+\usepackage{lscape}
+\usepackage{afterpage}
+% \usepackage{rotating}
+
+\usepackage{booktabs}
+
+%\usepackage{tikz}
+
+\input{sections/macros.tex}
+
+
+%%% The following is specific to ICFP '19 and the paper
+%%% 'A Mechanical Formalization of Higher-Ranked Polymorphic Type Inference'
+%%% by Jinxu Zhao, Bruno C. d. S. Oliveira, and Tom Schrijvers.
+%%%
+\setcopyright{acmcopyright}
+\acmPrice{}
+\acmDOI{10.1145/3341716}
+\acmYear{2019}
+\copyrightyear{2019}
+\acmJournal{PACMPL}
+\acmVolume{3}
+\acmNumber{ICFP}
+\acmArticle{112}
+\acmMonth{8}
+
+
+\begin{document}
+
+%% Title information
+\title{A Mechanical Formalization of Higher-Ranked Polymorphic
+  Type Inference}         %% [Short Title] is optional;
+                                        %% when present, will be used in
+                                        %% header instead of Full Title.
+%\titlenote{with title note}             %% \titlenote is optional;
+                                        %% can be repeated if necessary;
+                                        %% contents suppressed with 'anonymous'
+%\subtitle{Subtitle}                     %% \subtitle is optional
+%\subtitlenote{with subtitle note}       %% \subtitlenote is optional;
+                                        %% can be repeated if necessary;
+                                        %% contents suppressed with 'anonymous'
+
+
+%% Author information
+%% Contents and number of authors suppressed with 'anonymous'.
+%% Each author should be introduced by \author, followed by
+%% \authornote (optional), \orcid (optional), \affiliation, and
+%% \email.
+%% An author may have multiple affiliations and/or emails; repeat the
+%% appropriate command.
+%% Many elements are not rendered, but should be provided for metadata
+%% extraction tools.
+
+%% Author with single affiliation.
+\author{Jinxu Zhao}
+%\authornote{with author1 note}          %% \authornote is optional;
+                                        %% can be repeated if necessary
+%\orcid{nnnn-nnnn-nnnn-nnnn}             %% \orcid is optional
+\affiliation{
+  %\position{Position1}
+  \department{Department of Computer Science}              %% \department is recommended
+  \institution{The University of Hong Kong}            %% \institution is required
+  %\streetaddress{Pokfulam}
+  \city{Hong Kong}
+  %\state{State1}
+  %\postcode{Post-Code1}
+  \country{China}                    %% \country is recommended
+}
+\email{jxzhao@cs.hku.hk}          %% \email is recommended
+
+%% Author with two affiliations and emails.
+\author{Bruno C. d. S. Oliveira}
+%\authornote{with author1 note}          %% \authornote is optional;
+%% can be repeated if necessary
+%\orcid{nnnn-nnnn-nnnn-nnnn}             %% \orcid is optional
+\affiliation{
+	%\position{Position1}
+	\department{Department of Computer Science}              %% \department is recommended
+	\institution{The University of Hong Kong}            %% \institution is required
+	%\streetaddress{Pokfulam}
+	\city{Hong Kong}
+	%\state{State1}
+	%\postcode{Post-Code1}
+	\country{China}                    %% \country is recommended
+}
+\email{bruno@cs.hku.hk}          %% \email is recommended
+
+%% Author with two affiliations and emails.
+\author{Tom Schrijvers}
+%\authornote{with author2 note}          %% \authornote is optional;
+%% can be repeated if necessary
+%\orcid{nnnn-nnnn-nnnn-nnnn}             %% \orcid is optional
+\affiliation{
+	%\position{Position2a}
+	\department{Department of Computer Science}             %% \department is recommended
+	\institution{KU Leuven}           %% \institution is required
+	%\streetaddress{Street2a Address2a}
+	\city{Leuven}
+	%\state{State2a}
+	%\postcode{Post-Code2a}
+	\country{Belgium}                   %% \country is recommended
+}
+\email{tom.schrijvers@cs.kuleuven.be}
+
+
+%% Abstract
+%% Note: \begin{abstract}...\end{abstract} environment must come
+%% before \maketitle command
+\begin{abstract}
+Modern functional programming languages, such as Haskell or OCaml,
+use sophisticated forms of type inference. While an
+important topic in the Programming Languages research, there is little
+work on the mechanization of the metatheory of type inference in
+theorem provers. In particular we are unaware of any complete
+formalization of the type inference algorithms that are the backbone of modern 
+functional languages. 
+
+This paper presents the first full mechanical formalization of the metatheory for
+higher-ranked polymorphic type inference. The system that we formalize
+is the bidirectional type system by Dunfield and
+Krishnaswami (DK). The DK type system has two variants (a declarative
+and an algorithmic one) that have been \emph{manually} proven
+\emph{sound}, \emph{complete} and \emph{decidable}. We present 
+a mechanical formalization in the Abella theorem prover 
+of DK's declarative type system with a novel algorithmic system. We have
+a few reasons to use a new algorithm. Firstly, our new algorithm
+employs \emph{worklist judgments}, which precisely capture the
+scope of variables and simplify the formalization of scoping in a
+theorem prover. Secondly, while DK's original formalization comes with very
+well-written manual proofs, there are several details missing and some
+incorrect proofs,
+which complicate the task of writing a mechanized proof. 
+Despite the use of a different algorithm we prove the
+same results as DK, although with significantly different proofs and
+proof techniques. Since such type inference algorithms are quite
+subtle and have a complex metatheory, mechanical
+formalizations are an important advance in type-inference research.
+\end{abstract}
+
+
+%% 2012 ACM Computing Classification System (CSS) concepts
+%% Generate at 'http://dl.acm.org/ccs/ccs.cfm'.
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10011007.10011006.10011008.10011009.10011012</concept_id>
+<concept_desc>Software and its engineering~Functional languages</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10011007.10011006.10011008.10011024.10011025</concept_id>
+<concept_desc>Software and its engineering~Polymorphism</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10011007.10011006.10011039</concept_id>
+<concept_desc>Software and its engineering~Formal language definitions</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Software and its engineering~Functional languages}
+\ccsdesc[500]{Software and its engineering~Polymorphism}
+\ccsdesc[500]{Software and its engineering~Formal language definitions}
+%% End of generated code
+
+
+%% Keywords
+%% comma separated list
+\keywords{type inference, higher-rank polymorphism, mechanization}  %% \keywords are mandatory in final camera-ready submission
+
+
+%% \maketitle
+%% Note: \maketitle command must come after title commands, author
+%% commands, abstract environment, Computing Classification System
+%% environment and commands, and keywords command.
+\maketitle
+
+\input{sections/introduction.tex}
+\input{sections/Overview.tex}
+%\input{sections/Declarative.tex}
+\input{sections/algorithm.tex}
+\input{sections/Metatheory.tex}
+\input{sections/Discussion.tex}
+\input{sections/Related.tex}
+\input{sections/conclusion.tex}
+
+%% Acknowledgments
+\begin{acks}                            %% acks environment is optional
+                                        %% contents suppressed with 'anonymous'
+  %% Commands \grantsponsor{<sponsorID>}{<name>}{<url>} and
+  %% \grantnum[<url>]{<sponsorID>}{<number>} should be used to
+  %% acknowledge financial support and will be used by metadata
+  %% extraction tools.
+
+We sincerely thank the anonymous reviewers for their insightful
+comments. Ningning Xie found the issue with Lemma 29 in DK's formalization that we reported 
+on this article. This work has been sponsored by the Hong Kong Research
+Grant Council projects number 17210617 and 17258816, and by the
+Research Foundation - Flanders.
+\end{acks}
+
+
+%% Bibliography
+\bibliography{main}
+
+%% Appendix
+% \newpage
+% \appendix
+% \input{sections/Appendix.tex}
+
+\end{document}

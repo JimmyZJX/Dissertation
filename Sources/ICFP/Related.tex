@@ -1,0 +1,159 @@
+\section{Related Work}
+
+Throughout the paper we have already discussed much of the closest related work.
+In this section we summarize the key differences and novelties, and we discuss some other
+related work.
+
+\paragraph{Predicative Higher-Ranked Polymorphism Type Inference Algorithms}
+Higher-ranked polymorphism is a convenient and practical feature of
+programming languages.  Since full type-inference for System F is
+undecidable~\cite{wells1999typability}, various decidable partial
+type-inference algorithms were developed.
+% No need to cite here: the following text is describing the point ~\cite{}.
+The declarative system of this paper,
+proposed by \citet{dunfield2013complete}, is \emph{predicative}: 
+$\forall$'s only instantiate to monotypes.  The monotype restriction
+on instantiation is considered reasonable and practical for most
+programs, except for those that require sophisticated forms of
+higher-order polymorphism.  In those cases, the bidirectional system
+accepts guidance through type annotations, which allow polymorphic types.
+Such annotations also improve
+readability of the program, and are not much of a burden in practice.
+
+DK's algorithm is shown to be sound, complete and decidable in 70 pages of manual proofs.
+Though carefully written, some of the proofs are incorrect
+(see discussion in Appendix
+%~\ref{appendix:false_lemmas} and \ref{appendix:subsumption}
+),
+which creates difficulties when formalizing them in a proof assistant.
+In their follow-up work \citet{DunfieldIndexed} enrich the bidirectional higher-rank system with
+existentials and indexed types.
+With a more complex declarative system, they developed a proof of over 150 pages.
+It is even more difficult to argue its correctness for every single detail within such a big development.
+Unfortunately, we find that their Lemma 26 (Parallel Admissibility) appears to have the same issue 
+as lemma 29 in \citet{dunfield2013complete}: the conclusion is false. We also discuss
+the issue in more detail in Appendix. %~\ref{appendix:false_lemmas}.
+
+\citet{jones2007practical} developed another higher-rank predicative bidirectional type system.
+Their subtyping relation is enriched with \emph{deep skolemisation},
+which is more general than ours and allows more valid relations.
+In comparison to DK's system, they do not use the application inference judgment,
+resulting in a complicated mechanism for implicit instantiation taken care by the unification process for the algorithm.
+A manual proof is given, showing that the algorithm is sound and
+complete with respect to their declarative specification.
+
+In a more recent work, \citet{xie2018letarguments} proposed a variant of a
+bidirectional type inference system for a predicative system with higher-ranked types.
+Type information flows from arguments to
+functions with an additional \emph{application} mode. This variant 
+allows more higher-order typed programs to be inferred without additional annotations.
+Following the new mode, the let-generalization of the Hindley-Milner system
+is well supported as a syntactic sugar. The formalization includes some
+mechanized proofs for the declarative type system, but all proofs regarding
+the algorithmic type system are manual.
+
+\paragraph{Impredicative Higher-Ranked Polymorphism Type Inference Algorithms}
+Impredicative System F allows instantiation with polymorphic types,
+but unfortunately its subtyping system is already undecidable~\cite{tiuryn1996subtyping}.
+Works on partial impredicative type-inference algorithms~\cite{le2003ml,leijen2008hmf,vytiniotis2008fph}
+navigate a variety of design tradeoffs for a decidable algorithm.
+As a result, such algorithms tend to be more complicated, and thus less adopted in practice.
+Recent work proposed \emph{Guarded Impredicative Polymorphism}~\cite{Serrano2018},
+as an improvement on GHC's type inference algorithm with impredicative instantiation.
+They make use of local information in $n$-ary applications to
+infer polymorphic instantiations with a relatively simple specification and unification algorithm.
+Although not all impredicative instantiations can be handled well,
+their algorithm is already quite useful in practice.
+
+\paragraph{Mechanical Formalization of Polymorphic Subtyping}
+In all previous work on type inference for higher-ranked polymorphism
+(predicative and impredicative) discussed above, proofs and
+metatheory for the algorithmic aspects are manual. The only partial effort on mechanizing algorithmic
+aspects of type inference
+for higher-ranked types is
+the Abella formalization of \emph{polymorphic subtyping} by \citet{itp2018}.
+The judgment form of worklist $\Gm \vdash \Omega$ used in the formalization simplifies
+the propagation of existential variable instantiations.
+However, the approach has two main drawbacks:
+it does not collect unused variable declarations effectively;
+and the simple form of judgment cannot handle inference modes, which output types.
+The new worklist introduced in this paper inherits the simplicity of propagating instantiations,
+but overcomes both of the issues by mixing judgments with declarations
+and using the continuation-passing-style judgment chains. Furthermore,
+we formalize the complete bidirectional type system by
+\citet{dunfield2013complete}, whereas Zhao et al. only formalize
+the subtyping relation. 
+
+\paragraph{Mechanical Formalizations of Other Type-Inference Algorithms}
+Since the publication of the \textsc{POPLMark} challenge~\cite{aydemir2005mechanized},
+many theorem provers and packages provide new methods for dealing
+with variable binding~\cite{aydemir2008engineering,urban2008nominalTech,chlipala2008parametric}.
+More and more type systems are formalized with these tools.
+However, mechanizing certain algorithmic aspects, like unification and
+constraint solving, has received very little attention and is still challenging.
+Moreover, while most tools support local (input) contexts in a neat way,
+many practical type-inference algorithms require
+more complex binding structures with output contexts or various forms of constraint solving procedures.
+
+Algorithm $\mathcal{W}$,
+as one of the classic type inference algorithms for polymorphic type systems,
+has been manually proven to be sound and complete
+with respect to the Hindley-Milner type system~\cite{hindley1969principal,milner1978theory,damas1982principal}.
+After around 15 years, the algorithm was formally verified by
+\citet{naraschewski1999type} in Isabelle/HOL~\cite{nipkow2002isabelle}.
+The treatment of new variables was tricky at that time, while the overall structure follows the
+structure of Damas's manual proof closely.
+%Another complication is the encoding of substitutions,
+%which they chose to formalize as a function instead of an association list.
+Later on, other researchers~\cite{dubois2000proving,dubois1999certification}
+formalized algorithm $\mathcal{W}$ in Coq~\cite{Coq}.
+Nominal techniques~\cite{urban2008nominalTech} in Isabelle/HOL have been
+developed to help programming language formalizations, and are used for a similar
+verification~\cite{urban2008nominal}. Moreover, Garrigue~\cite{garrigue2015certified}
+mechanized a type inference algorithm,
+with the help of locally nameless~\cite{LocallyNameless},
+for Core ML extended with structural polymorphism and recursion.
+
+\paragraph{Ordered Contexts in Type Inference}
+Gundry et al.~\cite{gundry2010type} revisit algorithm $\mathcal{W}$ and
+propose a new unification algorithm with the help of ordered contexts.
+Similar to DK's algorithm, information of meta variables flow from input contexts to output contexts.
+Not surprisingly, its information increase relation has a similar role to DK's context extension.
+Our algorithm, in contrast,
+eliminates output contexts and solution records ($\al = \tau$),
+simplifying the information propagation process through immediate substitution
+by collecting all the judgments in a single worklist.
+
+\paragraph{The Essence of ML Type Inference}
+Constraint-based type inference is adopted by \citet{remy-attapl} for
+ML type systems, which do not employ higher-ranked polymorphism. An
+interesting feature of their algorithm is that it keeps precise
+scoping of variables, similarly to our approach.  Their algorithm is
+divided into constraint generation and solving phases (which are
+typical of constraint-based algorithms). Furthermore an intermediate
+language is used to describe constraints and their constraint solver
+utilizes a stack to track the state of the solving process.  In
+contrast, our algorithm has a single phase, where the judgment chains
+themselves act as constraints, thus no separate constraint language is
+needed.
+
+%A possible advantage of a separate constraint language is to provide
+%a general and reuseable interface
+%that interprets the desired properties for type inference.
+
+\paragraph{Lists of Judgments in Unification}
+Some work~\cite{Reed2009,Abel2011higher} adopts a similar idea to this paper
+in work on unification for dependently typed languages. Similarly to our work
+the algorithms need to be very careful about scoping, since the order of variable
+declarations is fundamental in a dependently typed setting. 
+Their algorithms simplify a collection of unification constraints progressively in a single-step style.
+In comparison, our algorithm mixes variable declarations with judgments,
+resulting in a simpler judgment form,
+while processing them in a similar way.
+One important difference is that contexts are
+duplicated in their unification judgments, which complicates the unification process,
+since the information of each local context needs to be synchronized.
+Instead we make use of the nature of ordered context to control the scopes of unification variables.
+While their algorithms focus only on unification,
+our algorithm also deals with other types of judgments like synthesis.
+A detailed discussion is in Section~\ref{sec:overview:list}.

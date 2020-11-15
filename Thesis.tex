@@ -1,0 +1,85 @@
+\input{topmatter.tex}
+
+\input{macros}
+
+\title{<Title>}
+\author{\textbf{Jinxu Zhao}}
+\date{February 2021}
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+ \input{Sources/Abstract}
+\end{abstract}
+
+
+%%---------------------%%
+\frontmatter
+%%---------------------%%
+\makedeclaration
+\makeAck
+\tableofcontents
+\listoffigures
+\listoftables
+% \listoftheorems[ignoreall, show={theorem,lemma}]
+
+%%---------------------%%
+\mainmatter
+%%---------------------%%
+
+\part{Prologue}
+
+\include{Sources/Introduction}
+
+\include{Sources/Background}
+
+%\part{Bidirectional Type Checking With Application Mode} \label{part:typeinference}
+%
+%\include{Sources/BiDirectional}
+%
+%\part{Higher-Rank Polymorphism and Gradual Typing}
+%\label{part:gradual}
+%
+%\include{Sources/Gradual}
+%
+%\part{Unification and Type-inference for Dependent Types} \label{part:dependentTypes}
+%
+%\include{Sources/Promotion}
+%\include{Sources/KindInference}
+
+\include{Sources/ITP}
+
+\include{Sources/ICFP}
+
+\include{Sources/Top}
+
+\part{Related and Future Work}
+
+\include{Sources/Related}
+
+\include{Sources/Future}
+
+\part{Epilogue}
+
+\include{Sources/Conclusion}
+
+% This ensures that the subsequent sections are being included as root
+% items in the bookmark structure of your PDF reader.
+\bookmarksetup{startatroot}
+
+%%---------------------%%
+% \backmatter
+%%---------------------%%
+
+\cleardoublepage
+\bibliography{main}
+
+\part{Technical Appendix}
+
+\appendix
+
+
+\end{document}
