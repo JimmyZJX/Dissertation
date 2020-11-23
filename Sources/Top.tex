@@ -86,7 +86,8 @@ therefore we omit the formal definitions.
 \end{figure}
 
 \paragraph{Declarative Subtyping}
-Our declarative subtyping extends the polymorphic subtyping relation
+Shown in Figure~\ref{fig:top_decl_subtyping},
+the declarative subtyping extends the polymorphic subtyping relation
 originally proposed by Odersky and L\"aufer~\cite{odersky1996putting}
 by adding rules $\mathtt{{\le}Top}$ and $\mathtt{{\le}Bot}$,
 defining the properties of the $\top$ and $\bot$ types, respectively.
@@ -95,8 +96,6 @@ they may increase the uncertainty on polymorphic instantiations.
 For example, the subtyping judgement
 \[\all a \to a \le \bot \to \top\]
 accepts any well-formed instantiation on the polymorphic type $\all a \to a$.
-
-
 
 
 \begin{figure}[t]
@@ -127,6 +126,10 @@ accepts any well-formed instantiation on the polymorphic type $\all a \to a$.
     \inferrule*[right=$\mathtt{Decl\top}$]
         {\Psi \vdash e}
         {\Psi\vdash e \Lto \top}
+    \qquad
+    \inferrule*[right=$\mathtt{Decl{\bot}App}$]
+        {\Psi\vdash e}
+        {\Psi\vdash \appInf{\bot}{e}{\bot}}
     \\
     \inferrule*[right=$\mathtt{Decl\forall I}$]
         {\Psi,a \vdash e \Lto A}
@@ -158,32 +161,45 @@ accepts any well-formed instantiation on the polymorphic type $\all a \to a$.
 
 \paragraph{Declarative Typing}
 
+The declarative typing rules, shown in Figure~\ref{fig:top_decl_typing},
+extends DK's higher-rank type system in order to support the top and bottom types.
+Rule $\mathtt{Decl\top}$ allows any well-formed expression to check against $\top$.
+Rule $\mathtt{Decl{\bot}App}$ returns the $\bot$ type
+when a function of $\bot$ type is applied to any argument.
+All other rules remain exactly the same as our previous work.
 
-
-$$\begin{aligned}
-\text{Type variables}\qquad&a, b\\
-\text{Existential variables}\qquad&\al, \bt\\[3mm]
-\text{Types}\qquad&A, B, C &::=&\quad 1 \mid \top \mid \bot \mid a \mid \forall x. A \mid A\to B \mid \al\\
-\text{Declarative Monotypes}\qquad&\tau &::=&\quad 1 \mid \top \mid \bot \mid a \mid \tau_1\to \tau_2\\
-% \text{Algorithmic Monotypes}\qquad & l, u &::=&\quad 1 \mid \top \mid \bot \mid a \mid \tau_1\to \tau_2 \mid \al\\
-% \text{Bound Collection}\qquad & L, U &::=&\quad \{\overline l\}\\
-% \text{Potential function types}\qquad&\sigma &::=&\quad \top \mid \bot \mid \sigma_1\to \sigma_2 \mid \al\\
-\text{Context}\qquad&\Psi &::=&\quad \cdot \mid \Psi, a
-\\[3mm]
-% \text{Algorithmic judgement chain}\qquad&\jg &::=&\quad A \le B\\[3mm]
-\text{Algorithmic worklist}\qquad&\Gm &::=&\quad \cdot \mid \Gm, a \mid \Gm, \al \mid \Gm \Vdash A \le B\\[3mm]
-% \text{Terms}\qquad&e&::=&\quad x \mid () \mid \lam{e} \mid e_1~e_2 \mid (e:A)
-\end{aligned}$$
-
-
-
-
-
-
-
-\section{Algorithmic System}
+It's worth mentioning that the design of the two new rules
+are driven by the subsumption property described in Section~\ref{sec:meta:decl}.
+They maintains the property in presence of a more powerful declarative subtyping,
+and we will discuss further later in that part.
 
 \setcounter{algRuleCounter}{0}
+
+\section{Backtracking Algorithm}
+
+\subsection{Syntax}
+
+\begin{figure}[t]
+    \begin{gather*}
+    \begin{aligned}
+        \text{Existential variables}\qquad&\al, \bt\\
+        \text{Types}\qquad&A, B, C &::=&\quad 1 \mid \top \mid \bot \mid a \mid \all A \mid A\to B \mid \al\\
+        \text{Algorithmic judgment chain}\qquad&\jg &::=&\quad A \le B \mid e\Lto A \mid e\To_{a} \jg \mid \appInfAlg{A}{e}\\
+        \text{Algorithmic worklist}\qquad&\Gm &::=&\quad \cdot \mid \Gm, a \mid \Gm, \al \mid \Gm \Vdash \jg
+    \end{aligned}
+    \end{gather*}
+\Description{Algorithmic Syntax}
+\caption{Algorithmic Syntax}\label{fig:top_alg_syntax}
+\end{figure}
+
+The algorithmic syntax is shown in Figure~\ref{fig:top_alg_syntax}.
+Compared with the declarative system, existential variables $\al, \bt$ are used
+as placeholders for unsolved mono-types.
+The judgment chain $\jg$ and worklist context $\Gm$ are defined in the same way as the ICFP work.
+
+The well-formedness relation is almost the same as that of the ICFP work.
+
+\subsection{Algorithmic Subtyping}
 
 \begin{figure}[t]
     \noindent\framebox{$\Gm\rto \Gm'$} $\Gm$ reduces to $\Gm'$.
@@ -199,14 +215,13 @@ $$\begin{aligned}
     \\
     \Gm \Vdash 1\le 1 &\algrule \Gm\\
     \Gm \Vdash a\le a &\algrule \Gm\\
-    \Gm[\al] \Vdash \al\le \al &\algrule \Gm\\
-    \\
     \Gm \Vdash A_1\to A_2 \le B_1\to B_2 &\algrule \Gm \Vdash A_2 \le B_2 \Vdash B_1\le A_1\\
     \Gm \Vdash \forall a. A\le B &\algrule \Gm, \al \Vdash [\al/a]A\le B\\
     \Gm \Vdash A\le \forall b. B &\algrule \Gm,b \Vdash A\le B\\
-    \\
     \Gm \Vdash A\le \top &\algrule \Gm\\
     \Gm \Vdash \bot \le B &\algrule \Gm\\
+    \\
+    \Gm[\al] \Vdash \al\le \al &\algrule \Gm\\
     \\
     % \multispan2{\text{\jimmy{These 2 rules introduce non-determinicity}}}\\
     \Gm[\al] \Vdash A \le \al &\algrule \{\al := \top\}~\Gm[\al]\\
@@ -229,10 +244,101 @@ $$\begin{aligned}
     \Gm[\al][\bt] \Vdash \bt \le \al &\algrule \{\bt := \al\}~\Gm[\al][\bt]\\
     \end{aligned}
     \end{gather*}
-\Description{Algorithmic Subtyping}
-\caption{Algorithmic Subtyping}\label{fig:top_alg_subtyping}
+\Description{Algorithmic Garbage Collection and Subtyping}
+\caption{Algorithmic Garbage Collection and Subtyping}\label{fig:top_alg_subtyping}
 \end{figure}
 
+Figure~\ref{fig:top_alg_subtyping} describes the algorithmic rules for subtyping.
+The relation is stated in a small-step ``reduction'' form, i.e. in each step,
+the worklist is analysed from the right-hand-side and reduced according to the top judgment.
+The overall procedure succeeds iff the worklist eventually reduces to $\cdot$ (the empty worklist).
+
+\jimmy{TODO: $\{\al := \tau\}$ Notation: Hole notation + solve notation}
+
+We categorize them into 7 groups according to their behavior:
+\begin{enumerate}
+    \item Rules 1-3 are basic garbage collection rules.
+        Given that the worklist $\Gm$ is well-formed,
+        no reference of a variable should occur before its declaration.
+        Therefore removing the declaration in the top position does not break well-formedness.
+
+        An existential variable that is unsolved in the top position indicates
+        that it is not constrained,
+        thus picking any well-formed mono-type as its solution is acceptable.
+        In our algorithmic formalization, we simply drop the existential variable.
+
+    \item Rules 4-10 directly correspond to the declarative subtyping rules.
+        With no top-level existential variables,
+        there are nothing to guess immediately,
+        and thus the algorithm behaves just like the declarative system.
+
+    \item Rule 11 is a base case in the algorithmic system.
+        The declarative reflexivity property suggests that any solution is acceptable,
+        thus the judgment holds without any constraint.
+    
+    \item Rules 12-13 are important rules that requires backtracking techniques
+        for implementation.
+        These rules \emph{overlaps} with all the remaining rules when solving
+        an existential variable.
+        In other words, they simply try if $\top$ or $\bot$ satisfies the constraints
+        in parallel with other possibilities.
+    
+    \item Rules 14-15 compares an existential variable $\al$ with a function type,
+        resulting in solving the $\al$ by $\al[1] \to \al[2]$.
+        The freshness condition rules out the possibility
+        when there is a cyclic dependency.
+        For example, the judgment
+        \[\al \le 1 \to \al\]
+        is satisfied with either of these solutions to $\al$:
+        \[ \bot, 1 \to \bot, \top \to \bot, 1 \to 1 \to \bot, \ldots \]
+        However, we argue that comparing $\al$ with a function type
+        that contains $\al$ itself is hardly useful in practice,
+        and most of the solutions are meaningless.
+        Therefore, in our algorithm, only the $\bot$ solution is considered
+        with rule 13.
+        The condition of rule 14 rejects the judgement for further analysis
+        and thus does not produce more solutions.
+        This is one source of incompleteness of our algorithm with respect to the declarative specification.
+    
+    \item Rules 16-19 solve existential variables against a type variable or the unit type.
+        For instance, the judgment
+        \[\al \le 1\]
+        only have two solutions: $\al = 1$ or $\al = \bot$.
+        In similar cases, one of the solutions is produced by rule 12 or 13,
+        and the other one is given by one of the rules in this group.
+        Additional well-formedness check is performed when type variables are encountered;
+        a solution to an existential variable must be well-formed in the context
+        before the existential variable is defined.
+    
+    \item Rules 20-21 deals with subtyping judgments
+        that compares two different existential variables.
+        The only difference between them is the variable order.
+        Similar to the type variable case in the previous group,
+        existential variables must solve to another one defined earlier.
+        With rules 12, 13, 20 and 21, a judgment like
+        \[\al \le \bt\]
+        could possibly give any of the following solutions:
+        \[ \al = \bt ~(\text{or } \bt = \al)
+            \text{ or } \al = \bot \text{ or } \bt = \top \]
+        Those are good attempts, but unfortunately,
+        they does not cover the complete set of possibilities.
+        The following example worklist
+        \[ \al, \bt \Vdash \bt \le 1 \to 1 \Vdash \al \le \bt \]
+        has a solution $\al = 1 \to \top, \bt = 1 \to 1$ missed by our algorithm.
+        Similar situations happen when the judgments are specifically ordered;
+        if $\bt \le 1 \to 1$ is the top-most judgment,
+        the algorithm will not miss this solution.
+
+        Although such treatment for existential variable solving is incomplete in theory,
+        a large number of practical unification is simply equality,
+        and the algorithm completely handles these programs.
+        Other programs that exploit complex guessing involving subtyping,
+        the programmer may put annotation when the type inference algorithm
+        does not find the optimal solution.
+\end{enumerate}
+
+
+\subsection{Algorithmic Typing}
 
 \begin{figure}[t]
 \noindent\framebox{$\Gm\rto \Gm'$} $\Gm$ reduces to $\Gm'$ (continued).
@@ -240,10 +346,11 @@ $$\begin{aligned}
 \begin{aligned}
     \Gm \Vdash e \Lto B &\algrule \Gm \Vdash e\To_a a\le B \quad
     \text{when } e \neq \lam e' \text{ and } B \neq \all B'\\
-    \Gm \Vdash e \Lto \top &\algrule \Gm\\
     \Gm \Vdash e\Lto \all A &\algrule \Gm,a \Vdash e\Lto A\\
     \Gm \Vdash \lam e \Lto A\to B &\algrule \Gm, x:A  \Vdash e \Lto B\\
-    \Gm[\al] \Vdash \lam e \Lto \al &\algrule [\al[1]\to \al[2] / \al](\Gm[\al[1],\al[2]], x:\al[1] \Vdash e \Lto \al[2])
+    \Gm[\al] \Vdash \lam e \Lto \al &\algrule [\al[1]\to \al[2] / \al](\Gm[\al[1],\al[2]], x:\al[1] \Vdash e \Lto \al[2])\\
+    \Gm \Vdash e \Lto \top &\algrule \Gm\\
+    \Gm[\al] \Vdash e \Lto \al &\algrule \{\al := \top\}~\Gm[\al]
     % \quad\text{\jimmy{Additional}}
     \\[3mm]
     \Gm \Vdash x\To_a \jg &\algrule \Gm \Vdash [A/a] \jg \quad \text{when } (x:A)\in \Gm\\
@@ -256,15 +363,23 @@ $$\begin{aligned}
     \Gm \Vdash \appInfAlg{\all A}{e} &\algrule \Gm,\al \Vdash \appInfAlg{[\al/a]A}{e}\\
     \Gm \Vdash \appInfAlg{A\to C}{e} &\algrule \Gm \Vdash [C/a]\jg \Vdash e \Lto A\\
     \Gm[\al] \Vdash \appInfAlg{\al}{e} &\algrule
-    [\al[1]\to\al[2]/\al](\Gm[\al[1], \al[2]] \Vdash \appInfAlg{\al[1]\to\al[2]}{e})
+    [\al[1]\to\al[2]/\al](\Gm[\al[1], \al[2]] \Vdash \appInfAlg{\al[1]\to\al[2]}{e})\\
+    \Gm \Vdash \appInfAlg{\bot}{e} &\algrule \Gm \Vdash [\bot/a]\jg\\
+    \Gm[\al] \Vdash \appInfAlg{\al}{e} &\algrule
+        \{\al := \bot\}~\Gm[\al] \Vdash [\bot/a]\jg
 \end{aligned}
 \end{gather*}
 \Description{Algorithmic Subtyping}
-\caption{Algorithmic Subtyping}\label{fig:top_alg_subtyping}
+\caption{Algorithmic Subtyping}\label{fig:top_alg_typing}
 \end{figure}
 
 
+
+
+
 \section{Metatheory}
+
+\subsection{Declarative Properties}\label{sec:meta:decl}
 
 \subsection{Soundness}
 
