@@ -201,7 +201,7 @@ The well-formedness relation is almost the same as that of the ICFP work.
 
 \subsection{Algorithmic Subtyping}
 
-\begin{figure}[t]
+\begin{figure}[!ht]
     \noindent\framebox{$\Gm\rto \Gm'$} $\Gm$ reduces to $\Gm'$.
     \begin{gather*}
     \begin{aligned}
@@ -340,7 +340,7 @@ We categorize them into 7 groups according to their behavior:
 
 \subsection{Algorithmic Typing}
 
-\begin{figure}[t]
+\begin{figure}[!ht]
 \noindent\framebox{$\Gm\rto \Gm'$} $\Gm$ reduces to $\Gm'$ (continued).
 \begin{gather*}
 \begin{aligned}
@@ -348,7 +348,7 @@ We categorize them into 7 groups according to their behavior:
     \text{when } e \neq \lam e' \text{ and } B \neq \all B'\\
     \Gm \Vdash e\Lto \all A &\algrule \Gm,a \Vdash e\Lto A\\
     \Gm \Vdash \lam e \Lto A\to B &\algrule \Gm, x:A  \Vdash e \Lto B\\
-    \Gm[\al] \Vdash \lam e \Lto \al &\algrule [\al[1]\to \al[2] / \al](\Gm[\al[1],\al[2]], x:\al[1] \Vdash e \Lto \al[2])\\
+    \Gm[\al] \Vdash \lam e \Lto \al &\algrule \{\al := \al[1]\to \al[2]\}~\Gm, x:\al[1] \Vdash e \Lto \al[2]\\
     \Gm \Vdash e \Lto \top &\algrule \Gm\\
     \Gm[\al] \Vdash e \Lto \al &\algrule \{\al := \top\}~\Gm[\al]
     % \quad\text{\jimmy{Additional}}
@@ -362,24 +362,135 @@ We categorize them into 7 groups according to their behavior:
     \\[3mm]
     \Gm \Vdash \appInfAlg{\all A}{e} &\algrule \Gm,\al \Vdash \appInfAlg{[\al/a]A}{e}\\
     \Gm \Vdash \appInfAlg{A\to C}{e} &\algrule \Gm \Vdash [C/a]\jg \Vdash e \Lto A\\
-    \Gm[\al] \Vdash \appInfAlg{\al}{e} &\algrule
-    [\al[1]\to\al[2]/\al](\Gm[\al[1], \al[2]] \Vdash \appInfAlg{\al[1]\to\al[2]}{e})\\
     \Gm \Vdash \appInfAlg{\bot}{e} &\algrule \Gm \Vdash [\bot/a]\jg\\
+    \Gm[\al] \Vdash \appInfAlg{\al}{e} &\algrule
+        \{\al := \al[1]\to \al[2]\}~\Gm \Vdash \appInfAlg{\al[1]\to\al[2]}{e}\\
     \Gm[\al] \Vdash \appInfAlg{\al}{e} &\algrule
         \{\al := \bot\}~\Gm[\al] \Vdash [\bot/a]\jg
 \end{aligned}
 \end{gather*}
-\Description{Algorithmic Subtyping}
-\caption{Algorithmic Subtyping}\label{fig:top_alg_typing}
+\Description{Algorithmic Typing}
+\caption{Algorithmic Typing}\label{fig:top_alg_typing}
 \end{figure}
 
+The algorithmic typing rules split into three groups,
+according to the category of the top-most judgment.
 
+\begin{enumerate}
+    \item Checking mode. Rules 22-27 reduce top-level checking judgments.
+            Rules 22, 23, 24 and 26 directly reflects how the declarative system behaves.
+            Rule 25 splits $\al$ into $\al[1] \to \al[2]$ to mimic the same logic as rule 24,
+            since a lambda expression must be of an function type.
+            Rule 27 is another backtracking rule, which overlaps with all other checking rules.
+            Solving $\al$ to $\top$ in such case reflects
+            the declarative rule $\mathtt{Decl{\top}}$ when the unknown type is $\top$.
+            Furthermore, we eliminate the algorithmic counterpart of declarative rule
+            $\mathtt{Decl1I}$, because a combination of Rules 22 and 30 already
+            accepts the judgment $() \Lto 1$.
+    
+    \item Inference mode. Rules 28-32 reduce inference judgments.
+            Like our previous work, encoding of the return type is by
+            an explicit substitution on the binder of a judgment chain.
+            Rules 28, 29, 30 and 32 corresponds to the declarative system straightforwardly.
+            Rule 31 guesses an unannotated lambda with a mono function type $\al \to \bt$.
+            Writing in a slightly different way may help improve readability:
+            \[ \Gm \Vdash \lam e \To_a \jg \rrule{31'}
+                \Gm, \al, \bt \Vdash [\al \to \bt / a]\jg \Vdash \lam e \Lto \al \to \bt \]
+            Rule 32 illustrates how the judgment chain works, with a continuation-passing-style
+            encoding of the type inference task.
+    
+    \item Application inference mode. Rules 33-37 reduce application inference judgments.
+            Each of these judgments accepts an input function type and an argument expression
+            and produces the expected return type.
+            Rules 33, 34 and 35 are direct translation from the declarative rules.
+            Rule 33, specifically, enables implicit parametric polymorphism via
+            existential variable solving.
+            Rules 36 and 37 deal with cases where a single existential variable
+            $\al$ as a function type.
+            Rule 36 splits $\al$ into a function unknown type $\al[1] \to \al[2]$.
+            Rule 37 tries the solution $\al = \bot$ and returns the $\bot$ type.
+            Both of the rules are not so useful in reality,
+            since it is derived from a parametric function type like $\all a$,
+            which behaves like the the $\bot$ type.
+
+
+\end{enumerate}
 
 
 
 \section{Metatheory}
 
 \subsection{Declarative Properties}\label{sec:meta:decl}
+
+An important desired property for a type system is \emph{checking subsumption},
+which basically says that any expression can
+check against any super type of its actual type.
+Since our bidirectional type system defines the checking mode, inference mode and
+application inference mode mutually,
+we formalize the generalized \emph{typing subsumption}.
+
+\begin{definition}[Worklist Subtyping]
+    Worklist subtyping compares the type of variables bound in the worklist.
+    $\Gm <: \Gm'$ iff each binding in $\Gm$ is converted to one with a super type.
+    \begin{gather*}
+        \inferrule*[right=$\mathtt{<:nil}$]
+            {~}{\cdot <: \cdot}
+        \qquad
+        \inferrule*[right=$\mathtt{<:ty}$]
+            {\Gm <: \Gm'}
+            {\Gm, a <: \Gm', a}
+        \\
+        \inferrule*[right=$\mathtt{<:of}$]
+            {\Gm' \vdash A \le B \\ \Gm <: \Gm'}
+            {\Gm, x:A <: \Gm', x:B}
+        \qquad
+        \inferrule*[right=$\mathtt{<:\omega}$]
+            {\Gm <: \Gm'}
+            {\Gm \Vdash \jg <: \Gm' \Vdash \jg}
+    \end{gather*}
+\end{definition}
+
+A basic property of worklist subtyping is that they acts similarly when viewed as contexts.
+\begin{lemma}[Worklist Subtyping Equivalence]
+    Given $\Gm <: \Gm'$, $\Gm \vdash A \le B \Longleftrightarrow \Gm' \vdash A \le B$.
+\end{lemma}
+
+\begin{lemma}[Typing Subsumption]
+    Given $\Gm <: \Gm'$,
+    \begin{enumerate}[1)]
+        \item If $\Gm' \vdash e \Lto A$ and $\Gm' \vdash A \le B$, then $\Gm \vdash e \Lto B$;
+        \item If $\Gm' \vdash e \To A$, then $\exists B$ s.t. $\Gm' \vdash B \le A$ and $\Gm \vdash e \To B$.
+        \item If $\Gm' \vdash \appInf{C}{e}{A}$ and $\Gm' \vdash D \le C$, then
+            $\exists B$ s.t. $\Gm' \vdash B \le A$ and $\Gm \vdash \appInf{D}{e}{B}$.
+    \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+    By induction on the following size measure (lexicographical order on a 3-tuple):
+    \begin{itemize}
+        \item Checking ($e \Lto A$): $\langle |e|, 1, |A|_\forall + |B|_\forall \rangle$
+        \item Inference ($e \To A$): $\langle |e|, 0, 0 \rangle$
+        \item Application inference ($\appInf{A}{e}{C}$): $\langle |e|, 2, |C|_\forall + |D|_\forall \rangle$
+    \end{itemize}
+    Most of the cases are straightforward.
+    When rule $\mathtt{{\le}\forall L}$ is applied for the subtyping predicate
+    like $\Gm' \vdash A \le B$,
+    a mono-type substitution is performed on $\all A$,
+    resulting in $[\tau/a]A$.
+    Since $\tau$ is a mono-type, the result type reduces the number of $\forall$'s,
+    and thus reduces the size measure.
+\end{proof}
+
+The two new declarative rules $\mathtt{Decl\top}$ and $\mathtt{Decl{\bot}App}$ are
+discovered through it and verified against it.
+To the best of the authors' knowledge,
+they are the minimal set of rules that keep the lemma hold.
+
+
+\paragraph{Subtyping Transitivity}
+
+
+
 
 \subsection{Soundness}
 

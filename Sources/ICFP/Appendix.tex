@@ -185,40 +185,40 @@ The mapping, shown in Table~\ref{table:translation_table}, should be helpful for
 \toprule
 Symbol & Abella textual relation & File (.thm) & Description\\
 \midrule
-$A$    & {\tt ty, wft, wfta} & typing &
+$A$    & \texttt{ty, wft, wfta} & typing &
     The "type" type, decl./alg. well-formedness\\
-$e$    & {\tt tm, wftm} & typing &
+$e$    & \texttt{tm, wftm} & typing &
     The "term" type, (alg.) well-formedness\\
-$\Psi, \Gm$ & {\tt olist, wfj} & typing &
-    {\tt olist} is Abella's built-in list type, i.e. {\tt [o]}\\
-$\jg$  & {\tt judgment, wfjg} & typing &
+$\Psi, \Gm$ & \texttt{olist, wfj} & typing &
+    \texttt{olist} is Abella's built-in list type, i.e. \texttt{[o]}\\
+$\jg$  & \texttt{judgment, wfjg} & typing &
     Judgment chain and its well-formedness\\
 
-$\Gm\rto\Gm'$ & {\tt reduction} & smallStep &
+$\Gm\rto\Gm'$ & \texttt{reduction} & smallStep &
     Algorithmic reduction: paper version\\
-$\Gm\redto\nil$ & {\tt judge} & typing &
-    ({\tt judge} $\Gm$): a success reduction on $\Gm$\\
+$\Gm\redto\nil$ & \texttt{judge} & typing &
+    (\texttt{judge} $\Gm$): a success reduction on $\Gm$\\
 
-$\Gm \sto \Om$ & {\tt tex} & trans &
+$\Gm \sto \Om$ & \texttt{tex} & trans &
     "transfer existential variables"\\
-$\Om\redto\nil$ & {\tt dc, dcl} & trans, dcl &
+$\Om\redto\nil$ & \texttt{dc, dcl} & trans, dcl &
     Declarative chain representation\\
 
-$\Psi'\le\Psi$ & {\tt esub} & declTyping & Declarative context subtyping\\
+$\Psi'\le\Psi$ & \texttt{esub} & declTyping & Declarative context subtyping\\
 
-$\Gm\jExt\Gm'$ & {\tt jExt} & inst\_decidable & "Judgment extension"\\
-$\Gm_i$ & {\tt iexp} & inst\_decidable & instantiation judgments ($\Gm \vdash_{wf} \Gm_i$)\\
-$\Gm_\le$ & {\tt subExp} & inst\_decidable & subtyping judgments\\
+$\Gm\jExt\Gm'$ & \texttt{jExt} & inst\_decidable & "Judgment extension"\\
+$\Gm_i$ & \texttt{iexp} & inst\_decidable & instantiation judgments ($\Gm \vdash_{wf} \Gm_i$)\\
+$\Gm_\le$ & \texttt{subExp} & inst\_decidable & subtyping judgments\\
 
-$|\cdot|_e$ & {\tt tmSize, tmSizeJ, tmSizel} & declTyping, decidability &
+$|\cdot|_e$ & \texttt{tmSize, tmSizeJ, tmSizel} & declTyping, decidability &
     Size measure for term, judgment chain or context\\
-$|\cdot|_\Leftrightarrow$ & {\tt m\_judgeJ, m\_judge} & decidability &
+$|\cdot|_\Leftrightarrow$ & \texttt{m\_judgeJ, m\_judge} & decidability &
     Judgment measure for judgment chain or context\\
-$|\cdot|_{\al}$ & {\tt nVar} & inst\_decidable &
+$|\cdot|_{\al}$ & \texttt{nVar} & inst\_decidable &
     Existential measure for context\\
-$|\cdot|_\forall$ & {\tt order, orderJ, orderl} & order, inst\_decidable &
+$|\cdot|_\forall$ & \texttt{order, orderJ, orderl} & order, inst\_decidable &
     Polymorphism measure for type, judgment chain or context\\
-$|\cdot|_\to$ & {\tt depth, depthJ, depthl} & order, decidability &
+$|\cdot|_\to$ & \texttt{depth, depthJ, depthl} & order, decidability &
     Function measure for type, judgment chain or context\\
 \bottomrule
 \end{tabular}

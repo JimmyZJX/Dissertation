@@ -22,7 +22,7 @@ A canonical example that requires higher-order polymorphism in Haskell is:
 hpoly = (\f :: forall a. a -> a) -> (f 1, f 'c')
 \end{verbatim}
 The function \verb|hpoly| cannot be
-type-checked in Hindley-Milner.  The type of \verb|hpoly| is 
+type-checked in Hindley-Milner.  The type of \verb|hpoly| is \\
 \verb|(forall a. a -> a) -> (Int, Char)|. The single universal quantifier
 does not appear at the top-level. Instead it is used to quantify a
 type variable \verb|a| used in the first argument of the
