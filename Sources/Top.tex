@@ -43,6 +43,7 @@ function may pass type checkers natually.
 The type $\text{Exception} \to \all a$ is also a reasonable choice,
 which in fact reveals that $\bot$ behaves almost identical to $\all a$.
 In the theoretical point of view, both of them are considered ``falsity''.
+\jimmy{The discussion might be moved to intro/motivation part}
 
 The well-formedness for the system is standard and almost identical to the previous systems,
 therefore we omit the formal definitions.
@@ -179,7 +180,7 @@ and we will discuss further later in that part.
 
 \subsection{Syntax}
 
-\begin{figure}[t]
+\begin{figure}[ht]
     \begin{gather*}
     \begin{aligned}
         \text{Existential variables}\qquad&\al, \bt\\
@@ -198,6 +199,21 @@ as placeholders for unsolved mono-types.
 The judgment chain $\jg$ and worklist context $\Gm$ are defined in the same way as the ICFP work.
 
 The well-formedness relation is almost the same as that of the ICFP work.
+The hole notation is also inherited.
+
+\paragraph{The Solve Notation}
+We define a set of auxiliary substitution functions in the form $\{\al := \tau_A\}$
+to improve readability of our algorithmic definitions.
+Basically it refers to a global substitution when solving an existential variable.
+
+A detailed definition of the notation is shown as follows:
+\begin{gather*}
+    \begin{aligned}
+        \{\al := \tau\}~(\Gm_L, \al, \Gm_R) &= \Gm_L, [\tau/\al]\Gm_R & \tau = 1, \top, \bot \text{ or }a\\
+        \{\al := \bt\}~(\Gm_L, \al, \Gm_R) &= \Gm_L, [\bt/\al]\Gm_R & \bt \in \Gm_L\\
+        \{\al := \al[1] \to \al[2]\}~(\Gm_L, \al, \Gm_R) &= \Gm_L, \al[1], \al[2], [\al[1] \to \al[2]/\al]\Gm_R\\
+    \end{aligned}
+\end{gather*}
 
 \subsection{Algorithmic Subtyping}
 
@@ -253,7 +269,6 @@ The relation is stated in a small-step ``reduction'' form, i.e. in each step,
 the worklist is analysed from the right-hand-side and reduced according to the top judgment.
 The overall procedure succeeds iff the worklist eventually reduces to $\cdot$ (the empty worklist).
 
-\jimmy{TODO: $\{\al := \tau\}$ Notation: Hole notation + solve notation}
 
 We categorize them into 7 groups according to their behavior:
 \begin{enumerate}
@@ -489,14 +504,223 @@ they are the minimal set of rules that keep the lemma hold.
 
 \paragraph{Subtyping Transitivity}
 
+The transitivity lemma for declarative subtyping is a commonly expected property.
+The proof depends on the following subtyping derivation size relation and an auxiliary lemma.
 
+\begin{definition}[Subtyping Derivation Size]
+    \begin{gather*}
+        \begin{aligned}
+            |1 \le 1| &= 0\\
+            |a \le a| &= 0\\
+            |A \le \top| &= 0\\
+            |\bot \le B| &= 0\\
+            |A_1 \to A_2 \le B_1 \to B_2| &= |B_1 \le A_1| + |A_2 \le B_2| + 1\\
+            |\all A \le B| &= |[\tau/a]A \le B| + 1\\
+            |A \le \all B| &= |A \le B| + 1
+        \end{aligned}
+    \end{gather*}
+\end{definition}
 
+\begin{lemma}[Subtyping Substiting Mono-type]
+    If $\Psi \vdash \tau$ and $\Psi, a, \Psi_R \vdash A \le B$, then
+    $\Psi, [\tau/a]\Psi_R \vdash [\tau/a]A \le [\tau/a]B$.
+\end{lemma}
+
+\begin{proof}
+    A routine induction on the subtyping relation $\Psi, a, \Psi_R \vdash A \le B$
+    finishes the proof.
+\end{proof}
+
+\begin{corollary}[Subtyping Substiting Type Var with a Mono-type]
+    \label{cor:subtyping_subst_mono}
+    If $\Psi \vdash \tau$ and $\Psi, a \vdash A \le B$, then
+    $\Psi \vdash [\tau/a]A \le [\tau/a]B$.
+\end{corollary}
+
+\begin{lemma}[Subtyping Transitivity]
+    If $\Psi \vdash A \le B$ and $\Psi \vdash B \le C$ then
+    $\Psi \vdash A \le C$.
+\end{lemma}
+
+\begin{proof}
+    Induction on $\langle |B|_\forall, |A \le B| + |B \le C| \rangle$.
+    Most cases preserve the first element of the size measures $|B|_\forall$,
+    and are relatively easy to prove.
+    The difficult case is when $B$ is a polymorphic type,
+    when the conditions are $\Psi \vdash A \le \all B$ and $\Psi \vdash \all B \le C$.
+    They are derived through rules $\mathtt{{\le}\forall L}$ and
+    $\mathtt{{\le}\forall R}$, respectively.
+    Therefore, we have $\Psi, a \vdash A \le B$ and $\Psi \vdash [\tau/a] B \le C$.
+    To exploit the induction hypothesis, the contexts should be unified.
+    By Corollary~\ref{cor:subtyping_subst_mono}, $\Psi \vdash A \le [\tau/a]B$.
+    Notice that the freshness condition is implicit for rule $\mathtt{{\le}\forall L}$.
+    Clearly, $|[\tau/a]B|_\forall < |\all B|_\forall$, i.e. the first size measure decreases.
+    By induction hypothesis we get $\Psi \vdash A \le C$ and finishes this case.
+\end{proof}
 
 \subsection{Soundness}
 
+Our algorithm is sound with respect to the declarative system.
+For any worklist $\Gm$ that reduces successfully,
+there is a valid instantiation $\Om$ that transfers all judgments
+to the declarative system.
+\begin{theorem}[Soundness]
+If \emph{wf }$\Gm$ and $\Gm \redto \nil$,
+then there exists $\Om$ s.t. $\Gm\sto\Om$ and $\Om\redto\nil$.
+\end{theorem}
+
 \subsection{Partial Completeness of Subtyping: Rank-1 Restriction}
+
+The algorithm is incomplete due to the subtyping rules 14, 15, 20 and 21.
+However, subtyping is complete with respect to the declarative system in rank-1 setting.
+
+\paragraph{Declarative Rank-1 Restriction}
+
+Rank-1 types are also named type schemes in Hindley-Milner type system.
+$$\begin{aligned}
+    \text{Declarative Type Schemes}\qquad&\sigma &::=&\quad \all \sigma \mid \tau\\
+\end{aligned}$$
+In other words, the universal quantifiers only appear in the top level
+of all polymorphic types.
+
+For declarative subtyping, a judgment must be of form $\sigma_1 \le \sigma_2$.
+
+\subsection{Algorithmic Rank-1 Restriction (Partial Completeness)}
+
+The algorithmic mono-types and type schemes are defined as following:
+$$\begin{aligned}
+    \text{Algorithmic Mono-types}\qquad&\tau_A &::=&\quad
+        1 \mid \top \mid \bot \mid a \mid A\to B \mid \al\\
+    \text{Algorithmic Type Schemes}\qquad&\sigma_A &::=&\quad \all \sigma_A \mid \tau_A\\
+\end{aligned}$$
+
+Starting from the declarative judgment $\sigma_1 \le \sigma_2$,
+the algorithmic derivation might involve different other kinds of judgments.
+The following derivation, as an example, shows how a rank-1 judgment derives.
+
+$$\begin{aligned}
+           & \cdot \Vdash \all a \to a \le \all[b] (b \to b) \to (b \to b)\\
+    \rrule{8} & b \Vdash \all a \to a \le (b \to b) \to (b \to b)\\
+    \rrule{7} & b, \al \Vdash \al \to \al \le (b \to b) \to (b \to b)\\
+    \rrule{6} & b, \al \Vdash \al \le b \to b \Vdash b \to b \le \al\\
+    \rrule{} & \cdots
+\end{aligned}$$
+
+In this derivation, we begin from a judgment of the form $\sigma \le \sigma$.
+After rule 8 is applied, the judgment becomes $\sigma \le \tau$,
+since the right-hand-side polymorphic type is reduced to a declarative mono-type.
+Then, rule 7 introduces existential variables to the left-hand-side,
+resulting in a judgment like $\tau_A \le \tau$,
+or $\sigma_A \le \tau$ in a more general case.
+Finally, rule 6 breaks a judgment between functions into two sub-judgments,
+which swaps the positions of the argument types
+and creates a judgment like $\tau \le \tau_A$.
+Notice that $\sigma_A$ is not possible to occur to the right
+because the function type may not contain any polymorphic types as its argument type.
+
+\jimmy{TODO the detailed analysis, perhaps a graph?}
+After a detailed analysis on the judgments derivations,
+we found that the only possible judgments that a rank-1 declarative subtyping judgment
+might step to belong to the following two categories:
+$$\sigma_A \le \sigma \quad\text{or}\quad \tau \le \sigma_A$$
+
+An interesting observation is that $\al \le \bt$ does not belong to either category,
+neither does $\al \le A \to B$ when $\al \in \text{FV}(A \to B)$.
+Therefore, in the rank-1 setting, both cases of incompleteness never occur,
+and our algorithm is complete.
+
+\begin{theorem}[Completeness of Rank-1 Subtyping]
+    Given $\Om \vdash \sigma_1 \le \sigma_2$,
+    \begin{itemize}
+        \item If $\Gm \Vdash \sigma_A \le \sigma \sto \Om \Vdash \sigma_1 \le \sigma_2$
+            \\then $\Gm \Vdash \sigma_A \le \sigma \redto \nil$;
+        \item If $\Gm \Vdash \tau \le \sigma_A \sto \Om \Vdash \sigma_1 \le \sigma_2$
+            \\then $\Gm \Vdash \tau \le \sigma_A \redto \nil$.
+    \end{itemize}
+\end{theorem}
 
 \subsection{Termination}
 
+The measure used in ICFP no longer works because subtyping judgments like
+$$\al \le \bot \to \top$$
+cause $\al$ to split into $\al[1] \to \al[2]$, without solving any part of it,
+resulting in an increased number of existential variables
+and possibly increased complexity of the worklist through the size-increasing substitution
+$\{\al := \al[1] \to \al[2]\}$.
+
+We have performed a large set of tests on generated subtyping judgments
+that are consist of algorithmic mono types,
+and all judgements terminated within a reasonable number of derivation depth.
+Unfortunately, we have not yet find any formal proof for the termination statement.
+
 \subsection{Formalization in the Abella Proof Assistant}
 
+
+\section{Discussion}
+\subsection{Lazy Substitution and Non-terminating Loops}
+
+One major source of incompleteness comes from rule 20 and 21,
+where two different existential variables are compared.
+A natural idea is to delay the solving procedure until all the corresponding
+constraints are collected.
+Constraint collection can be implemented by the following new worklist definition,
+where the existential variables also come with a set of upper bounds
+and a set of lower bounds. Both of the bounds are consist of algorithmic mono-types.
+
+\begin{gather*}
+    \begin{aligned}
+        \text{Algorithmic worklist}\qquad&\Gm &::=&\quad \cdot \mid \Gm, a \mid \Gm, \overline{\tau_A} \le \al \le \overline{\tau_A} \mid \Gm \Vdash \jg
+    \end{aligned}
+\end{gather*}
+
+In presence of the bound collections, the algorithm behaves slightly differently
+on variable solving rules.
+For example, rules 20 and 21 add the corresponding existential variable
+as part of a bound rather than performing a global substitution.
+
+\begin{gather*}
+    \begin{aligned}
+\Gm[\al][L \le \bt \le U] \Vdash \al \le \bt &\rrule{20'}
+    \Gm[\al][L \cup \{\al\} \le \bt \le U]\\
+\Gm[\al][L \le \bt \le U] \Vdash \bt \le \al &\rrule{21'}
+    \Gm[\al][L \le \bt \le U \cup \{\al\}]\\
+    \end{aligned}
+\end{gather*}
+
+The change of existential variable declaration also result in the change of
+the algorithmic rule on existential variable garbage collection.
+When $\al$ is to be recycled, we need to propagate the subtyping check to
+the bounds: any type that is a subtype of $\al$ should be subtype of
+any super type of $\al$, according to the transitivity of subtyping.
+
+\begin{gather*}
+    \begin{aligned}
+\Gm, \{l_i\}^n \le \al \le \{u_j\}^m &\rrule{2'}
+    \Gm \Vdash_{1 \le i \le n, 1 \le j \le m} l_i \le u_j\\
+    \end{aligned}
+\end{gather*}
+
+Luckily, such check is sufficient. In other words,
+we can always find a proper solution for $\al$ if any lower bound
+is subtype of any upper bound.
+
+This new approach fixes the incompleteness caused by rules 20 and 21,
+however, the algorithm might loop forever due to the
+(new version of) instantiation rules 14 and 15.
+For example, the following derivation results in infinite instantiations:
+
+\begin{gather*}
+    \begin{aligned}
+     & \al, \bt \Vdash \al \le 1 \to \bt \Vdash \bt \le 1 \to \al\\
+\rto~& \al, \bt[1], \bt[2], \{\} \le \bt \le \{\bt[1] \to \bt[2]\}
+        \Vdash \al \le 1 \to \bt \Vdash \bt[1] \to \bt[2] \le 1 \to \al\\
+\rto~& \cdots\\
+\rto~& \al, \{1\} \le \bt[1] \le \{\}, \{\} \le \bt[2] \le \{\al\},
+        \{\} \le \bt \le \{\bt[1] \to \bt[2]\}
+        \Vdash \al \le 1 \to \bt\\
+    \end{aligned}
+\end{gather*}
+
+\jimmy{Not sure whether this discussion is valueable;
+in fact the example is hard to demonstrate the infinite loop
+(not straightforward to understand)}
