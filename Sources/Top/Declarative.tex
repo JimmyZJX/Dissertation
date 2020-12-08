@@ -1,0 +1,169 @@
+
+\section{Declarative System}
+
+\begin{figure}[t]
+    \begin{gather*}
+    \begin{aligned}
+        \text{Type variables}\qquad&a, b\\
+        \text{Types}\qquad&A, B, C &::=&\quad 1 \mid \top \mid \bot \mid a \mid \all A \mid A\to B\\
+        \text{Monotypes}\qquad&\tau &::=&\quad 1 \mid \top \mid \bot \mid a \mid \tau_1\to \tau_2\\
+        \text{Expressions}\qquad&e &::=&\quad x \mid () \mid \lam e \mid e_1~e_2 \mid (e:A)\\
+        \text{Context}\qquad&\Psi &::=&\quad \cdot \mid \Psi, a \mid \Psi, x:A
+    \end{aligned}
+    \end{gather*}
+\Description{Declarative Syntax}
+\caption{Declarative Syntax}\label{fig:top_decl_syntax}
+\end{figure}
+
+\paragraph{Syntax}
+The syntax of the declarative system, shown in Figure~\ref{fig:top_decl_syntax},
+is similar to the previous systems by having
+a primitive type $1$, type variables $a$,
+polymorphic types $\all A$ and function types $A \to B$.
+Additionally, top and bottom types are introduced to the type system.
+The top type, $\top$, is the super type of any type,
+i.e. any type is more general than $\top$
+and thus can be considered as an instance of type $\top$.
+In typical object-oriented programming languages, the \texttt{Object} class,
+as the base class of any class, is the $\top$ type.
+In contrast, the bottom type, $\bot$, is dual to $\top$.
+An instance of $\bot$ can be casted to a value of any type, which is usually impossible,
+except when that is a \texttt{null pointer} value (\texttt{(void *)} in C++, for example).
+Another practical use for bottom types is exception.
+The type $\text{Exception} \to \bot$ given to the \texttt{raise}
+function may pass type checkers natually.
+The type $\text{Exception} \to \all a$ is also a reasonable choice,
+which in fact reveals that $\bot$ behaves almost identical to $\all a$.
+In the theoretical point of view, both of them are considered ``falsity''.
+\jimmy{The discussion might be moved to intro/motivation part}
+
+The well-formedness for the system is standard and almost identical to the previous systems,
+therefore we omit the formal definitions.
+
+
+\begin{figure}[t]
+    \framebox{$\Psi \vdash A \le B$}
+    \begin{gather*}
+    \inferrule*[right=$\mathtt{{\le}Var}$]
+    {a\in\Psi}{\Psi\vdash a\le a}
+    \qquad
+    \inferrule*[right=$\mathtt{{\le}Unit}$]
+    {~}{\Psi \vdash 1 \le 1}
+    \qquad
+    \inferrule*[right=$\mathtt{{\le}{\to}}$]
+    {\Psi \vdash B_1 \le A_1 \quad \Psi \vdash A_2 \le B_2}
+    {\Psi\vdash A_1\to A_2 \le B_1\to B_2}
+    \\
+    \inferrule*[right=$\mathtt{{\le}\forall L}$]
+    {\Psi\vdash \tau \quad \Psi\vdash [\tau/a] A \le B}
+    {\Psi\vdash \all A \le B}
+    \qquad
+    \inferrule*[right=$\mathtt{{\le}\forall R}$]
+    {\Psi, b\vdash A\le B}
+    {\Psi\vdash A \le \all[b]B}
+    \\
+    \pmb{
+    \inferrule*[right=$\mathtt{{\le}Top}$]
+    {~}
+    {A \le \top}
+    }
+    \qquad
+    \pmb{
+    \inferrule*[right=$\mathtt{{\le}Bot}$]
+    {~}
+    {\bot \le A}
+    }
+    \end{gather*}
+\Description{Declarative Subtyping}
+\caption{Declarative Subtyping}\label{fig:top_decl_subtyping}
+\end{figure}
+
+\paragraph{Declarative Subtyping}
+Shown in Figure~\ref{fig:top_decl_subtyping},
+the declarative subtyping extends the polymorphic subtyping relation
+originally proposed by Odersky and L\"aufer~\cite{odersky1996putting}
+by adding rules $\mathtt{{\le}Top}$ and $\mathtt{{\le}Bot}$,
+defining the properties of the $\top$ and $\bot$ types, respectively.
+Although the new rules seem quite simple,
+they may increase the uncertainty on polymorphic instantiations.
+For example, the subtyping judgement
+\[\all a \to a \le \bot \to \top\]
+accepts any well-formed instantiation on the polymorphic type $\all a \to a$.
+
+
+\begin{figure}[t]
+    \begin{tabular}{rl}
+        \framebox{$\Psi \vdash e \Lto A$} & $e$ checks against input type $A$.\\[0.5mm]
+        \framebox{$\Psi \vdash e \To A$} & $e$ synthesizes output type $A$.\\[0.5mm]
+        \framebox{$\Psi \vdash \appInf{A}{e}{C}$} & Applying a function of type $A$ to $e$ synthesizes type $C$.
+    \end{tabular}
+    \begin{gather*}
+    \inferrule*[right=$\mathtt{DeclVar}$]
+        {(x:A)\in\Psi}{\Psi\vdash x\To A}
+    \qquad
+    \inferrule*[right=$\mathtt{DeclSub}$]
+    %e \neq \lam e' \quad B \neq \all B' \quad 
+        {\Psi\vdash e\To A \quad \Psi\vdash A\le B}
+        {\Psi \vdash e\Lto B}
+    \\
+    \inferrule*[right=$\mathtt{DeclAnno}$]
+        {\Psi \vdash A \quad \Psi\vdash e\Lto A}
+        {\Psi\vdash (e:A)\To A}
+    \qquad
+    \inferrule*[right=$\mathtt{Decl1I{\To}}$]
+        {~}{\Psi\vdash () \To 1}
+    \\
+    \inferrule*[right=$\mathtt{Decl1I}$]
+        {~}{\Psi\vdash () \Lto 1}
+    \qquad
+    \inferrule*[right=$\mathtt{Decl\top}$]
+        {\Psi \vdash e}
+        {\Psi\vdash e \Lto \top}
+    \qquad
+    \inferrule*[right=$\mathtt{Decl{\bot}App}$]
+        {\Psi\vdash e}
+        {\Psi\vdash \appInf{\bot}{e}{\bot}}
+    \\
+    \inferrule*[right=$\mathtt{Decl\forall I}$]
+        {\Psi,a \vdash e \Lto A}
+        {\Psi\vdash e\Lto \all A}
+    \qquad
+    \inferrule*[right=$\mathtt{Decl\forall App}$]
+        {\Psi \vdash \tau \quad \Psi\vdash \appInf{[\tau/a]A}{e}{C} }
+        {\Psi\vdash \appInf{\all A}{e}{C}}
+    \\
+    \inferrule*[right=$\mathtt{Decl{\to}I}$]
+        {\Psi,x:A \vdash e\Lto B}
+        {\Psi\vdash \lam e \Lto A \to B}
+    \qquad
+    \inferrule*[right=$\mathtt{Decl{\to}I{\To}}$]
+        {\Psi\vdash \sigma\to\tau \quad \Psi,x:\sigma \vdash e\Lto \tau}
+        {\Psi\vdash \lam e \To \sigma\to\tau}
+    \\
+    \inferrule*[right=$\mathtt{Decl{\to} E}$]
+        {\Psi\vdash e_1\To A \quad \Psi\vdash \appInf{A}{e_2}{C}}
+        {\Psi\vdash e_1~e_2 \To C}
+    \qquad
+    \inferrule*[right=$\mathtt{Decl{\to}App}$]
+        {\Psi\vdash e \Lto A}
+        {\Psi\vdash \appInf{A \to C}{e}{C}}
+    \end{gather*}
+\Description{Declarative Typing}
+\caption{Declarative Typing}\label{fig:top_decl_typing}
+\end{figure}
+
+\paragraph{Declarative Typing}
+
+The declarative typing rules, shown in Figure~\ref{fig:top_decl_typing},
+extends DK's higher-rank type system in order to support the top and bottom types.
+Rule $\mathtt{Decl\top}$ allows any well-formed expression to check against $\top$.
+Rule $\mathtt{Decl{\bot}App}$ returns the $\bot$ type
+when a function of $\bot$ type is applied to any argument.
+All other rules remain exactly the same as our previous work.
+
+It's worth mentioning that the design of the two new rules
+are driven by the subsumption property described in Section~\ref{sec:meta:decl}.
+They maintains the property in presence of a more powerful declarative subtyping,
+and we will discuss further later in that part.
+
+\setcounter{algRuleCounter}{0}

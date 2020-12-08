@@ -1,0 +1,69 @@
+
+\section{Discussion}
+\subsection{Lazy Substitution and Non-terminating Loops}
+
+One major source of incompleteness comes from rule 20 and 21,
+where two different existential variables are compared.
+A natural idea is to delay the solving procedure until all the corresponding
+constraints are collected.
+Constraint collection can be implemented by the following new worklist definition,
+where the existential variables also come with a set of upper bounds
+and a set of lower bounds. Both of the bounds are consist of algorithmic mono-types.
+
+\begin{gather*}
+    \begin{aligned}
+        \text{Algorithmic worklist}\qquad&\Gm &::=&\quad \cdot \mid \Gm, a \mid \Gm, \overline{\tau_A} \le \al \le \overline{\tau_A} \mid \Gm \Vdash \jg
+    \end{aligned}
+\end{gather*}
+
+In presence of the bound collections, the algorithm behaves slightly differently
+on variable solving rules.
+For example, rules 20 and 21 add the corresponding existential variable
+as part of a bound rather than performing a global substitution.
+
+\begin{gather*}
+    \begin{aligned}
+\Gm[\al][L \le \bt \le U] \Vdash \al \le \bt &\rrule{20'}
+    \Gm[\al][L \cup \{\al\} \le \bt \le U]\\
+\Gm[\al][L \le \bt \le U] \Vdash \bt \le \al &\rrule{21'}
+    \Gm[\al][L \le \bt \le U \cup \{\al\}]\\
+    \end{aligned}
+\end{gather*}
+
+The change of existential variable declaration also result in the change of
+the algorithmic rule on existential variable garbage collection.
+When $\al$ is to be recycled, we need to propagate the subtyping check to
+the bounds: any type that is a subtype of $\al$ should be subtype of
+any super type of $\al$, according to the transitivity of subtyping.
+
+\begin{gather*}
+    \begin{aligned}
+\Gm, \{l_i\}^n \le \al \le \{u_j\}^m &\rrule{2'}
+    \Gm \Vdash_{1 \le i \le n, 1 \le j \le m} l_i \le u_j\\
+    \end{aligned}
+\end{gather*}
+
+Luckily, such check is sufficient. In other words,
+we can always find a proper solution for $\al$ if any lower bound
+is subtype of any upper bound.
+
+This new approach fixes the incompleteness caused by rules 20 and 21,
+however, the algorithm might loop forever due to the
+(new version of) instantiation rules 14 and 15.
+For example, the following derivation results in infinite instantiations:
+
+\begin{gather*}
+    \begin{aligned}
+     & \al, \bt \Vdash \al \le 1 \to \bt \Vdash \bt \le 1 \to \al\\
+\rto~& \al, \bt[1], \bt[2], \{\} \le \bt \le \{\bt[1] \to \bt[2]\}
+        \Vdash \al \le 1 \to \bt \Vdash \bt[1] \to \bt[2] \le 1 \to \al\\
+\rto~& \cdots\\
+\rto~& \al, \{1\} \le \bt[1] \le \{\}, \{\} \le \bt[2] \le \{\al\},
+        \{\} \le \bt \le \{\bt[1] \to \bt[2]\}
+        \Vdash \al \le 1 \to \bt\\
+    \end{aligned}
+\end{gather*}
+
+\jimmy{Not sure whether this discussion is valueable;
+in fact the example is hard to demonstrate the infinite loop
+(not straightforward to understand)}

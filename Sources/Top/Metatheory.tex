@@ -1,0 +1,222 @@
+
+\section{Metatheory}
+
+\subsection{Declarative Properties}\label{sec:meta:decl}
+
+An important desired property for a type system is \emph{checking subsumption},
+which basically says that any expression can
+check against any super type of its actual type.
+Since our bidirectional type system defines the checking mode, inference mode and
+application inference mode mutually,
+we formalize the generalized \emph{typing subsumption}.
+
+\begin{definition}[Worklist Subtyping]
+    Worklist subtyping compares the type of variables bound in the worklist.
+    $\Gm <: \Gm'$ iff each binding in $\Gm$ is converted to one with a super type.
+    \begin{gather*}
+        \inferrule*[right=$\mathtt{<:nil}$]
+            {~}{\cdot <: \cdot}
+        \qquad
+        \inferrule*[right=$\mathtt{<:ty}$]
+            {\Gm <: \Gm'}
+            {\Gm, a <: \Gm', a}
+        \\
+        \inferrule*[right=$\mathtt{<:of}$]
+            {\Gm' \vdash A \le B \\ \Gm <: \Gm'}
+            {\Gm, x:A <: \Gm', x:B}
+        \qquad
+        \inferrule*[right=$\mathtt{<:\omega}$]
+            {\Gm <: \Gm'}
+            {\Gm \Vdash \jg <: \Gm' \Vdash \jg}
+    \end{gather*}
+\end{definition}
+
+A basic property of worklist subtyping is that they acts similarly when viewed as contexts.
+\begin{lemma}[Worklist Subtyping Equivalence]
+    Given $\Gm <: \Gm'$, $\Gm \vdash A \le B \Longleftrightarrow \Gm' \vdash A \le B$.
+\end{lemma}
+
+\begin{lemma}[Typing Subsumption]
+    Given $\Gm <: \Gm'$,
+    \begin{enumerate}[1)]
+        \item If $\Gm' \vdash e \Lto A$ and $\Gm' \vdash A \le B$, then $\Gm \vdash e \Lto B$;
+        \item If $\Gm' \vdash e \To A$, then $\exists B$ s.t. $\Gm' \vdash B \le A$ and $\Gm \vdash e \To B$.
+        \item If $\Gm' \vdash \appInf{C}{e}{A}$ and $\Gm' \vdash D \le C$, then
+            $\exists B$ s.t. $\Gm' \vdash B \le A$ and $\Gm \vdash \appInf{D}{e}{B}$.
+    \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+    By induction on the following size measure (lexicographical order on a 3-tuple):
+    \begin{itemize}
+        \item Checking ($e \Lto A$): $\langle |e|, 1, |A|_\forall + |B|_\forall \rangle$
+        \item Inference ($e \To A$): $\langle |e|, 0, 0 \rangle$
+        \item Application inference ($\appInf{A}{e}{C}$): $\langle |e|, 2, |C|_\forall + |D|_\forall \rangle$
+    \end{itemize}
+    Most of the cases are straightforward.
+    When rule $\mathtt{{\le}\forall L}$ is applied for the subtyping predicate
+    like $\Gm' \vdash A \le B$,
+    a mono-type substitution is performed on $\all A$,
+    resulting in $[\tau/a]A$.
+    Since $\tau$ is a mono-type, the result type reduces the number of $\forall$'s,
+    and thus reduces the size measure.
+\end{proof}
+
+The two new declarative rules $\mathtt{Decl\top}$ and $\mathtt{Decl{\bot}App}$ are
+discovered through it and verified against it.
+To the best of the authors' knowledge,
+they are the minimal set of rules that keep the lemma hold.
+
+
+\paragraph{Subtyping Transitivity}
+
+The transitivity lemma for declarative subtyping is a commonly expected property.
+The proof depends on the following subtyping derivation size relation and an auxiliary lemma.
+
+\begin{definition}[Subtyping Derivation Size]
+    \begin{gather*}
+        \begin{aligned}
+            |1 \le 1| &= 0\\
+            |a \le a| &= 0\\
+            |A \le \top| &= 0\\
+            |\bot \le B| &= 0\\
+            |A_1 \to A_2 \le B_1 \to B_2| &= |B_1 \le A_1| + |A_2 \le B_2| + 1\\
+            |\all A \le B| &= |[\tau/a]A \le B| + 1\\
+            |A \le \all B| &= |A \le B| + 1
+        \end{aligned}
+    \end{gather*}
+\end{definition}
+
+\begin{lemma}[Subtyping Substiting Mono-type]
+    If $\Psi \vdash \tau$ and $\Psi, a, \Psi_R \vdash A \le B$, then
+    $\Psi, [\tau/a]\Psi_R \vdash [\tau/a]A \le [\tau/a]B$.
+\end{lemma}
+
+\begin{proof}
+    A routine induction on the subtyping relation $\Psi, a, \Psi_R \vdash A \le B$
+    finishes the proof.
+\end{proof}
+
+\begin{corollary}[Subtyping Substiting Type Var with a Mono-type]
+    \label{cor:subtyping_subst_mono}
+    If $\Psi \vdash \tau$ and $\Psi, a \vdash A \le B$, then
+    $\Psi \vdash [\tau/a]A \le [\tau/a]B$.
+\end{corollary}
+
+\begin{lemma}[Subtyping Transitivity]
+    If $\Psi \vdash A \le B$ and $\Psi \vdash B \le C$ then
+    $\Psi \vdash A \le C$.
+\end{lemma}
+
+\begin{proof}
+    Induction on $\langle |B|_\forall, |A \le B| + |B \le C| \rangle$.
+    Most cases preserve the first element of the size measures $|B|_\forall$,
+    and are relatively easy to prove.
+    The difficult case is when $B$ is a polymorphic type,
+    when the conditions are $\Psi \vdash A \le \all B$ and $\Psi \vdash \all B \le C$.
+    They are derived through rules $\mathtt{{\le}\forall L}$ and
+    $\mathtt{{\le}\forall R}$, respectively.
+    Therefore, we have $\Psi, a \vdash A \le B$ and $\Psi \vdash [\tau/a] B \le C$.
+    To exploit the induction hypothesis, the contexts should be unified.
+    By Corollary~\ref{cor:subtyping_subst_mono}, $\Psi \vdash A \le [\tau/a]B$.
+    Notice that the freshness condition is implicit for rule $\mathtt{{\le}\forall L}$.
+    Clearly, $|[\tau/a]B|_\forall < |\all B|_\forall$, i.e. the first size measure decreases.
+    By induction hypothesis we get $\Psi \vdash A \le C$ and finishes this case.
+\end{proof}
+
+\subsection{Soundness}
+
+Our algorithm is sound with respect to the declarative system.
+For any worklist $\Gm$ that reduces successfully,
+there is a valid instantiation $\Om$ that transfers all judgments
+to the declarative system.
+\begin{theorem}[Soundness]
+If \emph{wf }$\Gm$ and $\Gm \redto \nil$,
+then there exists $\Om$ s.t. $\Gm\sto\Om$ and $\Om\redto\nil$.
+\end{theorem}
+
+\subsection{Partial Completeness of Subtyping: Rank-1 Restriction}
+
+The algorithm is incomplete due to the subtyping rules 14, 15, 20 and 21.
+However, subtyping is complete with respect to the declarative system in rank-1 setting.
+
+\paragraph{Declarative Rank-1 Restriction}
+
+Rank-1 types are also named type schemes in Hindley-Milner type system.
+$$\begin{aligned}
+    \text{Declarative Type Schemes}\qquad&\sigma &::=&\quad \all \sigma \mid \tau\\
+\end{aligned}$$
+In other words, the universal quantifiers only appear in the top level
+of all polymorphic types.
+
+For declarative subtyping, a judgment must be of form $\sigma_1 \le \sigma_2$.
+
+\subsection{Algorithmic Rank-1 Restriction (Partial Completeness)}
+
+The algorithmic mono-types and type schemes are defined as following:
+$$\begin{aligned}
+    \text{Algorithmic Mono-types}\qquad&\tau_A &::=&\quad
+        1 \mid \top \mid \bot \mid a \mid A\to B \mid \al\\
+    \text{Algorithmic Type Schemes}\qquad&\sigma_A &::=&\quad \all \sigma_A \mid \tau_A\\
+\end{aligned}$$
+
+Starting from the declarative judgment $\sigma_1 \le \sigma_2$,
+the algorithmic derivation might involve different other kinds of judgments.
+The following derivation, as an example, shows how a rank-1 judgment derives.
+
+$$\begin{aligned}
+           & \cdot \Vdash \all a \to a \le \all[b] (b \to b) \to (b \to b)\\
+    \rrule{8} & b \Vdash \all a \to a \le (b \to b) \to (b \to b)\\
+    \rrule{7} & b, \al \Vdash \al \to \al \le (b \to b) \to (b \to b)\\
+    \rrule{6} & b, \al \Vdash \al \le b \to b \Vdash b \to b \le \al\\
+    \rrule{} & \cdots
+\end{aligned}$$
+
+In this derivation, we begin from a judgment of the form $\sigma \le \sigma$.
+After rule 8 is applied, the judgment becomes $\sigma \le \tau$,
+since the right-hand-side polymorphic type is reduced to a declarative mono-type.
+Then, rule 7 introduces existential variables to the left-hand-side,
+resulting in a judgment like $\tau_A \le \tau$,
+or $\sigma_A \le \tau$ in a more general case.
+Finally, rule 6 breaks a judgment between functions into two sub-judgments,
+which swaps the positions of the argument types
+and creates a judgment like $\tau \le \tau_A$.
+Notice that $\sigma_A$ is not possible to occur to the right
+because the function type may not contain any polymorphic types as its argument type.
+
+\jimmy{TODO the detailed analysis, perhaps a graph?}
+After a detailed analysis on the judgments derivations,
+we found that the only possible judgments that a rank-1 declarative subtyping judgment
+might step to belong to the following two categories:
+$$\sigma_A \le \sigma \quad\text{or}\quad \tau \le \sigma_A$$
+
+An interesting observation is that $\al \le \bt$ does not belong to either category,
+neither does $\al \le A \to B$ when $\al \in \text{FV}(A \to B)$.
+Therefore, in the rank-1 setting, both cases of incompleteness never occur,
+and our algorithm is complete.
+
+\begin{theorem}[Completeness of Rank-1 Subtyping]
+    Given $\Om \vdash \sigma_1 \le \sigma_2$,
+    \begin{itemize}
+        \item If $\Gm \Vdash \sigma_A \le \sigma \sto \Om \Vdash \sigma_1 \le \sigma_2$
+            \\then $\Gm \Vdash \sigma_A \le \sigma \redto \nil$;
+        \item If $\Gm \Vdash \tau \le \sigma_A \sto \Om \Vdash \sigma_1 \le \sigma_2$
+            \\then $\Gm \Vdash \tau \le \sigma_A \redto \nil$.
+    \end{itemize}
+\end{theorem}
+
+\subsection{Termination}
+
+The measure used in ICFP no longer works because subtyping judgments like
+$$\al \le \bot \to \top$$
+cause $\al$ to split into $\al[1] \to \al[2]$, without solving any part of it,
+resulting in an increased number of existential variables
+and possibly increased complexity of the worklist through the size-increasing substitution
+$\{\al := \al[1] \to \al[2]\}$.
+
+We have performed a large set of tests on generated subtyping judgments
+that are consist of algorithmic mono types,
+and all judgements terminated within a reasonable number of derivation depth.
+Unfortunately, we have not yet find any formal proof for the termination statement.
+
+\subsection{Formalization in the Abella Proof Assistant}

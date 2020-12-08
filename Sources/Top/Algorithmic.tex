@@ -1,0 +1,256 @@
+
+\section{Backtracking Algorithm}
+
+\subsection{Syntax}
+
+\begin{figure}[ht]
+    \begin{gather*}
+    \begin{aligned}
+        \text{Existential variables}\qquad&\al, \bt\\
+        \text{Types}\qquad&A, B, C &::=&\quad 1 \mid \top \mid \bot \mid a \mid \all A \mid A\to B \mid \al\\
+        \text{Algorithmic judgment chain}\qquad&\jg &::=&\quad A \le B \mid e\Lto A \mid e\To_{a} \jg \mid \appInfAlg{A}{e}\\
+        \text{Algorithmic worklist}\qquad&\Gm &::=&\quad \cdot \mid \Gm, a \mid \Gm, \al \mid \Gm \Vdash \jg
+    \end{aligned}
+    \end{gather*}
+\Description{Algorithmic Syntax}
+\caption{Algorithmic Syntax}\label{fig:top_alg_syntax}
+\end{figure}
+
+The algorithmic syntax is shown in Figure~\ref{fig:top_alg_syntax}.
+Compared with the declarative system, existential variables $\al, \bt$ are used
+as placeholders for unsolved mono-types.
+The judgment chain $\jg$ and worklist context $\Gm$ are defined in the same way as the ICFP work.
+
+The well-formedness relation is almost the same as that of the ICFP work.
+The hole notation is also inherited.
+
+\paragraph{The Solve Notation}
+We define a set of auxiliary substitution functions in the form $\{\al := \tau_A\}$
+to improve readability of our algorithmic definitions.
+Basically it refers to a global substitution when solving an existential variable.
+
+A detailed definition of the notation is shown as follows:
+\begin{gather*}
+    \begin{aligned}
+        \{\al := \tau\}~(\Gm_L, \al, \Gm_R) &= \Gm_L, [\tau/\al]\Gm_R & \tau = 1, \top, \bot \text{ or }a\\
+        \{\al := \bt\}~(\Gm_L, \al, \Gm_R) &= \Gm_L, [\bt/\al]\Gm_R & \bt \in \Gm_L\\
+        \{\al := \al[1] \to \al[2]\}~(\Gm_L, \al, \Gm_R) &= \Gm_L, \al[1], \al[2], [\al[1] \to \al[2]/\al]\Gm_R\\
+    \end{aligned}
+\end{gather*}
+
+\subsection{Algorithmic Subtyping}
+
+\begin{figure}[!ht]
+    \noindent\framebox{$\Gm\rto \Gm'$} $\Gm$ reduces to $\Gm'$.
+    \begin{gather*}
+    \begin{aligned}
+    \Gm, a &\algrule \Gm\\
+    \Gm, \al &\algrule \Gm\\
+    \Gm, x:A &\algrule \Gm\\
+    % \\
+    % \pmb{
+    % (\Gm, L \le \al \le U)} &\algrule \Gm \Vdash l_1 \le u_1 \Vdash \ldots \Vdash l_n \le u_m
+    % 	\quad \color{blue} \text{Add $nm$ judgments}\\
+    \\
+    \Gm \Vdash 1\le 1 &\algrule \Gm\\
+    \Gm \Vdash a\le a &\algrule \Gm\\
+    \Gm \Vdash A_1\to A_2 \le B_1\to B_2 &\algrule \Gm \Vdash A_2 \le B_2 \Vdash B_1\le A_1\\
+    \Gm \Vdash \forall a. A\le B &\algrule \Gm, \al \Vdash [\al/a]A\le B\\
+    \Gm \Vdash A\le \forall b. B &\algrule \Gm,b \Vdash A\le B\\
+    \Gm \Vdash A\le \top &\algrule \Gm\\
+    \Gm \Vdash \bot \le B &\algrule \Gm\\
+    \\
+    \Gm[\al] \Vdash \al\le \al &\algrule \Gm\\
+    \\
+    % \multispan2{\text{\jimmy{These 2 rules introduce non-determinicity}}}\\
+    \Gm[\al] \Vdash A \le \al &\algrule \{\al := \top\}~\Gm[\al]\\
+    \Gm[\al] \Vdash \al \le A &\algrule \{\al := \bot\}~\Gm[\al]\\
+    \\
+    \Gm[\al] \Vdash \al \le A\to B &\algrule
+    \{\al := \al[1] \to \al[2]\}~(\Gm[\al] \Vdash \al \le A\to B)\\
+    &\qquad\qquad \text{when } \al\notin FV(A \to B)\\
+    \Gm[\al] \Vdash A\to B \le \al &\algrule
+    \{\al := \al[1] \to \al[2]\}~(\Gm[\al] \Vdash A\to B \le \al)\\
+    %\Gm[\al[1], \al[2], L \cup \{\al[1] \to \al[2]\} \le \al \le U] \Vdash A \to B \le \al[1] \to \al[2]\\
+    &\qquad\qquad \text{when } \al\notin  FV(A \to B)\\
+    \\
+    \Gm[a][\bt] \Vdash a \le \bt &\algrule \{\bt := a\}~\Gm[a][\bt]\\
+    \Gm[a][\bt] \Vdash \bt \le a &\algrule \{\bt := a\}~\Gm[a][\bt]\\
+    \Gm[\bt] \Vdash 1 \le \bt &\algrule \{\bt := 1\}~\Gm[\bt]\\
+    \Gm[\bt] \Vdash \bt \le 1 &\algrule \{\bt := 1\}~\Gm[\bt]\\
+    \\
+    \Gm[\al][\bt] \Vdash \al \le \bt &\algrule \{\bt := \al\}~\Gm[\al][\bt]\\
+    \Gm[\al][\bt] \Vdash \bt \le \al &\algrule \{\bt := \al\}~\Gm[\al][\bt]\\
+    \end{aligned}
+    \end{gather*}
+\Description{Algorithmic Garbage Collection and Subtyping}
+\caption{Algorithmic Garbage Collection and Subtyping}\label{fig:top_alg_subtyping}
+\end{figure}
+
+Figure~\ref{fig:top_alg_subtyping} describes the algorithmic rules for subtyping.
+The relation is stated in a small-step ``reduction'' form, i.e. in each step,
+the worklist is analysed from the right-hand-side and reduced according to the top judgment.
+The overall procedure succeeds iff the worklist eventually reduces to $\cdot$ (the empty worklist).
+
+
+We categorize them into 7 groups according to their behavior:
+\begin{enumerate}
+    \item Rules 1-3 are basic garbage collection rules.
+        Given that the worklist $\Gm$ is well-formed,
+        no reference of a variable should occur before its declaration.
+        Therefore removing the declaration in the top position does not break well-formedness.
+
+        An existential variable that is unsolved in the top position indicates
+        that it is not constrained,
+        thus picking any well-formed mono-type as its solution is acceptable.
+        In our algorithmic formalization, we simply drop the existential variable.
+
+    \item Rules 4-10 directly correspond to the declarative subtyping rules.
+        With no top-level existential variables,
+        there are nothing to guess immediately,
+        and thus the algorithm behaves just like the declarative system.
+
+    \item Rule 11 is a base case in the algorithmic system.
+        The declarative reflexivity property suggests that any solution is acceptable,
+        thus the judgment holds without any constraint.
+    
+    \item Rules 12-13 are important rules that requires backtracking techniques
+        for implementation.
+        These rules \emph{overlaps} with all the remaining rules when solving
+        an existential variable.
+        In other words, they simply try if $\top$ or $\bot$ satisfies the constraints
+        in parallel with other possibilities.
+    
+    \item Rules 14-15 compares an existential variable $\al$ with a function type,
+        resulting in solving the $\al$ by $\al[1] \to \al[2]$.
+        The freshness condition rules out the possibility
+        when there is a cyclic dependency.
+        For example, the judgment
+        \[\al \le 1 \to \al\]
+        is satisfied with either of these solutions to $\al$:
+        \[ \bot, 1 \to \bot, \top \to \bot, 1 \to 1 \to \bot, \ldots \]
+        However, we argue that comparing $\al$ with a function type
+        that contains $\al$ itself is hardly useful in practice,
+        and most of the solutions are meaningless.
+        Therefore, in our algorithm, only the $\bot$ solution is considered
+        with rule 13.
+        The condition of rule 14 rejects the judgement for further analysis
+        and thus does not produce more solutions.
+        This is one source of incompleteness of our algorithm with respect to the declarative specification.
+    
+    \item Rules 16-19 solve existential variables against a type variable or the unit type.
+        For instance, the judgment
+        \[\al \le 1\]
+        only have two solutions: $\al = 1$ or $\al = \bot$.
+        In similar cases, one of the solutions is produced by rule 12 or 13,
+        and the other one is given by one of the rules in this group.
+        Additional well-formedness check is performed when type variables are encountered;
+        a solution to an existential variable must be well-formed in the context
+        before the existential variable is defined.
+    
+    \item Rules 20-21 deals with subtyping judgments
+        that compares two different existential variables.
+        The only difference between them is the variable order.
+        Similar to the type variable case in the previous group,
+        existential variables must solve to another one defined earlier.
+        With rules 12, 13, 20 and 21, a judgment like
+        \[\al \le \bt\]
+        could possibly give any of the following solutions:
+        \[ \al = \bt ~(\text{or } \bt = \al)
+            \text{ or } \al = \bot \text{ or } \bt = \top \]
+        Those are good attempts, but unfortunately,
+        they does not cover the complete set of possibilities.
+        The following example worklist
+        \[ \al, \bt \Vdash \bt \le 1 \to 1 \Vdash \al \le \bt \]
+        has a solution $\al = 1 \to \top, \bt = 1 \to 1$ missed by our algorithm.
+        Similar situations happen when the judgments are specifically ordered;
+        if $\bt \le 1 \to 1$ is the top-most judgment,
+        the algorithm will not miss this solution.
+
+        Although such treatment for existential variable solving is incomplete in theory,
+        a large number of practical unification is simply equality,
+        and the algorithm completely handles these programs.
+        Other programs that exploit complex guessing involving subtyping,
+        the programmer may put annotation when the type inference algorithm
+        does not find the optimal solution.
+\end{enumerate}
+
+
+\subsection{Algorithmic Typing}
+
+\begin{figure}[!ht]
+\noindent\framebox{$\Gm\rto \Gm'$} $\Gm$ reduces to $\Gm'$ (continued).
+\begin{gather*}
+\begin{aligned}
+    \Gm \Vdash e \Lto B &\algrule \Gm \Vdash e\To_a a\le B \quad
+    \text{when } e \neq \lam e' \text{ and } B \neq \all B'\\
+    \Gm \Vdash e\Lto \all A &\algrule \Gm,a \Vdash e\Lto A\\
+    \Gm \Vdash \lam e \Lto A\to B &\algrule \Gm, x:A  \Vdash e \Lto B\\
+    \Gm[\al] \Vdash \lam e \Lto \al &\algrule \{\al := \al[1]\to \al[2]\}~\Gm, x:\al[1] \Vdash e \Lto \al[2]\\
+    \Gm \Vdash e \Lto \top &\algrule \Gm\\
+    \Gm[\al] \Vdash e \Lto \al &\algrule \{\al := \top\}~\Gm[\al]
+    % \quad\text{\jimmy{Additional}}
+    \\[3mm]
+    \Gm \Vdash x\To_a \jg &\algrule \Gm \Vdash [A/a] \jg \quad \text{when } (x:A)\in \Gm\\
+    \Gm \Vdash (e:A)\To_a \jg &\algrule \Gm \Vdash [A/a]\jg \Vdash e \Lto A\\
+    \Gm \Vdash ()\To_a \jg &\algrule \Gm \Vdash [1/a]\jg\\
+    \Gm \Vdash \lam e \To_a \jg &\algrule
+    \Gm,\al,\bt \Vdash [\al\to\bt/a]\jg, x:\al \Vdash e\Lto \bt\\
+    \Gm \Vdash e_1\ e_2 \To_a \jg &\algrule \Gm \Vdash e_1\To_b (\appInfAlg{b}{e_2})
+    \\[3mm]
+    \Gm \Vdash \appInfAlg{\all A}{e} &\algrule \Gm,\al \Vdash \appInfAlg{[\al/a]A}{e}\\
+    \Gm \Vdash \appInfAlg{A\to C}{e} &\algrule \Gm \Vdash [C/a]\jg \Vdash e \Lto A\\
+    \Gm \Vdash \appInfAlg{\bot}{e} &\algrule \Gm \Vdash [\bot/a]\jg\\
+    \Gm[\al] \Vdash \appInfAlg{\al}{e} &\algrule
+        \{\al := \al[1]\to \al[2]\}~\Gm \Vdash \appInfAlg{\al[1]\to\al[2]}{e}\\
+    \Gm[\al] \Vdash \appInfAlg{\al}{e} &\algrule
+        \{\al := \bot\}~\Gm[\al] \Vdash [\bot/a]\jg
+\end{aligned}
+\end{gather*}
+\Description{Algorithmic Typing}
+\caption{Algorithmic Typing}\label{fig:top_alg_typing}
+\end{figure}
+
+The algorithmic typing rules split into three groups,
+according to the category of the top-most judgment.
+
+\begin{enumerate}
+    \item Checking mode. Rules 22-27 reduce top-level checking judgments.
+            Rules 22, 23, 24 and 26 directly reflects how the declarative system behaves.
+            Rule 25 splits $\al$ into $\al[1] \to \al[2]$ to mimic the same logic as rule 24,
+            since a lambda expression must be of an function type.
+            Rule 27 is another backtracking rule, which overlaps with all other checking rules.
+            Solving $\al$ to $\top$ in such case reflects
+            the declarative rule $\mathtt{Decl{\top}}$ when the unknown type is $\top$.
+            Furthermore, we eliminate the algorithmic counterpart of declarative rule
+            $\mathtt{Decl1I}$, because a combination of Rules 22 and 30 already
+            accepts the judgment $() \Lto 1$.
+    
+    \item Inference mode. Rules 28-32 reduce inference judgments.
+            Like our previous work, encoding of the return type is by
+            an explicit substitution on the binder of a judgment chain.
+            Rules 28, 29, 30 and 32 corresponds to the declarative system straightforwardly.
+            Rule 31 guesses an unannotated lambda with a mono function type $\al \to \bt$.
+            Writing in a slightly different way may help improve readability:
+            \[ \Gm \Vdash \lam e \To_a \jg \rrule{31'}
+                \Gm, \al, \bt \Vdash [\al \to \bt / a]\jg \Vdash \lam e \Lto \al \to \bt \]
+            Rule 32 illustrates how the judgment chain works, with a continuation-passing-style
+            encoding of the type inference task.
+    
+    \item Application inference mode. Rules 33-37 reduce application inference judgments.
+            Each of these judgments accepts an input function type and an argument expression
+            and produces the expected return type.
+            Rules 33, 34 and 35 are direct translation from the declarative rules.
+            Rule 33, specifically, enables implicit parametric polymorphism via
+            existential variable solving.
+            Rules 36 and 37 deal with cases where a single existential variable
+            $\al$ as a function type.
+            Rule 36 splits $\al$ into a function unknown type $\al[1] \to \al[2]$.
+            Rule 37 tries the solution $\al = \bot$ and returns the $\bot$ type.
+            Both of the rules are not so useful in reality,
+            since it is derived from a parametric function type like $\all a$,
+            which behaves like the the $\bot$ type.
+
+
+\end{enumerate}
+
