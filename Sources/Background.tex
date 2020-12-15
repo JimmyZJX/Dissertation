@@ -4,4 +4,292 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 
+\section{Hindley-Milner Type System}
+
+\subsection{Declarative System}
+
+\begin{figure}[t]
+    \begin{gather*}
+    \begin{aligned}
+        \text{Type variables}\qquad&a, b\\
+        \text{Types}\qquad&\sigma &::=&\quad \tau \mid \all \sigma\\
+        \text{Monotypes}\qquad&\tau &::=&\quad 1 \mid a \mid \tau_1\to \tau_2\\
+        \text{Expressions}\qquad&e &::=&\quad x \mid () \mid \lam e \mid e_1~e_2 \mid \letin{e_1}{e_2}\\
+        \text{Contexts}\qquad&\Psi &::=&\quad \cdot \mid \Psi, x:\sigma
+    \end{aligned}
+    \end{gather*}
+\Description{HM Syntax}
+\caption{HM Syntax}\label{fig:hm_decl_syntax}
+\end{figure}
+
+\paragraph{Syntax}
+The declarative syntax is shown in Figure~\ref{fig:hm_decl_syntax}.
+The HM types are consist of polymorphic types (or type schemes) and monomorphic types.
+A polymorphic type contains zero or more universal quantifiers only at the top level.
+When no universal quantifier occurs, the type belongs to a mono-type.
+Mono-types are constructed by a unit type $1$, a type variable $a$,
+or a function type $\tau_1 \to \tau_2$.
+
+Expressions $e$ includes variables $x$, literals $()$, lambda abstractions $\lam e$,
+applications $e_1~e_2$ and the let expression $\letin{e_1}{e_2}$.
+A context $\Psi$ is a collection of type bindings for variables.
+
+\begin{figure}[t]
+    \framebox{$\sigma_1 \sqsubseteq \sigma_2$} HM Type Instantiation
+    $$
+    \inferrule*[right=$\mathtt{HM \dash TInst}$]
+        {\tau' = [\overline{\tau}/\overline{a}] \tau \\ \overline{b} \notin \text{FV}(\all[\overline{a}] \tau)}
+        {\all[\overline{a}] \tau \sqsubseteq \all[\overline{b}] \tau'}$$
+    \framebox{$\Psi \vdash_{HM} e : \sigma$} HM Typing
+    \begin{gather*}
+        \inferrule*[right=$\mathtt{HM \dash Var}$]
+            {(x : \sigma) \in \Psi}
+            {\Psi \vdash_{HM} x : \sigma}
+        \qquad
+        \inferrule*[right=$\mathtt{HM \dash Unit}$]
+            {~}{\Psi \vdash_{HM} () : 1}
+        \qquad
+        \inferrule*[right=$\mathtt{HM \dash Abs}$]
+            {\Psi, x:\tau_1 \vdash_{HM} e:\tau_2}
+            {\Psi \vdash_{HM} \lam e : \tau_1 \to \tau_2}
+        \\
+        \inferrule*[right=$\mathtt{HM \dash App}$]
+            {\Psi \vdash_{HM} e_1 : \tau_1 \to \tau_2 \\ \Psi \vdash_{HM} e_2 : \tau_1}
+            {\Psi \vdash_{HM} e_1~e_2 : \tau_2}
+        \\
+        \inferrule*[right=$\mathtt{HM \dash Let}$]
+            {\Psi \vdash_{HM} e_1:\sigma \\ \Psi, x:\sigma \vdash_{HM} e_2:\tau}
+            {\Psi \vdash_{HM} \letin{e_1}{e_2} : \tau}
+        \\
+        \inferrule*[right=$\mathtt{HM \dash Gen}$]
+            {\Psi \vdash_{HM} e:\sigma \\ \overline{a} \notin \text{FV}(\Psi)}
+            {\Psi \vdash_{HM} e : \all[\overline{a}] \sigma}
+        \qquad
+        \inferrule*[right=$\mathtt{HM \dash Inst}$]
+            {\Psi \vdash_{HM} e:\sigma_1 \\ \sigma_1 \sqsubseteq \sigma_2}
+            {\Psi \vdash_{HM} e : \sigma_2}
+    \end{gather*}
+\Description{HM Type System}
+\caption{HM Type System}\label{fig:hm_decl_type}
+\end{figure}
+
+\paragraph{Type Instantiation}
+The relations between types are described via type instantiations.
+The rule shown to the top of Figure~\ref{fig:hm_decl_type} checks if
+$\all[\overline{a}] \tau$ is a \emph{generic instance} of $\all[\overline{b}] \tau'$.
+This relation is valid when $\tau' = [\overline{\tau}/\overline{a}] \tau$ for a
+series of mono-types $\overline{\tau}$ and each variable in $\overline{b}$ is not
+free in $\all[\overline{a}] \tau$.
+
+For example, $$\all a \to a \sqsubseteq 1 \to 1$$
+is obtained by the substitution $[1/a]$, and
+$$\all a \to a \sqsubseteq \all[b] (b \to b) \to (b \to b)$$
+substitutes $a$ by $b \to b$, and generalizes $b$ after the substitution.
+
+
+\paragraph{Typing}
+The typing relation $\Psi \vdash_{HM} e:\sigma$ synthesizes a type $\sigma$ for
+an expression $e$ under the context $\Psi$.
+Rule $\mathtt{HM \dash Var}$ looks up the binding of a variable $x$ in the context.
+Rule $\mathtt{HM \dash Unit}$ always give the unit type $1$ to the unit expression $()$.
+For a lambda abstraction $\lam e$, rule $\mathtt{HM \dash Abs}$ guesses its input type ($\tau_1$)
+and compute the type of its body ($\tau_2$) as the return type.
+Rule $\mathtt{HM \dash App}$ eliminates a function type by an application $e_1~e_2$,
+where the argument type must be the same as the input type of the function,
+and the type of the whole application is $\tau_2$.
+
+Rule $\mathtt{HM \dash Let}$ is also referred as let-polymorphism.
+In (untyped) lambda calculus, $\letin{e_1}{e_2}$ behaves the same as $(\lam e_2)~e_1$.
+However, the HM let rule derives the type of $e_1$ first,
+and binds the polymorphic type into the context before $e_2$.
+This enables polymorphic expressions to be reused multiple times in different instantiated types.
+
+Rules $\mathtt{HM \dash Gen}$ and $\mathtt{HM \dash Inst}$ changes the type of an expression
+at any time during the derivation.
+Rule $\mathtt{HM \dash Gen}$ generalizes over fresh type variables $\overline{a}$.
+Rule $\mathtt{HM \dash Inst}$, as opposed to generalization, specializes a type
+according to the type instantiation relation.
+
+\subsection{Algorithmic System and Principality}
+
+\paragraph{Syntax-Directed System}
+The declarative system is not syntax-directed due to
+rules $\mathtt{HM \dash Gen}$ and $\mathtt{HM \dash Inst}$,
+which can be applied on any expression.
+A syntax-directed system can be obtained by
+replacing rules $\mathtt{HM \dash Var}$ and $\mathtt{HM \dash Let}$
+by the following rules:
+\begin{gather*}
+    \inferrule*[right=$\mathtt{HM \dash Var \dash Inst}$]
+        {(x : \sigma) \in \Psi \\ \sigma \sqsubseteq \tau}
+        {\Psi \vdash_{HM}^S x : \tau}
+    \qquad
+    \inferrule*[right=$\mathtt{HM \dash Let \dash Gen}$]
+        {
+            \Psi \vdash_{HM} e_1:\sigma \\\\
+            \overline{a} = \text{FV}(\sigma) - \text{FV}(\Psi)\\\\
+            \Psi, x:\all[\overline{a}] \sigma \vdash_{HM} e_2:\tau
+        }
+        {\Psi \vdash_{HM}^S \letin{e_1}{e_2} : \tau}
+\end{gather*}
+
+A generalization on $\sigma$, the synthesized type of $e_1$,
+is added to rule $\mathtt{HM \dash Let}$,
+since it is the source place where a polymorphic type is generated.
+However, a too generalized type might reject applications due to its shape,
+therefore, an instantiation procedure is added to eliminate all the universal quantifiers
+on rule $\mathtt{HM \dash Var}$.
+We omit rules $\mathtt{HM \dash Unit}$, $\mathtt{HM \dash Abs}$, and $\mathtt{HM \dash App}$
+for the syntax-directed system $\Psi\vdash_{HM}^S$.
+The following property shows that the new system is (almost) equivalent to the original declarative system.
+
+\begin{theorem}[Equivalence of Syntax-Directed System]~
+    \begin{enumerate}
+        \item If $\Psi \vdash_{HM}^S e : \sigma$ then $\Psi \vdash_{HM} e : \sigma$
+        \item If $\Psi \vdash_{HM} e : \sigma$ then $\Psi \vdash_{HM} e : \tau$,
+                and $\all[\overline{a}]\tau \sqsubseteq \sigma$,
+                where $\overline{a} = \text{FV}(\tau) - \text{FV}(\Psi)$.
+    \end{enumerate}
+\end{theorem}
+
+
+\paragraph{Type Inference Algorithm}
+Although being syntax-directed solves some problems, the rules still requires some guessings,
+including rule $\mathtt{HM \dash Abs}$ and $\mathtt{HM \dash Var \dash Inst}$.
+Algorithm W~\cite{milner1978theory}, based on unification,
+is proven to be sound and complete w.r.t the declarative specifications.
+
+\begin{theorem}[Algorithmic Completeness (Principality)]
+    If $\Psi \vdash_{HM} e : \sigma$, then W computes a principal type sheme $\sigma_p$, i.e.
+    \begin{enumerate}
+        \item $\Psi \vdash_{HM} e : \sigma_p$
+        \item $\sigma_p \sqsubseteq \sigma$.
+    \end{enumerate}
+\end{theorem}
+
+\section{Odersky-L\"aufer Bidirectional Type System}
+
+
+\subsection{Higher-Ranked Types}
+
+
+\subsection{Declarative System}
+
+\begin{figure}[t]
+    \begin{gather*}
+    \begin{aligned}
+        \text{Type variables}\qquad&a, b\\
+        \text{Types}\qquad&\sigma &::=&\quad 1 \mid a \mid \sigma_1\to \sigma_2 \mid \all \sigma\\
+        \text{Monotypes}\qquad&\tau &::=&\quad 1 \mid a \mid \tau_1\to \tau_2\\
+        \text{Expressions}\qquad&e &::=&\quad x \mid () \mid \lam[x:\sigma] e
+            \mid e : \sigma \mid \lam e \mid e_1~e_2 \mid \letin{e_1}{e_2}\\
+        \text{Contexts}\qquad&\Psi &::=&\quad \cdot \mid \Psi, x:\sigma \mid \Psi, a
+    \end{aligned}
+    \end{gather*}
+\Description{Syntax of Odersky-L\"aufer System}
+\caption{Syntax of Odersky-L\"aufer System}\label{fig:ol_decl_syntax}
+\end{figure}
+
+\newcommand{\vdashOL}{\mathrel{\vdash_{OL}}}
+
+\begin{figure}[t]
+    \begin{gather*}
+        \inferrule*[right=$\mathtt{OL \dash WF \dash Unit}$]
+            {~}{\Psi \vdashOL 1}
+        \qquad
+        \inferrule*[right=$\mathtt{OL \dash WF \dash TVar}$]
+            {a \in \Psi}
+            {\Psi \vdashOL a}
+        \\
+        \inferrule*[right=$\mathtt{OL \dash WF \dash Arr}$]
+            {\Psi \vdashOL \sigma_1 \\ \Psi \vdashOL \sigma_2}
+            {\Psi \vdashOL \sigma_1 \to \sigma_2}
+        \qquad
+        \inferrule*[right=$\mathtt{OL \dash WF \dash Forall}$]
+            {\Psi, a \vdashOL \sigma}
+            {\Psi \vdashOL \all \sigma}
+    \end{gather*}
+\Description{Well-formedness of types in the Odersky-L\"aufer System}
+\caption{Well-formedness of types in the Odersky-L\"aufer System}\label{fig:ol_decl_wft}
+\end{figure}
+
+\begin{figure}[t]
+    \begin{gather*}
+        \inferrule*[right=$\mathtt{OL \dash SUB \dash Unit}$]
+            {~}{\Psi \vdashOL 1 \le 1}
+        \qquad
+        \inferrule*[right=$\mathtt{OL \dash SUB \dash Var}$]
+            {a \in \Psi}
+            {\Psi \vdashOL a \le a}
+        \\
+        \inferrule*[right=$\mathtt{OL \dash SUB \dash Arr}$]
+            {\Psi \vdashOL \sigma_1' \le \sigma_1 \\
+                \Psi \vdashOL \sigma_2 \le \sigma_2'}
+            {\Psi \vdashOL \sigma_1 \to \sigma_2 \le \sigma_1' \to \sigma_2'}
+        \\
+        \inferrule*[right=$\mathtt{OL \dash SUB \dash \forall L}$]
+            {\Psi \vdashOL \tau \\ \Psi \vdashOL [\tau/a] \sigma \le \sigma'}
+            {\Psi \vdashOL \all \sigma \le \sigma'}
+        \qquad
+        \inferrule*[right=$\mathtt{OL \dash SUB \dash \forall R}$]
+            {\Psi, a \vdashOL \sigma \le \sigma'}
+            {\Psi \vdashOL \sigma \le \all \sigma'}
+    \end{gather*}
+\Description{Subtyping of the Odersky-L\"aufer System}
+\caption{Subtyping of the Odersky-L\"aufer System}\label{fig:ol_decl_sub}
+\end{figure}
+
+\begin{figure}[t]
+    \begin{gather*}
+        \inferrule*[right=$\mathtt{OL \dash Var}$]
+            {(x:\sigma) \in \Psi}
+            {\Psi \vdashOL x : \sigma}
+        \qquad
+        \inferrule*[right=$\mathtt{OL \dash Unit}$]
+            {~}
+            {\Psi \vdashOL () : 1}
+        \qquad
+        \inferrule*[right=$\mathtt{OL \dash Anno}$]
+            {\Psi \vdashOL e : \sigma}
+            {\Psi \vdashOL (e:\sigma) : \sigma}
+        \\
+        \inferrule*[right=$\mathtt{OL \dash Lam}$]
+            {\Psi \vdashOL \tau \\ \Psi, x:\tau \vdashOL e : \sigma}
+            {\Psi \vdashOL \lam e : \tau \to \sigma}
+        \qquad
+        \inferrule*[right=$\mathtt{OL \dash LamAnno}$]
+            {\Psi, x:\sigma_1 \vdashOL e : \sigma_2}
+            {\Psi \vdashOL \lam[x:\sigma_1] e : \sigma_1 \to \sigma_2}
+        \\
+        \inferrule*[right=$\mathtt{OL \dash App}$]
+            {\Psi \vdashOL e_1 : \sigma_1 \to \sigma_2 \\ \Psi \vdashOL e_2 : \sigma_1}
+            {\Psi \vdashOL e_1~e_2 : \sigma_2}
+        \qquad
+        \inferrule*[right=$\mathtt{OL \dash Gen}$]
+            {\Psi, a \vdashOL e : \sigma}
+            {\Psi \vdashOL e : \all \sigma}
+        \\
+        \inferrule*[right=$\mathtt{OL \dash Let}$]
+            {\Psi \vdashOL e_1 : \sigma_1 \\ \Psi, x:\sigma_1 \vdashOL e_2 : \sigma_2}
+            {\Psi \vdashOL \letin{e_1}{e_2} : \sigma_2}
+        \qquad
+        \inferrule*[right=$\mathtt{OL \dash Sub}$]
+            {\Psi \vdashOL e : \sigma_1 \\ \Psi \vdashOL \sigma_1 \le \sigma_2}
+            {\Psi \vdashOL e : \sigma_2}
+    \end{gather*}
+\Description{Typing of the Odersky-L\"aufer System}
+\caption{Typing of the Odersky-L\"aufer System}\label{fig:ol_decl_typing}
+\end{figure}
+
+
+\subsection{Relating to HM}
+
+
+
+
+\section{Dunfield's Bidirectional Type System}
+
+
+
+\section{MLSub}
 
