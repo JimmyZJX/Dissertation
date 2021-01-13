@@ -110,6 +110,15 @@ Rule $\mathtt{HM \dash Gen}$ generalizes over fresh type variables $\overline{a}
 Rule $\mathtt{HM \dash Inst}$, as opposed to generalization, specializes a type
 according to the type instantiation relation.
 
+The type system of HM supports \emph{implicit instantiation} through
+rule $\mathtt{HM \dash Inst}$.
+This means that any expression (function) that has a polymorphic type
+can be automatically instantiated with a proper monotype for any reasonable application.
+The fact that only monotypes are guessed indicates that the system is \emph{predicative}.
+In contrast, an \emph{impredicative} system might guess polymorphic types.
+Unfortunately, type inference on impredicative systems is undecidable~\cite{wells1999typability}.
+In this thesis, we focus on predicative systems only.
+
 \subsection{Algorithmic System and Principality}
 
 \paragraph{Syntax-Directed System}
@@ -167,11 +176,37 @@ is proven to be sound and complete w.r.t the declarative specifications.
     \end{enumerate}
 \end{theorem}
 
-\section{Odersky-L\"aufer Bidirectional Type System}
+\section{Odersky-L\"aufer Type System}
 
 
 \subsection{Higher-Ranked Types}
 
+The \emph{rank} of a type represents how deep a universal quantifier
+appear at the contravariant position~\cite{rank1992kfoury}. Formally speaking,
+
+\begin{gather*}
+    \begin{aligned}
+        \text{Rank 0 / Monotypes}\qquad& \tau, \sigma^0 &::=&\quad 1 \mid a \mid \tau_1\to \tau_2\\
+        \text{Rank $k (k \ge 1)$, Polytypes}\qquad& \sigma^k &::=&\quad
+            \sigma^{k-1} \mid \sigma^{k-1} \to \sigma^k \mid \all \sigma^k\\
+    \end{aligned}
+\end{gather*}
+
+The following example illustrates what rank a type belongs to:
+
+\begin{gather*}
+    \begin{aligned}
+        1 \to 1 && \text{Rank 0}\\
+        \all a \to a && \text{Rank 1}\\
+        1 \to \all a \to a && \text{Rank 1}\\
+        (\all a \to a) \to (\all a \to a) && \text{Rank 2}\\
+    \end{aligned}
+\end{gather*}
+
+According to the definition, monotypes are types that does not contain any universal quantifier.
+In the HM type system, all polymorphic types have rank 1.
+
+\jimmy{TODO Background about System F incompleteness, examples about higher-rank types}
 
 \subsection{Declarative System}
 
@@ -213,6 +248,33 @@ is proven to be sound and complete w.r.t the declarative specifications.
 \caption{Well-formedness of types in the Odersky-L\"aufer System}\label{fig:ol_decl_wft}
 \end{figure}
 
+
+The syntax of Odersky-L\"aufer system is shown in Figure~\ref{fig:ol_decl_syntax}.
+There are several differences compared to the HM system.
+
+First, polymorphic types can be of arbitrary rank,
+i.e. the forall quantifier may occur at any part of a type.
+Yet, mono-type remains the same definition as HM's.
+
+Second, expressions now allows annotations $e:\sigma$ and
+(argument) annotated lambda functions $\lam[x:\sigma] e$.
+Annotations on expressions help guide the type system properly,
+acting as a machine-checked document by the programmers.
+By annotating the argument of a lambda function with a polymorphic type $\sigma$,
+one may encode a function of higher rank in this system compared to HM's.
+
+Finally, contexts consist of not only variable bindings,
+but also type variable declarations.
+Here we adopt a slightly different approach than the original work~\cite{odersky1996putting},
+which does not track type variables explicitly in a context.
+Such explicit declarations reduce formalization difficulties especially
+when dealing with freshness conditions or variable name encodings.
+This also enables us to formally define well-formedness of types,
+shown in Figure~\ref{fig:ol_decl_wft}.
+
+
+\paragraph{Subtyping}
+
 \begin{figure}[t]
     \begin{gather*}
         \inferrule*[right=$\mathtt{OL \dash SUB \dash Unit}$]
@@ -238,6 +300,21 @@ is proven to be sound and complete w.r.t the declarative specifications.
 \Description{Subtyping of the Odersky-L\"aufer System}
 \caption{Subtyping of the Odersky-L\"aufer System}\label{fig:ol_decl_sub}
 \end{figure}
+
+The subtyping relation, defined in Figure~\ref{fig:ol_decl_sub},
+is more powerful than that (type instantiation) of HM.
+In contrast to HM's subtyping, higher-ranked types can be compared thanks to
+rule $\mathtt{OL \dash SUB \dash Arr}$.
+Functions are contravariant on argument types and covariant on return types.
+Rule $\mathtt{OL \dash SUB \dash \forall L}$ instantiates a polymorphic type
+by a monotype $\tau$.
+Rule $\mathtt{OL \dash SUB \dash \forall R}$ picks a fresh type variable
+for the right-hand-side polymorphic type,
+which is made possible by renaming according to alpha-equivalence.
+Given that such implicit freshness condition is widely adopt,
+we omit that throughout the thesis.
+
+\paragraph{Typing}
 
 \begin{figure}[t]
     \begin{gather*}
@@ -281,6 +358,41 @@ is proven to be sound and complete w.r.t the declarative specifications.
 \caption{Typing of the Odersky-L\"aufer System}\label{fig:ol_decl_typing}
 \end{figure}
 
+The type system of Odersky-L\"aufer, shown in Figure~\ref{fig:ol_decl_typing},
+extends HM's type system in the following aspects.
+
+Rule $\mathtt{OL \dash Lam}$ now accepts polymorphic return type,
+because such type is well-formed.
+The guess on parameter types is still limited to monotypes like HM's.
+However, if a parameter type is specified in advance,
+the type system accepts polymorphic argument type with rule $\mathtt{OL \dash LamAnno}$.
+Functions of arbitrary rank can be encoded through proper annotations.
+The application and let-generalization rules also accept polymorphic return types.
+
+Rule $\mathtt{OL \dash Gen}$ encodes the generalization rule of HM in a different way
+under explicit type variable declarations.
+A fresh type variable is introduced into the context before
+the type of expression $e$ is calculated.
+Then we conclude that $e$ has a polymorphic type by generalizing the type variable.
+For example, the type of the identity function is derived as follows
+$$
+\inferrule*[Right=$\mathtt{OL \dash Gen}$]
+{
+    \inferrule*[Right=$\mathtt{OL \dash Lam}$]
+    {
+        \cdot, a \vdashOL a
+        \\
+        \inferrule*[Right=$\mathtt{OL \dash Var}$]
+        {(x:a) \in (\cdot, a, x : a)}
+        {\cdot, a, x : a \vdashOL x : a}
+    }
+    {\cdot, a \vdashOL \lam x : a \to a}
+}
+{\cdot \vdashOL \lam x : \all a \to a}
+$$
+
+The subsumption rule $\mathtt{OL \dash Sub}$ converts the type of an expression
+with the help of the subtyping relation.
 
 \subsection{Relating to HM}
 
@@ -289,7 +401,381 @@ is proven to be sound and complete w.r.t the declarative specifications.
 
 \section{Dunfield's Bidirectional Type System}
 
+\subsection{Declarative System}
+
+\begin{figure}[t]
+\[
+\begin{array}{l@{\qquad}lcl}
+\text{Type variables}\qquad&a, b
+\\
+\text{Types}\qquad&A, B, C &::=&\quad 1 \mid a \mid \all A \mid A\to B\\
+\text{Monotypes}\qquad&\tau,\sigma &::=&\quad 1 \mid a \mid \tau\to \sigma
+\\
+\text{Expressions}\qquad&e &::=&\quad x \mid () \mid \lam e \mid e_1~e_2 \mid (e:A)
+\\
+\text{Contexts}\qquad&\Psi &::=&\quad \nil \mid \Psi, a \mid \Psi, x:A
+\end{array}
+\]
+\Description{Syntax of Declarative System}
+\caption{Syntax of Declarative System}\label{fig:decl:syntax}
+\end{figure}
+
+\paragraph{Syntax.}
+The syntax of DK's declarative system~\cite{dunfield2013complete} is shown in Figure~\ref{fig:decl:syntax}.
+A declarative type $A$ is either the unit type $1$, a type variable $a$,
+a universal quantification $\all A$ or a function type $A \to B$.
+Nested universal quantifiers are allowed for types,
+but monotypes $\tau$ do not have any universal quantifier.
+Terms include a unit term $()$, variables $x$, lambda-functions $\lam e$,
+applications $e_1~e_2$ and annotations $(e:A)$.
+Contexts $\Psi$ are sequences of type variable declarations and
+term variables with their types declared $x:A$.
+
+\paragraph{Well-formedness} Well-formedness of types and terms is 
+shown at the top of Figure~\ref{fig:decl:sub}. The rules are standard
+and simply ensure that variables in types and terms are well-scoped.  
+
+\begin{figure}[t]
+\centering \framebox{$\Psi \vdash A$} Well-formed declarative type
+\begin{gather*}
+\inferrule*[right=$\mathtt{wf_d unit}$]
+    {~}{\Psi\vdash 1}
+\qquad
+\inferrule*[right=$\mathtt{wf_d var}$]
+    {a\in\Psi}{\Psi\vdash a}
+\qquad
+\inferrule*[right=$\mathtt{wf_d{\to}}$]
+    {\Psi\vdash A\quad \Psi\vdash B}
+    {\Psi\vdash A\to B}
+\qquad
+\inferrule*[right=$\mathtt{wf_d\forall}$]
+    {\Psi, a\vdash A}
+    {\Psi\vdash \forall a. A}
+\end{gather*}
+
+\centering \framebox{$\Psi \vdash e$} Well-formed declarative expression
+\begin{gather*}
+\inferrule*[right=$\mathtt{wf_d tmvar}$]
+    {x:A\in\Psi}{\Psi\vdash x}
+\qquad
+\inferrule*[right=$\mathtt{wf_d tmunit}$]
+    {~}{\Psi\vdash ()}
+\qquad
+\inferrule*[right=$\mathtt{wf_d abs}$]
+    {\Psi,x:A\vdash e}
+    {\Psi\vdash \lam e}
+\\
+\inferrule*[right=$\mathtt{wf_d app}$]
+    {\Psi\vdash e_1 \quad \Psi\vdash e_2}
+    {\Psi\vdash e_1~e_2}
+\qquad
+\inferrule*[right=$\mathtt{wf_d anno}$]
+    {\Psi\vdash A \quad \Psi\vdash e}
+    {\Psi\vdash (e:A)}
+\end{gather*}
+
+\centering \framebox{$\Psi \vdash A \le B$} Declarative subtyping
+\begin{gather*}
+\inferrule*[right=$\mathtt{{\le}Var}$]
+    {a\in\Psi}{\Psi\vdash a\le a}
+\qquad
+\inferrule*[right=$\mathtt{{\le}Unit}$]
+    {~}{\Psi \vdash 1 \le 1}
+\qquad
+\inferrule*[right=$\mathtt{{\le}{\to}}$]
+    {\Psi \vdash B_1 \le A_1 \quad \Psi \vdash A_2 \le B_2}
+    {\Psi\vdash A_1\to A_2 \le B_1\to B_2}
+\\
+\inferrule*[right=$\mathtt{{\le}\forall L}$]
+    {\Psi\vdash \tau \quad \Psi\vdash [\tau/a] A \le B}
+    {\Psi\vdash \all A \le B}
+\qquad
+\inferrule*[right=$\mathtt{{\le}\forall R}$]
+    {\Psi, b\vdash A\le B}
+    {\Psi\vdash A \le \all[b]B}
+\end{gather*}
+\Description{Declarative Well-formedness and Subtyping}
+\caption{%Well-formedness of Declarative Types and 
+Declarative Well-formedness and Subtyping}\label{fig:decl:sub}
+\end{figure}
+
+%The DK subtyping relation was adopted from \citet{odersky1996putting}.
+
+\paragraph{Declarative Subtyping}
+The bottom of Figure~\ref{fig:decl:sub} shows DK's declarative subtyping judgment $\Psi \vdash A \le B$,
+which was adopted from \citet{odersky1996putting}. It compares the
+degree of polymorphism between $A$ and $B$ in DK's implicit polymorphic type system. 
+Essentially, if $A$ can always be instantiated to match any instantiation of $B$,
+then A is ``at least as polymorphic as'' $B$. We also 
+say that $A$ is ``more polymorphic than'' $B$ and write $A \le B$.
+
+Subtyping rules $\mathtt{{\le}Var}$, $\mathtt{{\le}Unit}$ and $\mathtt{{\le}{\to}}$
+handle simple cases that do not involve universal quantifiers.
+The subtyping rule for function types $\mathtt{{\le}{\to}}$ is standard,
+being covariant on the return type and contravariant on the argument type.
+Rule $\mathtt{{\le}\forall R}$ states that if $A$ is a subtype of $B$
+in the context $\Psi, a$, where $a$ is fresh in $A$, then $A\le\all B$.
+Intuitively, if $A$ is more general than $\all B$ (where the universal quantifier
+already indicates that $\all B$ is a general type),
+then $A$ must instantiate to $[\tau/a]B$ for every $\tau$.
+
+The most interesting rule is $\mathtt{{\le}\forall L}$.
+If some instantiation of $\all A$, $[\tau/a]A$, is a subtype of $B$,
+then $\all A \le B$.
+The monotype $\tau$ we used to instantiate $a$ is \emph{guessed} in this
+declarative rule, but the algorithmic system does not guess and defers the
+instantiation until it can determine the monotype deterministically.
+The fact that $\tau$ is a monotype rules out the possibility of
+polymorphic (or impredicative) instantiation.
+However this restriction ensures that the subtyping relation remains
+decidable. Allowing an arbitrary type (rather than a monotype) in rule $\mathtt{{\le}\forall L}$
+is known to give rise to an undecidable subtyping relation~\cite{tiuryn1996subtyping}.
+\citet{jones2007practical} also impose the restriction of
+predicative instantiation in their type system.
+Both systems are adopted by several practical programming languages.
+
+% \jimmy{Mention the implicit freshness conditions in the premises}
+Note that when we introduce a new binder in the premise, we implicitly pick a fresh one.
+This applies to rules such as $\mathtt{wf_d\forall}$, $\mathtt{wf_dabs}$, $\mathtt{{\le}\forall R}$,
+throughout the whole text.
+
+\begin{figure}[t]
+\begin{tabular}{rl}
+    \framebox{$\Psi \vdash e \Lto A$} & $e$ checks against input type $A$.\\[0.5mm]
+    \framebox{$\Psi \vdash e \To A$} & $e$ synthesizes output type $A$.\\[0.5mm]
+    \framebox{$\Psi \vdash \appInf{A}{e}{C}$} & Applying a function of type $A$ to $e$ synthesizes type $C$.
+\end{tabular}
+\begin{gather*}
+\inferrule*[right=$\mathtt{DeclVar}$]
+    {(x:A)\in\Psi}{\Psi\vdash x\To A}
+\qquad
+\inferrule*[right=$\mathtt{DeclSub}$]
+%e \neq \lam e' \quad B \neq \all B' \quad 
+    {\Psi\vdash e\To A \quad \Psi\vdash A\le B}
+    {\Psi \vdash e\Lto B}
+\\
+\inferrule*[right=$\mathtt{DeclAnno}$]
+    {\Psi \vdash A \quad \Psi\vdash e\Lto A}
+    {\Psi\vdash (e:A)\To A}
+\qquad
+\inferrule*[right=$\mathtt{Decl1I}$]
+    {~}{\Psi\vdash () \Lto 1}
+\qquad
+\inferrule*[right=$\mathtt{Decl1I{\To}}$]
+    {~}{\Psi\vdash () \To 1}
+\\
+\inferrule*[right=$\mathtt{Decl\forall I}$]
+    {\Psi,a \vdash e \Lto A}
+    {\Psi\vdash e\Lto \all A}
+\qquad
+\inferrule*[right=$\mathtt{Decl\forall App}$]
+    {\Psi \vdash \tau \quad \Psi\vdash \appInf{[\tau/a]A}{e}{C} }
+    {\Psi\vdash \appInf{\all A}{e}{C}}
+\\
+\inferrule*[right=$\mathtt{Decl{\to}I}$]
+    {\Psi,x:A \vdash e\Lto B}
+    {\Psi\vdash \lam e \Lto A \to B}
+\qquad
+\inferrule*[right=$\mathtt{Decl{\to}I{\To}}$]
+    {\Psi\vdash \sigma\to\tau \quad \Psi,x:\sigma \vdash e\Lto \tau}
+    {\Psi\vdash \lam e \To \sigma\to\tau}
+\\
+\inferrule*[right=$\mathtt{Decl{\to} E}$]
+    {\Psi\vdash e_1\To A \quad \Psi\vdash \appInf{A}{e_2}{C}}
+    {\Psi\vdash e_1~e_2 \To C}
+\qquad
+\inferrule*[right=$\mathtt{Decl{\to}App}$]
+    {\Psi\vdash e \Lto A}
+    {\Psi\vdash \appInf{A \to C}{e}{C}}
+\end{gather*}
+\Description{Declarative Typing}
+\caption{Declarative Typing}\label{fig:decl:typing}
+\end{figure}
+
+\paragraph{Declarative Typing}
+The bidirectional type system, shown in Figure~\ref{fig:decl:typing}, has three judgments.
+The checking judgment $\Psi\vdash e\Lto A$ checks expression $e$ against the type $A$ in the context $\Psi$.
+The synthesis judgment $\Psi\vdash e\To A$ synthesizes the type $A$ of expression $e$ in the context $\Psi$.
+The application judgment $\Psi\vdash \appInf{A}{e}{C}$ synthesizes the type $C$ of the application of a function of type $A$
+(which could be polymorphic) to the argument $e$.
+
+Many rules are standard.
+Rule $\mathtt{DeclVar}$ looks up term variables in the context.
+Rules $\mathtt{Decl1I}$ and $\mathtt{Decl1I{\To}}$ respectively check and synthesize the unit type.
+Rule $\mathtt{DeclAnno}$ synthesizes the annotated type $A$ of the annotated expression $(e:A)$
+and checks that $e$ has type $A$.
+Checking an expression $e$ against a polymorphic type $\all A$ in the context $\Psi$ succeeds
+if $e$ checks against $A$ in the extended context $(\Psi, a)$.
+The subsumption rule $\mathtt{DeclSub}$ depends on the subtyping relation,
+and changes mode from checking to synthesis: if $e$ synthesizes type $A$ and $A\le B$
+($A$ is more polymorphic than $B$), then $e$ checks against $B$.
+If a checking problem does not match any other rules,
+this rule can be applied to synthesize a type instead and then
+check whether the synthesized type entails the checked type.
+Lambda abstractions are the hardest construct of the bidirectional
+type system to deal with. 
+Checking $\lam e$ against function type $A\to B$ is easy:
+we check the body $e$ against $B$ in the context extended with $x:A$.
+However, synthesizing a lambda-function is a lot harder, and 
+this type system only synthesizes monotypes $\sigma\to\tau$.
+
+Application $e_1~e_2$ is handled by Rule $\mathtt{Decl{\to}E}$,
+which first synthesizes the type $A$ of the function $e_1$.
+If $A$ is a function type $B\to C$, Rule $\mathtt{Decl{\to}App}$ is applied;
+it checks the argument $e_2$ against $B$ and returns type $C$.
+The synthesized type of function $e_1$ can also be polymorphic, of the form $\all A$.
+In that case, we instantiate $A$ to $[\tau/a]A$ with a monotype $\tau$ % (which is also guessed)
+using according to Rule $\mathtt{Decl{\to}I{\To}}$.
+If $[\tau/a]A$ is a function type, Rule $\mathtt{Decl{\to}App}$ proceeds;
+if $[\tau/a]A$ is another universal quantified type,
+Rule $\mathtt{Decl{\to}I{\To}}$ is recursively applied.
 
 
-\section{MLSub}
+
+
+\section{MLsub}
+
+MLsub~\cite{mlsub} extends the HM type system with subtyping.
+In presence of subtyping, type inference does not simply handle equality during unification.
+Therefore, types are extended with lattice to express bounds properly.
+Furthermore, polar types are introduced to help separate input and output types,
+which simplifies the type inference algorithm.
+Like HM's type inference, MLsub always infers a principal type.
+
+\subsection{Types and Polar Types}
+
+\begin{figure}[t]
+    \[
+    \begin{array}{l@{\qquad}lcl}
+    \text{Types}\qquad&\tau &::=&\quad 1 \mid a \mid \top \mid \bot \mid \tau_1 \to \tau_2 \mid
+        \tau_1 \sqcup \tau_2 \mid \tau_1 \sqcap \tau_2 \\
+    \text{Positive Types}\qquad&\tau^+ &::=&\quad 1 \mid a \mid \bot \mid \tau_1^-\to \tau_2^+ \mid
+        \tau_1^+ \sqcup \tau_2^+\\
+    \text{Negative Types}\qquad&\tau^- &::=&\quad 1 \mid a \mid \top \mid \tau_1^+\to \tau_2^- \mid
+        \tau_1^- \sqcap \tau_2^-\\
+    \end{array}
+    \]
+    \Description{Types of MLsub}
+    \caption{Types of MLsub}\label{fig:mlsub:types}
+\end{figure}
+
+In comparison to the type system of HM, types (Figure~\ref{fig:mlsub:types})
+now include $\top$ and $\bot$,
+as minimal components to support subtyping.
+Besides, the least-upper-bound ($\sqcup$) and greatest-lower-bound ($\sqcap$) lattice operations
+are used to represent a bound expressed by two types.
+For finite types, a distributive lattice can be defined via a set of equivalence classes
+of $\equiv$~\citep{mlsub}.
+The most interesting equations are the distributivity rule and rules for function types:
+
+\[\begin{aligned}
+    \tau_1 \sqcup (\tau_2 \sqcap \tau_3) &\equiv
+        (\tau_1 \sqcup \tau_2) \sqcap (\tau_1 \sqcup \tau_3)\\
+    \tau_1 \sqcap (\tau_2 \sqcup \tau_3) &\equiv
+        (\tau_1 \sqcap \tau_2) \sqcup (\tau_1 \sqcap \tau_3)\\
+    (\tau_1 \to \tau_2) \sqcup (\tau_1' \to \tau_2') &\equiv 
+        (\tau_1 \sqcap \tau_1') \to (\tau_2 \sqcup \tau_2')\\
+    (\tau_1 \to \tau_2) \sqcap (\tau_1' \to \tau_2') &\equiv 
+        (\tau_1 \sqcup \tau_1') \to (\tau_2 \sqcap \tau_2')\\
+\end{aligned}\]
+
+The partial order $\tau_1 \le \tau_2$ is defined as $\tau_1 \sqcup \tau_2 \equiv \tau_2$ or
+$\tau_1 \sqcap \tau_2 \equiv \tau_1$.
+$\top$ and $\bot$ are the least and greatest types.
+The above rules on function types imply the usual subtyping rule for function types,
+considering the definition of partial order:
+\[
+    \inferrule*
+    {\tau_1' \le \tau_1 \\ \tau_2 \le \tau_2'}
+    {\tau_1 \to \tau_2 \le \tau_1' \to \tau_2'}
+\]
+
+Type schemes are not defined as the usual $\sigma$.
+Instead, a monotype $\tau$ already represent a type scheme by
+omitting the $\forall$ quantifiers---all the
+free type variables are implicitly generalized.
+
+Recursive types play an important role regarding the principality of type inference,
+but we omit them for simplicity.
+
+\paragraph{Polar Types}
+Polar types are restrictions on the lattice operations;
+they should not occur arbitrarily in any position.
+Specifically, function outputs consist of types ($\tau_1, \tau_2$) from different branches,
+resulting in $\tau_1 \sqcup \tau_2$;
+a function input might be used in various ways (under different constraints),
+thus $\tau_1 \sqcap \tau_2$ is more suitable.
+In summary, $\sqcup$ only arises in return types,
+while $\sqcap$ only arises in argument types.
+Figure~\ref{fig:mlsub:types} formally defines the restriction,
+where positive types $\tau^+$ describe return types,
+and negative types $\tau^-$ describe argument types.
+
+An important consequence is that all the constraints are of the form
+$\tau^+ \le \tau^-$, which represents the subtyping relation when
+using an output expression in a function application as argument.
+The following subtyping rules involving the lattice operations
+reflects their basic properties:
+\[
+    \inferrule*
+        {\tau_1^+ \le \tau^- \\ \tau_2^+ \le \tau^-}
+        {\tau_1^+ \sqcup \tau_2^+ \le \tau^-}
+    \qquad
+    \inferrule*
+        {\tau^+ \le \tau_1^- \\ \tau^+ \le \tau_2^-}
+        {\tau^- \le \tau_1^- \sqcap \tau_2^-}
+    .
+\]
+Interestingly, the polar subtyping judgments avoids difficult judgments like
+$\tau_1 \sqcap \tau_2 \le \tau$ or $\tau \le \tau_1 \sqcup \tau_2$
+through its syntactic restriction.
+
+
+
+\subsection{Biunification}
+
+Type inference for MLsub, similar to that for ML, is mainly a unification algorithm.
+However, in presence of subtyping,
+equality-based unification loses information about subtyping constraints.
+
+For the atomic constraint $\al = \tau$ where $\al \notin \text{FV}(\tau)$,
+the ML unification algorithm produces the substitution $[\tau/\al]$.
+In constrast, an MLsub atomic constraint might be $\al \le \tau$,
+and the substitution $[\tau/\al]$ treat the subtyping constraint as a equality constraint,
+which eliminates a whole set of possibilities.
+
+Luckily, lattices in MLsub helps express subtyping constraints on types directly.
+The constraint $\al \le \tau$ ($\al \notin \text{FV}(\tau)$) may produce the substitution
+$[\al \sqcap \tau/\al]$, since $\al \sqcap \tau \le \tau$.
+In the meantime, $\al \sqcap \tau$ does not lose any expressiveness:
+for any $\tau_0$ s.t. $\tau_0 \le \tau$,
+picking $\al = \tau_0$ gives $\al \sqcap \tau = \tau_0$,
+and the substitution $[\al \sqcap \tau/\al]$ is equivalent to $[\tau_0/\al]$.
+
+In presence of polar types, the biunification algorithm of MLsub
+produces a \emph{bisubstitution} $[\al \sqcap \tau^-/\al^-]$
+against the constraint $\al \le \tau^-$,
+where only negative occurances are substituted,
+keeping polar types properly ``polarized''.
+For example, a positive type $\al \to \al$ becomes $(\al \sqcap \tau^-) \to \al$
+under such substitution and remains a positive type.
+A more important fact is that this type is equivalent to
+the original type with the constraint $\al \le \tau^-$.
+Similarly, a constraint like $\tau^+ \le \al$ is reduced to
+a substitution $[\al \sqcup \tau^+/\al^+]$.
+
+For example, the \emph{choose} function is typed $\all a \to a \to a$ in ML.
+However, MLsub might also infer an equivalent type
+$\all[a~b] a \to b \to a \sqcup b$.
+One can easily read the MLsub type in a form
+where constraints are explicitly stated
+\[\all[a~b~c] a \to b \to c \text{ where } a \le c, b \le c.\]
+Therefore, MLsub encodes the constraints directly onto types with the help of
+the lattice operations.
+Furthermore, a simplification step is taken after the type inference algorithm,
+reducing the size and improving readablity of the type inferred.
+
+As a result, biunification for MLsub extends unification for ML,
+accepting subtyping in addition to type schemes,
+while maintaining principality.
 
