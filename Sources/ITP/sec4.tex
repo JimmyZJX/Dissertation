@@ -40,7 +40,7 @@ $$
 \qquad
 \inferrule*[right=$\mathtt{{\to}exvar}$]
 	{\Gamma\to \Psi}
-	{\Gamma, \alpha\to \Psi}
+	{\Gamma, \al\to \Psi}
 \qquad
 $$
 \framebox{$\Gamma \mid \exps \rightsquigarrow \exps'$}
@@ -54,8 +54,8 @@ $$
 \qquad
 \inferrule*[right=$\mathtt{{\rightsquigarrow}exvar}$]
 	{\Gamma\to \Psi \quad \Psi\vdash \tau\quad
-		\Gamma \mid [\tau/\alpha]\exps \rightsquigarrow \exps'}
-	{\Gamma, \alpha \mid \exps \rightsquigarrow \exps'}
+		\Gamma \mid [\tau/\al]\exps \rightsquigarrow \exps'}
+	{\Gamma, \al \mid \exps \rightsquigarrow \exps'}
 $$
 \caption{Transfer Rules}
 \label{fig:transfer}
@@ -65,16 +65,16 @@ The following two lemmas generalize Rule~$\mathtt{{\rightsquigarrow}exvar}$ from
 existential variable to substituting any existential variable.
 
 \begin{lemma}[Insert]
-If $\Gamma\to\Psi$ and $\Psi\vdash \tau$ and $\Gamma, \Gamma_1 \mid [\tau/\alpha]\exps \rightsquigarrow \exps'$
-, then $\Gamma, \alpha, \Gamma_1\mid \exps \rightsquigarrow \exps'$.
+If $\Gamma\to\Psi$ and $\Psi\vdash \tau$ and $\Gamma, \Gamma_1 \mid [\tau/\al]\exps \rightsquigarrow \exps'$
+, then $\Gamma, \al, \Gamma_1\mid \exps \rightsquigarrow \exps'$.
 % \[
 % \inferrule
-%   {\Gamma\to\Psi \\ \Psi\vdash \tau \\ \Gamma, \Gamma_1 \mid [\tau/\alpha]\exps \rightsquigarrow \exps'}
-%   {\Gamma, \alpha, \Gamma_1\mid \exps \rightsquigarrow \exps'}
+%   {\Gamma\to\Psi \\ \Psi\vdash \tau \\ \Gamma, \Gamma_1 \mid [\tau/\al]\exps \rightsquigarrow \exps'}
+%   {\Gamma, \al, \Gamma_1\mid \exps \rightsquigarrow \exps'}
 % \]
 \end{lemma}
 \begin{lemma}[Extract]
-	If $\Gamma, \alpha, \Gamma_1\mid \exps \rightsquigarrow \exps'$, then $\exists\tau$ s.t. $\Gamma\to\Psi, \Psi\vdash \tau$ and $\Gamma, \Gamma_1 \mid [\tau/\alpha]\exps \rightsquigarrow \exps'$.
+	If $\Gamma, \al, \Gamma_1\mid \exps \rightsquigarrow \exps'$, then $\exists\tau$ s.t. $\Gamma\to\Psi, \Psi\vdash \tau$ and $\Gamma, \Gamma_1 \mid [\tau/\al]\exps \rightsquigarrow \exps'$.
 \end{lemma}
 
 In order to match the shape of algorithmic subtyping relation for the following proofs, we define a relation $\Psi\vdash \exps$ for the declarative system, meaning that all the declarative judgments hold under context $\Psi$.
@@ -127,19 +127,19 @@ $\mathtt{{\le_a}instR}$ rules.  When the proof by induction on $\Psi\vdash
 \exps'$ reaches the $\mathtt{{\le}{\to}}$ case, the first declarative
 judgment has a shape like $A_1\to A_2 \le B_1\to B_2$. 
 One of the possibile cases for the first corresponding algorithmic judgement
-is $\alpha\le A\to B$. However, the case analysis does not indicate
-that $\alpha$ is fresh in $A$ and $B$. Thus we cannot apply
+is $\al\le A\to B$. However, the case analysis does not indicate
+that $\al$ is fresh in $A$ and $B$. Thus we cannot apply
 Rule~$\mathtt{{\le_a}instL}$ and make use of the induction hypothesis.
 The following lemma helps us out in those cases:
-it rules out subtypings with infinite types as solutions (e.g. $\alpha \le 1
-\to \alpha$) and guarantees that $\alpha$ is free in $A$ and $B$.
+it rules out subtypings with infinite types as solutions (e.g. $\al \le 1
+\to \al$) and guarantees that $\al$ is free in $A$ and $B$.
 \begin{lemma}[Prune Transfer for Instantiation]
-	If $\Psi \vdash \jcons{A_1\to A_2 \le B_1\to B_2}{\exps'}$ and $\Gamma\to \Psi$ and $\Gamma\mid (\jcons{\alpha \le A\to B}{\exps}) \rightsquigarrow
+	If $\Psi \vdash \jcons{A_1\to A_2 \le B_1\to B_2}{\exps'}$ and $\Gamma\to \Psi$ and $\Gamma\mid (\jcons{\al \le A\to B}{\exps}) \rightsquigarrow
 	(\jcons{A_1\to A_2 \le B_1\to B_2}{\exps'})$
-	% or $\Gamma\mid A\to B \le \alpha : \exps \rightsquigarrow A_1\to A_2 \le B_1\to B_2 : \exps'$
-	, then $\alpha \notin FV(A)\cup FV(B)$. 
+	% or $\Gamma\mid A\to B \le \al : \exps \rightsquigarrow A_1\to A_2 \le B_1\to B_2 : \exps'$
+	, then $\al \notin FV(A)\cup FV(B)$. 
 \end{lemma}
-A similar lemma holds for the symmetric case $(\jcons{A \to B \le \alpha}{\Omega})$.
+A similar lemma holds for the symmetric case $(\jcons{A \to B \le \al}{\Omega})$.
 %\tom{Say something about the corollary, e.g., why it's important.}
 %\begin{corollary}[Completeness\_decl]
 %	If $\Gamma = \Psi, A = A', B = B'$, $\Psi\vdash A'\le B'$, then $\Gamma\vdash A\le B$.
@@ -154,14 +154,14 @@ The third key result for our algorithm is decidability.
 \end{theorem}
 
 \noindent We have proven this theorem by means of a lexicographic group of induction
-measurements $\left\langle|\Omega|_\forall,|\Gamma|_\alpha, |\Omega|_\to\right\rangle$ on the worklist $\Omega$
+measurements $\left\langle|\Omega|_\forall,|\Gamma|_{\al}, |\Omega|_\to\right\rangle$ on the worklist $\Omega$
 and algorithmic context $\Gamma$. 
 The worklist measures $|\cdot|_\forall$ and $|\cdot|_\to$ count the
 number of universal quantifiers and function types respectively.
 \begin{definition}[Worklist Measures]
 \[
 \begin{array}{rcl@{\hspace{-10mm}}rclrcl} 
-|1|_\forall = |a|_\forall = |\alpha|_\forall &=& 0      &|1|_\to = |a|_\to = |\alpha|_\to &=& 0        \\
+|1|_\forall = |a|_\forall = |\al|_\forall &=& 0      &|1|_\to = |a|_\to = |\al|_\to &=& 0        \\
 |A\to B|_\forall &=& |A|_\forall + |B|_\forall  &|A\to B|_\to &=& |A|_\to + |B|_\to + 1\\
 |\forall x. A|_\forall &=& |A|_\forall + 1              &|\forall x. A|_\to &=& |A|_\to                        \\
 |\exps|_\forall &=& \sum_{A \le B\in \exps} |A|_\forall + |B|_\forall       &|\exps|_\to &=& \sum_{A \le B \in \exps} |A|_\to + |B|_\to
@@ -169,11 +169,11 @@ number of universal quantifiers and function types respectively.
 \]
 \end{definition}
 
-\noindent The context measure $|\cdot|_\alpha$ counts the number of unsolved existential variables.
+\noindent The context measure $|\cdot|_{\al}$ counts the number of unsolved existential variables.
 \begin{definition}[Context Measure]
-$$|\cdot|_\alpha = 0\qquad
-|\Gamma,a|_\alpha = |\Gamma|_\alpha\qquad
-|\Gamma,\alpha|_\alpha = |\Gamma|_\alpha + 1$$
+$$|\cdot|_{\al} = 0\qquad
+|\Gamma,a|_{\al} = |\Gamma|_{\al}\qquad
+|\Gamma,\al|_{\al} = |\Gamma|_{\al} + 1$$
 \end{definition}
 
 It is not difficult to see that all but two of the algorithm's rules decrease
@@ -184,8 +184,8 @@ To handle these rules, we handle a special class of judgements, which
 we call \emph{instantiation judgements} $\exps_i$, separately. They 
 take the form:
 \begin{definition}[$\exps_i$]
-$$\exps_i := \cdot \mid \jcons{\alpha\le A}{\exps_i'} \mid \jcons{A\le \alpha}{\exps_i'}
-\quad\text{where } \alpha\notin FV(A)\cup FV(\exps_i')$$
+$$\exps_i := \cdot \mid \jcons{\al\le A}{\exps_i'} \mid \jcons{A\le \al}{\exps_i'}
+\quad\text{where } \al\notin FV(A)\cup FV(\exps_i')$$
 \end{definition}
 These instantiation judgements are these ones consumed and
 produced by the Rules $\mathtt{{\le_a}instL}$ and $\mathtt{{\le_a}instR}$.
@@ -194,7 +194,7 @@ The following lemma handles their decidability.
 	For any context $\Gamma$ and judgment list $\exps_i, \exps$, it is decidable whether $\Gamma\vdash \exps_i,\exps$ if both of the conditions hold
 \begin{enumerate}[1)]
 	\item $\forall \Gamma', \exps'$ s.t. $|\exps'|_\forall < |\exps_i,\exps|_\forall$, it is decidable whether $\Gamma'\vdash \exps'$.
-	\item $\forall \Gamma', \exps'$ s.t. $|\exps'|_\forall = |\exps_i,\exps|_\forall$ and $|\Gamma'|_\alpha = |\Gamma|_\alpha - |\exps_i|$, it is decidable whether $\Gamma'\vdash \exps'$.
+	\item $\forall \Gamma', \exps'$ s.t. $|\exps'|_\forall = |\exps_i,\exps|_\forall$ and $|\Gamma'|_{\al} = |\Gamma|_{\al} - |\exps_i|$, it is decidable whether $\Gamma'\vdash \exps'$.
 \end{enumerate}
 \label{lemma:inst_decidable}
 \end{lemma}
@@ -204,7 +204,7 @@ instantiation judgment. The proof of this lemma is by induction on the measure
 $2*|\exps_i|_{\to} + |\exps_i|$ of the instantiation judgment list.
 
 In summary, the decidability theorem can be shown through a lexicographic group
-of induction measurements $\left\langle|\Omega|_\forall, |\Omega|_\alpha,
+of induction measurements $\left\langle|\Omega|_\forall, |\Omega|_{\al},
 |\Omega|_\to\right\rangle$. The critical case is that, whenever we
 encounter an instantiation judgment at the front of the worklist, we refer to
 Lemma~\ref{lemma:inst_decidable}, which reduces the number of unsolved

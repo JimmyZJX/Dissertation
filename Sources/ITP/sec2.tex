@@ -1,5 +1,6 @@
 
-This section introduces Odersky and L\"aufer declarative subtyping rules, and discusses the challenges in formalizing a corresponding
+This section discusses Odersky and L\"aufer declarative subtyping rules further in depth,
+and identifies the challenges in formalizing a corresponding
 algorithmic version. Then the key ideas of our approach that address
 those challenges are introduced.
 
@@ -188,28 +189,28 @@ Rule $\mathtt{{\le}\forall L}$: $$\frac{\cdot\vdash 1\quad \cdot\vdash 1
 \to 1}\ \mathtt{{\le}\forall L}$$
 
 \noindent Dunfield and Krishnaswami introduce an \emph{existential variable}---denoted
-with $\alpha,\beta$---whenever a monotype $\tau$ needs to be guessed. Below is a sample
+with $\al,\bt$---whenever a monotype $\tau$ needs to be guessed. Below is a sample
 derivation of their algorithm; we omit the full set of algorithmic rules due to
 lack of space:
 $$\inferrule*[right=$\mathtt{{<:}\forall L}$]
 {\inferrule*[right=$\mathtt{{<:}{\to}}$]
 	{
 		\inferrule*[right=$\mathtt{InstRSolve}$]{~}
-		{\alpha\vdash 1\le \alpha \dashv \alpha=1}
+		{\al\vdash 1\le \al \dashv \al=1}
 		\quad
 		\inferrule*[right=$\mathtt{{<:}Unit}$]{~}
-		{\alpha=1\vdash 1\le 1\vdash \alpha=1}
+		{\al=1\vdash 1\le 1\vdash \al=1}
 	}
-	{\alpha\vdash \alpha\to\alpha \le 1\to 1\dashv \alpha = 1}
+	{\al\vdash \al\to\al \le 1\to 1\dashv \al = 1}
 }
 {\cdot\vdash \forall a. a\to a \le 1 \to 1 \dashv \cdot}$$
 
 \noindent 
 The first step applies Rule $\mathtt{{<:}\forall L}$, which introduces a
-fresh existential variable, $\alpha$, and opens the left-hand-side
+fresh existential variable, $\al$, and opens the left-hand-side
 $\forall$-quantifier with it. Next, Rule $\mathtt{{<:}{\to}}$
 splits the judgment in two. For the first branch, Rule
-$\mathtt{InstRSolve}$ satisfies $1\le \alpha$ by solving $\alpha$ to
+$\mathtt{InstRSolve}$ satisfies $1\le \al$ by solving $\al$ to
 $1$, and stores the solution in its output context. The output context
 of the first branch is used as the input context of the second branch,
 and the judgment is updated according to current solutions. Finally,
@@ -266,9 +267,9 @@ The derivation of the previous example with the worklist approach is:
 			}
 			{\cdot \vdash \jcons{1 \le 1}{\cdot}}
 		}
-		{\alpha \vdash \jcons{1\le \alpha}{\jcons{\alpha \le 1}{\cdot}}}
+		{\al \vdash \jcons{1\le \al}{\jcons{\al \le 1}{\cdot}}}
 	}
-	{\alpha \vdash \jcons{\alpha \to \alpha \le 1\to 1}{\cdot}}
+	{\al \vdash \jcons{\al \to \al \le 1\to 1}{\cdot}}
 }
 {\cdot \vdash \jcons{\forall a. a\to a\le 1\to 1}{\cdot}}
 \end{equation*}
@@ -284,10 +285,10 @@ solution to each of the judgments.
 To derive $\cdot\vdash \forall a. a\to a \le 1\to 1$
 with the worklist approach, we first introduce an existential variable
 and change the judgement to
-$\jcons{\alpha\vdash \alpha\to\alpha \le 1\to 1}{\cdot}$. Then, we
+$\jcons{\al\vdash \al\to\al \le 1\to 1}{\cdot}$. Then, we
 split the judgment in two for the function types and the derivation
-comes to $\jcons{\alpha\vdash 1\le \alpha}{\jcons{\alpha \le 1}{\cdot}}$. When the first
-judgment is solved with $\alpha = 1$, we immediately remove $\alpha$
+comes to $\jcons{\al\vdash 1\le \al}{\jcons{\al \le 1}{\cdot}}$. When the first
+judgment is solved with $\al = 1$, we immediately remove $\al$
 from the context, while propagating the solution as a substitution to
 the rest of the judgment list, resulting in $\jcons{\cdot\vdash 1 \le 1}{\cdot}$,
 which finishes the derivation in two trivial steps.

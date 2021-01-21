@@ -1,117 +1,12 @@
 \section{Introduction}
 
-Most statically typed functional languages support a form of
-\emph{(implicit) parametric polymorphism}~\cite{reynolds1983types}.
-Traditionally, functional languages have employed variants of the
-Hindley-Milner~\cite{hindley1969principal,milner1978theory,damas1982principal}
-type system, which supports full type-inference without any type annotations.
-However the Hindley-Milner type system only supports \emph{first-order
-polymorphism}, where all universal quantifiers only occur at the top-level
-of a type.  Modern functional programming languages such as Haskell go beyond
-Hindley-Milner and support \emph{higher-order polymorphism}. With higher-order
-polymorphism there is no restriction on where universal quantifiers can occur.
-This enables more code reuse and more expressions to type-check, and has
-numerous applications~\cite{jones1995functional,gill1993short,launchbury1995state,lammel2003scrap}.
 
-Unfortunately, with higher-order polymorphism full type-inference becomes
-undecidable~\cite{wells1999typability}. To recover decidability some type annotations 
-on polymorphic arguments
-are necessary. 
-A canonical example that requires higher-order polymorphism in Haskell is:
-\begin{verbatim}
-hpoly = (\f :: forall a. a -> a) -> (f 1, f 'c')
-\end{verbatim}
-The function \verb|hpoly| cannot be
-type-checked in Hindley-Milner.  The type of \verb|hpoly| is \\
-\verb|(forall a. a -> a) -> (Int, Char)|. The single universal quantifier
-does not appear at the top-level. Instead it is used to quantify a
-type variable \verb|a| used in the first argument of the
-function.
-Notably \verb|hpoly| requires a type annotation for the first
-argument (\verb|forall a. a -> a|). 
-Despite these additional annotations,
-the type-inference algorithm employed by GHC Haskell~\cite{jones2007practical} preserves 
-many of the desirable properties of Hindley-Milner. 
-Like in Hindley-Milner type instantiation is \emph{implicit}. That is,
-calling a polymorphic function never requires the programmer to 
-provide the instantiations of the type parameters.
-
-Central to type-inference with \emph{higher-order polymorphism} is an
-algorithm for polymorphic subtyping. 
-This algorithm
-allows us to check whether one type is more general than another,
-which is essential to detect valid instantiations of a polymorphic
-type. For example, the type \verb|forall a. a -> a| is more
-general than \verb|Int -> Int|. 
-% Similarly, \verb|(Int -> Int) -> (Int, Char)| is more general than \verb|(forall a . a -> a) -> (Int, Char)|
-% (due to contravariance of argument types). 
-A simple declarative specification for polymorphic subtyping
-was proposed by Odersky and L\"aufer~\cite{odersky1996putting}. Since then several
-algorithms have been proposed that implement it. Most
-notably, the algorithm proposed by Peyton Jones et al.~\cite{jones2007practical} forms the basis
-for the implementation of type inference in the GHC compiler. 
-Dunfield and Krishnaswami~\cite{dunfield2013complete} provided a very elegant
-formalization of another sound and complete algorithm, which has 
-also inspired implementations of type-inference in some polymorphic 
-programming languages (such as PureScript~\cite{PureScript} or DDC~\cite{Disciple}).
-
-Unfortunately, while many aspects of programming languages and type systems
-have been mechanically formalized in theorem provers, there is little work on
-formalizing algorithms related to type-inference. The main exceptions to the rule
-are mechanical formalizations of algorithm $\mathcal{W}$ and other aspects
-of traditional Hindler-Milner 
-type-inference~\cite{naraschewski1999type,dubois2000proving,dubois1999certification,urban2008nominal,garrigue2015certified}.
-However, as far as we know, there is no mechanisation of algorithms 
-used by modern functional languages like Haskell, and
-polymorphic subtyping included is no exception.  
-This is a shame because recently there has been a lot of effort
-in promoting the use of theorem provers to check the meta-theory 
-of programming languages, e.g., through well-known examples like the \textsc{POPLMark} challenge~\cite{aydemir2005mechanized} and the CompCert project~\cite{leroy2012compcert}.
-Mechanical formalizations are especially valuable for proving the
-correctness of the semantics and type systems 
-of programming languages. Type-inference algorithms are arguably among
-the most non-trivial aspects of the implementations of programming
-languages. In particular the information discovery process required by 
-many algorithms (through unification-like or constraint-based
-approaches), is quite subtle and tricky to get right. Moreover,
-extending type-inference algorithms with new programming language features is often quite 
-delicate. Studying the meta-theory for such extensions would be
-greatly aided by the existence of a mechanical
-formalization of the base language, which could then be extended by
-the language designer.
-
-Handling variable binding is particularly challenging in type inference,
-because the algorithms typically do not rely simply on local environments, but
-instead propagate information across judgements. Yet, there is little work on
-how to deal with these complex forms of binding in theorem provers. We believe
-that this is the primary reason why theorem provers have still not been widely
-adopted for formalizing type-inference algorithms.
 
 %
 % Secondly, many older type-inference algorithms typically use
 % sets to collect constraints or substitutions for unification; these are hard to
 % handle in the purely inductive style favored by theorem provers.
 
-This paper advances the state-of-the-art by formalizing an algorithm for
-polymorphic subtyping in the Abella theorem prover.  We hope that
-this work encourages other researchers to use theorem provers for formalizing
-type-inference algorithms.  
-%
-In particular, we show that the problem we have identified above can be
-overcome by means of \emph{worklist judgments}. These are a form of
-judgement that turns the complicated
-global propagation of unifications into a simple local substitution.
-Moreover, we exploit several ideas in the recent inductive
-formulation of a type-inference algorithm by
-Dunfield and Krishnaswami~\cite{dunfield2013complete}, which turn out to be useful
-for mechanisation in a theorem prover.
-
-Building on these ideas we develop a complete formalization of
-polymorphic subtyping in the Abella theorem prover. Moreover, we
- show that the algorithm is \emph{sound}, \emph{complete} and \emph{decidable} with
-respect to the well-known declarative formulation of polymorphic subtyping by
-Odersky and L\"aufer.  While these meta-theoretical results are not new, as far
-as we know our work is the first to mechanically formalize them.
 
 In summary the contributions of this paper are:
 

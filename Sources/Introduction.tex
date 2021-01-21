@@ -2,7 +2,260 @@
 \chapter{Introduction}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
+\section{Type Systems and Type Inference Algorithms}
+
+Statically typed programming languages are widely used nowadays.
+Programs are categorized by various types before it is compiled and executed.
+Type errors caught before execution usually indicate potential bugs,
+letting the programmers to realize and correct in advance.
+
+In early stages, programming languages like C is built on a simple explicit type system,
+where only primitive types, function types and records are supported.
+People soon realize the need to generalize similar programs that have different types when used.
+For example, a typical way to define a swap function on integers is
+\begin{verbatim}
+  void swap(int *x, int *y) {
+    int t = *x; *x = *y; *y = *t;
+  }
+\end{verbatim}
+Similarly, the swap function for float values can be defined as
+\begin{verbatim}
+  void swap(float *x, float *y) {
+    float t = *x; *x = *y; *y = *t;
+  }
+\end{verbatim}
+which mostly shares a the same body with the above function,
+except that the types changes from \verb|int| to \verb|float|.
+Therefore, a type-safe approach to get a generic function for free is by
+text generation (pre-processing) macros:
+\begin{verbatim}
+  #define SWAP(X, Y, T) { T _tmp = X; X = Y; Y = _tmp; }
+\end{verbatim}
+
+Macros provides a generic way to program while maintaining type-safety,
+but the drawback of macro programming is also obvious:
+the type information for the abstraction is neither declared nor verified by
+the type system.
+In fact, users are responsible for the correctness of an expression after substitution.
+
+In comparison, C++ provides a better way to define such a generic function:
+\begin{verbatim}
+  template<typename T> void swap(T& t1, T& t2) {
+    T tmp(t1); t1 = t2; t2 = tmp;
+  }
+\end{verbatim}
+where \verb|T| denotes the generic type that programmers may arbitrarily pick.
+The C++ \verb|swap| function utilize the feature of type system, template,
+to improve modularity.
+In other words, introduction of good features of type systems
+accepts more meaningful programs.
+
+On the other hand, being able to accept all syntactically correct programs,
+as dynamically-typed programming languages do,
+are not desirable as well.
+Ill-typed programs are easy to write by mistake, like \verb|"3" / 3|;
+or even well-typed programs with ambiguous/unexpected meaning like \verb|"3" + 4 + 5|
+(for someone who is not familiar with the conventions).
+
+
+
+\subsection{System F and Functional Programming}
+
+
+\subsection{Type Inference for Parametric Polymorphism}
+
+
+Most statically typed functional languages support a form of
+\emph{(implicit) parametric polymorphism}~\cite{reynolds1983types}.
+Traditionally, functional languages have employed variants of the
+Hindley-Milner~\cite{hindley1969principal,milner1978theory,damas1982principal}
+type system, which supports full type-inference without any type annotations.
+However the Hindley-Milner type system only supports \emph{first-order
+polymorphism}, where all universal quantifiers only occur at the top-level
+of a type.  Modern functional programming languages such as Haskell go beyond
+Hindley-Milner and support \emph{higher-order polymorphism}. With higher-order
+polymorphism there is no restriction on where universal quantifiers can occur.
+This enables more code reuse and more expressions to type-check, and has
+numerous applications~\cite{jones1995functional,gill1993short,launchbury1995state,lammel2003scrap}.
+
+
+Modern functional programming languages, such as Haskell or OCaml,
+use sophisticated forms of type inference. The type systems of these languages are
+descendants of
+Hindley-Milner~\cite{hindley1969principal,milner1978theory,damas1982principal}, 
+which was revolutionary at the
+time in allowing type-inference to proceed without any type
+annotation. The traditional Hindley-Milner type system supports
+top-level \emph{implicit (parametric) polymorphism}~\cite{reynolds1983types}. With implicit
+polymorphism, type arguments of polymorphic functions are
+automatically instantiated. Thus implicit polymorphism and the absence of
+type annotations mean that the Hindley-Milner type system 
+strikes a great balance between expressive power and usability. 
+
+
+
+\section{Challenges and Motivations}
+
+\subsection{Higher-Ranked Type Inference}
+
 ``predicative implicit higher-rank polymorphism''
+
+Unfortunately, with higher-order polymorphism full type-inference becomes
+undecidable~\cite{wells1999typability}. To recover decidability some type annotations 
+on polymorphic arguments
+are necessary. 
+A canonical example that requires higher-order polymorphism in Haskell is:
+\begin{verbatim}
+hpoly = (\f :: forall a. a -> a) -> (f 1, f 'c')
+\end{verbatim}
+The function \verb|hpoly| cannot be
+type-checked in Hindley-Milner.  The type of \verb|hpoly| is \\
+\verb|(forall a. a -> a) -> (Int, Char)|. The single universal quantifier
+does not appear at the top-level. Instead it is used to quantify a
+type variable \verb|a| used in the first argument of the
+function.
+Notably \verb|hpoly| requires a type annotation for the first
+argument (\verb|forall a. a -> a|). 
+Despite these additional annotations,
+the type-inference algorithm employed by GHC Haskell~\cite{jones2007practical} preserves 
+many of the desirable properties of Hindley-Milner. 
+Like in Hindley-Milner type instantiation is \emph{implicit}. That is,
+calling a polymorphic function never requires the programmer to 
+provide the instantiations of the type parameters.
+
+Central to type-inference with \emph{higher-order polymorphism} is an
+algorithm for polymorphic subtyping. 
+This algorithm
+allows us to check whether one type is more general than another,
+which is essential to detect valid instantiations of a polymorphic
+type. For example, the type \verb|forall a. a -> a| is more
+general than \verb|Int -> Int|. 
+% Similarly, \verb|(Int -> Int) -> (Int, Char)| is more general than \verb|(forall a . a -> a) -> (Int, Char)|
+% (due to contravariance of argument types). 
+A simple declarative specification for polymorphic subtyping
+was proposed by Odersky and L\"aufer~\cite{odersky1996putting}. Since then several
+algorithms have been proposed that implement it. Most
+notably, the algorithm proposed by Peyton Jones et al.~\cite{jones2007practical} forms the basis
+for the implementation of type inference in the GHC compiler. 
+Dunfield and Krishnaswami~\cite{dunfield2013complete} provided a very elegant
+formalization of another sound and complete algorithm, which has 
+also inspired implementations of type-inference in some polymorphic 
+programming languages (such as PureScript~\cite{PureScript} or DDC~\cite{Disciple}).
+
+As functional languages evolved the need for more expressive
+power has motivated language designers to look beyond Hindley-Milner.
+In particular one popular direction is to allow 
+\emph{higher-ranked polymorphism} where polymorphic types can
+occur anywhere in a type signature.  
+An important challenge is that full type inference for higher-ranked
+polymorphism is known to be undecidable~\cite{wells1999typability}. Therefore some type
+annotations are necessary to guide type inference. In response to this 
+challenge several decidable type systems requiring some annotations 
+have been proposed~\cite{,dunfield2013complete,jones2007practical,Serrano2018,le2003ml,leijen2008hmf,vytiniotis2008fph}.
+Two closely related type systems that 
+support \emph{predicative} higher-ranked type inference were proposed 
+by Peyton Jones et al.~\cite{jones2007practical} and Dunfield and
+Krishnaswami~\cite{dunfield2013complete} (henceforth denoted as DK). 
+These type systems are
+popular among language designers and their ideas have been adopted by
+several modern functional languages, including Haskell, PureScript~\cite{PureScript} and
+Unison~\cite{Unison} among others.
+In those type systems
+type annotations are required for polymorphic arguments of functions,
+but other type annotations can be omitted. A canonical example (here written in Haskell) is:
+\begin{verbatim}
+    hpoly = \(f :: forall a. a -> a) -> (f 1, f 'c')
+\end{verbatim}
+The function \verb|hpoly| cannot be
+type-checked in the Hindley-Milner type system. The type of \verb|hpoly| is the rank-2 type:
+\verb|(forall a. a -> a) -> (Int, Char)|. Notably (and unlike
+Hindley-Milner) the lambda argument \verb|f| requires a
+\emph{polymorphic} type annotation.
+This annotation is needed because the single universal quantifier
+does not appear at the top-level. Instead it is used to quantify a
+type variable \verb|a| used in the first argument of the
+function. 
+Despite these additional annotations, Peyton Jones et al. and DK's
+type inference algorithms preserve many of the desirable properties 
+of Hindley-Milner. For example the applications of \verb|f| implicitly 
+instantiate the polymorphic type arguments of \verb|f|.
+
+
+\subsection{Subtyping}
+
+
+\section{Machanical Formalizations and Theorem Provers}
+
+
+Although type inference is important in practice and receives a lot of
+attention in
+academic research, there is little work on mechanically formalizing
+such advanced forms of type inference in theorem provers.
+The remarkable exception is work done on the formalization of 
+certain parts of Hindley-Milner type inference~\cite{naraschewski1999type,
+dubois2000proving,dubois1999certification,urban2008nominal,
+garrigue2015certified}. However
+there is still no formalization of the higher-ranked type systems
+that are employed by modern languages like Haskell.
+This is at
+odds with the current trend of mechanical formalizations in
+programming language research. In particular both the \textsc{POPLMark}
+challenge~\cite{aydemir2005mechanized} and
+CompCert ~\cite{leroy2012compcert} have significantly promoted
+the use of theorem provers to model various aspects of programming
+languages. Today papers in various programming language venues routinely
+use theorem provers to mechanically formalize: \emph{dynamic and
+  static semantics} and their correctness properties~\cite{aydemir2008engineering},
+\emph{compiler correctness}~\cite{leroy2012compcert}, \emph{correctness of
+  optimizations}~\cite{Bertot04}, \emph{program analysis}~\cite{Chang2006}
+or proofs involving \emph{logical relations}~\cite{abel2018}. The
+main argument for mechanical formalizations is a simple one. Proofs
+for programming languages tend to be \emph{long}, \emph{tedious} and
+\emph{error-prone}. In such proofs it is very easy to make mistakes
+that may invalidate the whole development. Furthermore, readers and
+reviewers often do not have time to look at the proofs carefully to
+check their correctness. Therefore errors can go unnoticed for a
+long time.  Mechanical formalizations provide, in principle, a natural
+solution for these problems. Theorem provers can automatically check and
+validate the proofs, which removes the burden of checking from both
+the person doing the proofs as well as readers or reviewers.
+
+
+
+Unfortunately, while many aspects of programming languages and type systems
+have been mechanically formalized in theorem provers, there is little work on
+formalizing algorithms related to type-inference. The main exceptions to the rule
+are mechanical formalizations of algorithm $\mathcal{W}$ and other aspects
+of traditional Hindler-Milner 
+type-inference~\cite{naraschewski1999type,dubois2000proving,dubois1999certification,urban2008nominal,garrigue2015certified}.
+However, as far as we know, there is no mechanisation of algorithms 
+used by modern functional languages like Haskell, and
+polymorphic subtyping included is no exception.  
+This is a shame because recently there has been a lot of effort
+in promoting the use of theorem provers to check the meta-theory 
+of programming languages, e.g., through well-known examples like the \textsc{POPLMark} challenge~\cite{aydemir2005mechanized} and the CompCert project~\cite{leroy2012compcert}.
+Mechanical formalizations are especially valuable for proving the
+correctness of the semantics and type systems 
+of programming languages. Type-inference algorithms are arguably among
+the most non-trivial aspects of the implementations of programming
+languages. In particular the information discovery process required by 
+many algorithms (through unification-like or constraint-based
+approaches), is quite subtle and tricky to get right. Moreover,
+extending type-inference algorithms with new programming language features is often quite 
+delicate. Studying the meta-theory for such extensions would be
+greatly aided by the existence of a mechanical
+formalization of the base language, which could then be extended by
+the language designer.
+
+Handling variable binding is particularly challenging in type inference,
+because the algorithms typically do not rely simply on local environments, but
+instead propagate information across judgements. Yet, there is little work on
+how to deal with these complex forms of binding in theorem provers. We believe
+that this is the primary reason why theorem provers have still not been widely
+adopted for formalizing type-inference algorithms.
+
+
 
 \section{Contributions}
 
@@ -10,20 +263,34 @@ In summary the contributions of this thesis are:
 
 
 \begin{description}
-\item[\Cref{part:typeinference}]
+\item[\Cref{chap:ITP}]
   \begin{itemize}
-  \item ~
+  \item The first mechanical formalization of a polymorphic subtyping algorithm.
+  \item Information propagation across worklist judgments with eager substitution.
+  \end{itemize}
+\item[\Cref{chap:ICFP}]
+  \begin{itemize}
+  \item A fully mechanical formalization of type inference with higher-ranked types.
+  \item A new algorithm for DK's type system.
+  \item Worklists with inference judgments.
+  \item Unification of worklists and contexts.
+  \end{itemize}
+\item[\Cref{chap:Top}]
+  \begin{itemize}
+  \item A mechanical formalization of type inference with higher-ranked types and subtyping.
+  \item A new backtracking-based sound type inference algorithm.
+  \item Formalization of rank-1 restriction.
   \end{itemize}
 \end{description}
 
 
 \section{Organization}
 
-This thesis is largely based on the
-publications by the author~\citep{},
+This thesis is partially based on the publications by the author~\citep{},
 as indicated below.
 \begin{description}
-\item[\cref{chap:BiDirectional}:]~
+\item[\cref{chap:ITP}:]~
+\item[\cref{chap:ICFP}:]~
 \end{description}
 
 

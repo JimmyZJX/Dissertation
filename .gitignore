@@ -1,3 +1,6 @@
+
+*.pdf
+
 *.acn
 *.acr
 *.alg
@@ -51,3 +54,4 @@ Figures/External/
 *.brf
 *.mngtex-old
 /Thesis.loe
+Thesis.pdf

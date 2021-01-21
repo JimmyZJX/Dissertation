@@ -1,88 +1,6 @@
 \section{Introduction}
 
-Modern functional programming languages, such as Haskell or OCaml,
-use sophisticated forms of type inference. The type systems of these languages are
-descendants of
-Hindley-Milner~\cite{hindley1969principal,milner1978theory,damas1982principal}, 
-which was revolutionary at the
-time in allowing type-inference to proceed without any type
-annotation. The traditional Hindley-Milner type system supports
-top-level \emph{implicit (parametric) polymorphism}~\cite{reynolds1983types}. With implicit
-polymorphism, type arguments of polymorphic functions are
-automatically instantiated. Thus implicit polymorphism and the absence of
-type annotations mean that the Hindley-Milner type system 
-strikes a great balance between expressive power and usability. 
 
-As functional languages evolved the need for more expressive
-power has motivated language designers to look beyond Hindley-Milner.
-In particular one popular direction is to allow 
-\emph{higher-ranked polymorphism} where polymorphic types can
-occur anywhere in a type signature.  
-An important challenge is that full type inference for higher-ranked
-polymorphism is known to be undecidable~\cite{wells1999typability}. Therefore some type
-annotations are necessary to guide type inference. In response to this 
-challenge several decidable type systems requiring some annotations 
-have been proposed~\cite{,dunfield2013complete,jones2007practical,Serrano2018,le2003ml,leijen2008hmf,vytiniotis2008fph}.
-Two closely related type systems that 
-support \emph{predicative} higher-ranked type inference were proposed 
-by Peyton Jones et al.~\cite{jones2007practical} and Dunfield and
-Krishnaswami~\cite{dunfield2013complete} (henceforth denoted as DK). 
-These type systems are
-popular among language designers and their ideas have been adopted by
-several modern functional languages, including Haskell, PureScript~\cite{PureScript} and
-Unison~\cite{Unison} among others.
-In those type systems
-type annotations are required for polymorphic arguments of functions,
-but other type annotations can be omitted. A canonical example (here written in Haskell) is:
-\begin{verbatim}
-    hpoly = \(f :: forall a. a -> a) -> (f 1, f 'c')
-\end{verbatim}
-The function \verb|hpoly| cannot be
-type-checked in the Hindley-Milner type system. The type of \verb|hpoly| is the rank-2 type:
-\verb|(forall a. a -> a) -> (Int, Char)|. Notably (and unlike
-Hindley-Milner) the lambda argument \verb|f| requires a
-\emph{polymorphic} type annotation.
-This annotation is needed because the single universal quantifier
-does not appear at the top-level. Instead it is used to quantify a
-type variable \verb|a| used in the first argument of the
-function. 
-Despite these additional annotations, Peyton Jones et al. and DK's
-type inference algorithms preserve many of the desirable properties 
-of Hindley-Milner. For example the applications of \verb|f| implicitly 
-instantiate the polymorphic type arguments of \verb|f|.
-
-Although type inference is important in practice and receives a lot of
-attention in
-academic research, there is little work on mechanically formalizing
-such advanced forms of type inference in theorem provers.
-The remarkable exception is work done on the formalization of 
-certain parts of Hindley-Milner type inference~\cite{naraschewski1999type,
-dubois2000proving,dubois1999certification,urban2008nominal,
-garrigue2015certified}. However
-there is still no formalization of the higher-ranked type systems
-that are employed by modern languages like Haskell.
-This is at
-odds with the current trend of mechanical formalizations in
-programming language research. In particular both the \textsc{POPLMark}
-challenge~\cite{aydemir2005mechanized} and
-CompCert ~\cite{leroy2012compcert} have significantly promoted
-the use of theorem provers to model various aspects of programming
-languages. Today papers in various programming language venues routinely
-use theorem provers to mechanically formalize: \emph{dynamic and
-  static semantics} and their correctness properties~\cite{aydemir2008engineering},
-\emph{compiler correctness}~\cite{leroy2012compcert}, \emph{correctness of
-  optimizations}~\cite{Bertot04}, \emph{program analysis}~\cite{Chang2006}
-or proofs involving \emph{logical relations}~\cite{abel2018}. The
-main argument for mechanical formalizations is a simple one. Proofs
-for programming languages tend to be \emph{long}, \emph{tedious} and
-\emph{error-prone}. In such proofs it is very easy to make mistakes
-that may invalidate the whole development. Furthermore, readers and
-reviewers often do not have time to look at the proofs carefully to
-check their correctness. Therefore errors can go unnoticed for a
-long time.  Mechanical formalizations provide, in principle, a natural
-solution for these problems. Theorem provers can automatically check and
-validate the proofs, which removes the burden of checking from both
-the person doing the proofs as well as readers or reviewers.
 
 This paper presents the first fully mechanized formalization of the
 metatheory for higher-ranked polymorphic type inference.
@@ -108,9 +26,8 @@ original formalization comes with very well written manual proofs,
 there are still several details missing. These complicate the task of
 writing a mechanically verified proof. Moreover some proofs and
 lemmas are wrong and, in some cases, it is not clear to us how to fix them.
-%%\footnote{
-%%Perhaps, with some additional thought, a work-around can be found, but, as our algorithm
-%%differs significantly from DK's, it would not further our mechanization goal and so we did not pursue this.}
+
+
 Despite the problems in DK's manual formalization,
 we believe that these problems do not
 invalidate their work and that their results are still true. In fact we have nothing but praise for their detailed

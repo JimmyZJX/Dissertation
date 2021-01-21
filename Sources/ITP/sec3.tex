@@ -14,7 +14,7 @@ syntax and the well-formedness judgement.
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 \paragraph{Existential Variables}
 In order to solve the unknown types $\tau$, the algorithmic system extends the
-declarative syntax of types with \emph{existential variables} $\alpha$.  They
+declarative syntax of types with \emph{existential variables} $\al$.  They
 behave like unification variables, but are not globally defined. Instead, the
 ordered \emph{algorithmic context}, inspired by Dunfield and
 Krishnaswami~\cite{dunfield2013complete}, defines their scope. Thus 
@@ -38,9 +38,9 @@ of an existential variable.
 \[
 \begin{array}{l@{\qquad}lcl}
 \text{Type variables} & a, b\\
-\text{Existential variables} & \alpha, \beta\\[3mm]
-\text{Algorithmic types} &A, B, C &::=&\quad 1 \mid a \mid \alpha \mid \forall a. A \mid A\to B\\
-\text{Algorithmic context}&\Gamma &::=&\quad \cdot \mid \Gamma, a \mid \Gamma, \alpha\\
+\text{Existential variables} & \al, \bt\\[3mm]
+\text{Algorithmic types} &A, B, C &::=&\quad 1 \mid a \mid \al \mid \forall a. A \mid A\to B\\
+\text{Algorithmic context}&\Gamma &::=&\quad \cdot \mid \Gamma, a \mid \Gamma, \al\\
 \text{Algorithmic judgments}&\exps &::=&\quad \cdot \mid \jcons{A \le B}{\exps}
 \end{array}
 \]
@@ -55,8 +55,8 @@ of an existential variable.
   {\Gamma\vdash a}
 \qquad
 \inferrule*[right=$\mathtt{{wf_a}exvar}$]
-  {\alpha\in\Gamma}
-  {\Gamma\vdash \alpha} \\
+  {\al\in\Gamma}
+  {\Gamma\vdash \al} \\
 \inferrule*[right=$\mathtt{{wf_a}{\to}}$]
   {\Gamma\vdash A \\ \Gamma\vdash B}
   {\Gamma\vdash A\to B}
@@ -81,8 +81,8 @@ of an existential variable.
   {\Gamma\vdash a}
 \qquad
 \inferrule*[right=$\mathtt{{wf_a}exvar}$]
-  {\alpha\in\Gamma}
-  {\Gamma\vdash \alpha} \\
+  {\al\in\Gamma}
+  {\Gamma\vdash \al} \\
 \inferrule*[right=$\mathtt{{wf_a}{\to}}$]
   {\Gamma\vdash A \\ \Gamma\vdash B}
   {\Gamma\vdash A\to B}
@@ -99,7 +99,7 @@ of an existential variable.
 To facilitate context manipulation, we use the syntax $\Gamma[\Gamma_M]$ to
 denote a context of the form $\Gamma_L, \Gamma_M, \Gamma_R$ where $\Gamma$ is
 the context $\Gamma_L, \bullet, \Gamma_R$ with a hole ($\bullet$).
-Hole notations with the same name implicitly share the same $\Gamma_L$ and $\Gamma_R$. A multi-hole notation like $\Gamma[\alpha][\beta]$ means $\Gamma_1,\alpha,\Gamma_2,\beta,\Gamma_3$.
+Hole notations with the same name implicitly share the same $\Gamma_L$ and $\Gamma_R$. A multi-hole notation like $\Gamma[\al][\bt]$ means $\Gamma_1,\al,\Gamma_2,\bt,\Gamma_3$.
 
 %-------------------------------------------------------------------------------
 \subsection{Algorithmic Subtyping}
@@ -136,15 +136,15 @@ Logically we can discern 3 groups of rules.
   {\Gamma \vdash \jcons{a\le a}{\exps}}
 \qquad
 \inferrule*[right=$\mathtt{{\le_a}exvar}$]
-  {\alpha\in\Gamma \\ \Gamma \vdash \exps}
-  {\Gamma \vdash \jcons{\alpha\le \alpha}{\exps}}
+  {\al\in\Gamma \\ \Gamma \vdash \exps}
+  {\Gamma \vdash \jcons{\al\le \al}{\exps}}
 \\
 \inferrule*[right=$\mathtt{{\le_a}{\to}}$]
   {\Gamma \vdash \jcons{B_1\le A_1}{\jcons{A_2\le B_2}{\exps}}}
   {\Gamma \vdash \jcons{A_1\to A_2\le B_1\to B_2}{\exps}}
 \\
 \inferrule*[right=$\mathtt{{\le_a}\forall L}$]
-  {\alpha \text{ fresh} \\ \Gamma,\alpha \vdash \jcons{[\alpha/a]A\le B}{\exps}}
+  {\al \text{ fresh} \\ \Gamma,\al \vdash \jcons{[\al/a]A\le B}{\exps}}
   {\Gamma\vdash \jcons{\forall a. A\le B}{\exps}}
 \qquad
 \inferrule*[right=$\mathtt{{\le_a}\forall R}$]
@@ -153,39 +153,39 @@ Logically we can discern 3 groups of rules.
 \\
 \\
 \inferrule*[right=$\mathtt{{\le_a}instL}$]
-  {\alpha\notin \mathit{FV}(A)\cup FV(B)\quad
-  	\Gamma[\alpha_1, \alpha_2]\vdash \jcons{\alpha_1\to \alpha_2\le A\to B}{ [\alpha_1\to \alpha_2/\alpha]\exps}}
-  {\Gamma[\alpha] \vdash \jcons{\alpha\le A\to B}{\exps}}
+  {\al\notin \mathit{FV}(A)\cup FV(B)\quad
+  	\Gamma[\al[1], \al[2]]\vdash \jcons{\al[1]\to \al[2]\le A\to B}{ [\al[1]\to \al[2]/\al]\exps}}
+  {\Gamma[\al] \vdash \jcons{\al\le A\to B}{\exps}}
 \\
 \inferrule*[right=$\mathtt{{\le_a}instR}$]
-  {\alpha\notin FV(A)\cup FV(B)\quad
-	\Gamma[\alpha_1, \alpha_2]\vdash \jcons{A\to B\le \alpha_1\to \alpha_2}{ [\alpha_1\to \alpha_2/\alpha]\exps}}
-  {\Gamma[\alpha] \vdash \jcons{A\to B\le \alpha}{\exps}}
+  {\al\notin FV(A)\cup FV(B)\quad
+	\Gamma[\al[1], \al[2]]\vdash \jcons{A\to B\le \al[1]\to \al[2]}{ [\al[1]\to \al[2]/\al]\exps}}
+  {\Gamma[\al] \vdash \jcons{A\to B\le \al}{\exps}}
 \\
 \\
 \inferrule*[right=$\mathtt{{\le_a}solve\_ex}$]
-  {\Gamma[\alpha][]\vdash [\alpha/\beta]\exps}
-  {\Gamma[\alpha][\beta]\vdash \jcons{\alpha\le \beta}{\exps}}
+  {\Gamma[\al][]\vdash [\al/\bt]\exps}
+  {\Gamma[\al][\bt]\vdash \jcons{\al\le \bt}{\exps}}
 \qquad
 \inferrule*[right=$\mathtt{{\le_a}solve\_ex'}$]
-  {\Gamma[\alpha][]\vdash [\alpha/\beta]\exps}
-  {\Gamma[\alpha][\beta]\vdash \jcons{\beta\le \alpha}{\exps}}
+  {\Gamma[\al][]\vdash [\al/\bt]\exps}
+  {\Gamma[\al][\bt]\vdash \jcons{\bt\le \al}{\exps}}
 \\
 \inferrule*[right=$\mathtt{{\le_a}solve\_var}$]
-  {\Gamma[a][]\vdash [a/\beta]\exps}
-  {\Gamma[a][\beta]\vdash \jcons{a\le \beta}{\exps}}
+  {\Gamma[a][]\vdash [a/\bt]\exps}
+  {\Gamma[a][\bt]\vdash \jcons{a\le \bt}{\exps}}
 \qquad
 \inferrule*[right=$\mathtt{{\le_a}solve\_var'}$]
-  {\Gamma[a][]\vdash [a/\beta]\exps}
-  {\Gamma[a][\beta]\vdash \jcons{\beta\le a}{\exps}}
+  {\Gamma[a][]\vdash [a/\bt]\exps}
+  {\Gamma[a][\bt]\vdash \jcons{\bt\le a}{\exps}}
 \\
 \inferrule*[right=$\mathtt{{\le_a}solve\_unit}$]
-  {\Gamma[]\vdash [1/\alpha]\exps}
-  {\Gamma[\alpha]\vdash \jcons{\alpha\le 1}{\exps}}
+  {\Gamma[]\vdash [1/\al]\exps}
+  {\Gamma[\al]\vdash \jcons{\al\le 1}{\exps}}
 \qquad
 \inferrule*[right=$\mathtt{{\le_a}solve\_unit'}$]
-  {\Gamma[]\vdash [1/\alpha]\exps}
-  {\Gamma[\alpha]\vdash \jcons{1\le \alpha}{\exps}}
+  {\Gamma[]\vdash [1/\al]\exps}
+  {\Gamma[\al]\vdash \jcons{1\le \al}{\exps}}
 \end{gather*}
 \caption{Algorithmic Subtyping}
 \label{fig:alg}
@@ -197,23 +197,23 @@ $\mathtt{{\le_a}{\to}}$ consumes one judgment and pushes two to the
 worklist.  A notable difference with the declarative Rule $\mathtt{{\le}\forall
 L}$ is that Rule $\mathtt{{\le_a}\forall L}$ requires no guessing of a type $\tau$ to instantiate
 the polymorphic type $\forall a. A$, but instead
-introduces an existential variable $\alpha$ to the context and to $A$. In
+introduces an existential variable $\al$ to the context and to $A$. In
 accordance with the declarative system, where 
-the monotype $\tau$ should be bound in the context $\Psi$, here $\alpha$ should only
-be solved to a monotype bound in $\Gamma$. More generally, for any algorithmic context $\Gamma[\alpha]$, the algorithmic variable $\alpha$ 
+the monotype $\tau$ should be bound in the context $\Psi$, here $\al$ should only
+be solved to a monotype bound in $\Gamma$. More generally, for any algorithmic context $\Gamma[\al]$, the algorithmic variable $\al$ 
 can only be solved to a monotype that is well-formed with respect to $\Gamma_L$.
 
 Secondly, Rules $\mathtt{{\le_a}instL}$ and $\mathtt{{\le_a}instR}$ partially
-instantiate existential types $\alpha$, to function types. The domain and range
+instantiate existential types $\al$, to function types. The domain and range
 of the new function type are undetermined: they are set to two
-fresh existential variables $\alpha_1$ and $\alpha_2$. To make sure that
-$\alpha_1 \to \alpha_2$ has the same scope as $\alpha$, the new variables
-$\alpha_1$ and $\alpha_2$ are inserted in the same position in the context
-where the old variable $\alpha$ was. To propagate the instantiation to the remainder
-of the worklist, $\alpha$ is substituted for $\alpha_1 \to \alpha_2$ in $\Omega$.
+fresh existential variables $\al[1]$ and $\al[2]$. To make sure that
+$\al[1] \to \al[2]$ has the same scope as $\al$, the new variables
+$\al[1]$ and $\al[2]$ are inserted in the same position in the context
+where the old variable $\al$ was. To propagate the instantiation to the remainder
+of the worklist, $\al$ is substituted for $\al[1] \to \al[2]$ in $\Omega$.
 The \emph{occurs-check} side-condition is necessary to prevent a diverging
 infinite instantiation. For example
-$1 \to \alpha \le \alpha$ would diverge with no such check.
+$1 \to \al \le \al$ would diverge with no such check.
 
 Thirdly, in the remaining six rules an existential variable can be immediately
 solved. Each of the six similar rules removes an existential variable from the
@@ -239,21 +239,21 @@ $\begin{aligned}
 							{\inferrule*[Right=$\mathtt{{\le_a}unit}$]
 								{\inferrule*[Right=$\mathtt{a\_nil}$]
 									{~}
-									{\alpha_1 \vdash \cdot}
+									{\al[1] \vdash \cdot}
 								}
-								{\alpha_1 \vdash \jcons{1 \le 1}{\cdot}}
+								{\al[1] \vdash \jcons{1 \le 1}{\cdot}}
 							}
-							{\alpha_1, \alpha_2 \vdash \jcons{\alpha_1 \le \alpha_2}{\jcons{1 \le 1}{\cdot}}}
+							{\al[1], \al[2] \vdash \jcons{\al[1] \le \al[2]}{\jcons{1 \le 1}{\cdot}}}
 						}
-						{\alpha_1, \alpha_2, \beta \vdash \jcons{\alpha_1 \le \beta}{\jcons{\beta \le \alpha_2}{\jcons{1 \le 1}{\cdot}}}}
+						{\al[1], \al[2], \bt \vdash \jcons{\al[1] \le \bt}{\jcons{\bt \le \al[2]}{\jcons{1 \le 1}{\cdot}}}}
 					}
-					{\alpha_1, \alpha_2, \beta \vdash \jcons{\beta \to \beta \le \alpha_1 \to \alpha_2}{\jcons{1 \le 1}{\cdot}}}
+					{\al[1], \al[2], \bt \vdash \jcons{\bt \to \bt \le \al[1] \to \al[2]}{\jcons{1 \le 1}{\cdot}}}
 				}
-				{\alpha, \beta \vdash \jcons{\beta \to \beta \le \alpha}{\jcons{1 \le 1}{\cdot}}}
+				{\al, \bt \vdash \jcons{\bt \to \bt \le \al}{\jcons{1 \le 1}{\cdot}}}
 			}
-			{\alpha \vdash \jcons{\forall a.\ a \to a \le \alpha}{\jcons{1 \le 1}{\cdot}}}
+			{\al \vdash \jcons{\forall a.\ a \to a \le \al}{\jcons{1 \le 1}{\cdot}}}
 		}
-		{\alpha \vdash \jcons{\alpha \to 1 \le (\forall a.\ a \to a) \to 1}{\cdot}}
+		{\al \vdash \jcons{\al \to 1 \le (\forall a.\ a \to a) \to 1}{\cdot}}
 	}
 	{\cdot \vdash \jcons{\forall a.\ a\to 1\le (\forall a.\ a\to a)\to 1}{\cdot }}
 	\end{aligned}\qquad\quad$
@@ -267,13 +267,13 @@ $\begin{aligned}
 				{\inferrule*[Right=$\mathtt{?}$]
 					{stuck
 					}
-					{\alpha, b \vdash \jcons{\alpha \le b}{\cdot}}
+					{\al, b \vdash \jcons{\al \le b}{\cdot}}
 				}
-				{\alpha \vdash {\jcons{\alpha \le \forall b.\ b}{\cdot}}}
+				{\al \vdash {\jcons{\al \le \forall b.\ b}{\cdot}}}
 			}
-			{\alpha \vdash \jcons{1\le 1}{\jcons{\alpha \le \forall b.\ b}{\cdot}}}
+			{\al \vdash \jcons{1\le 1}{\jcons{\al \le \forall b.\ b}{\cdot}}}
 		}
-		{\alpha \vdash \jcons{1 \to \alpha \le 1\to \forall b.\ b}{\cdot}}
+		{\al \vdash \jcons{1 \to \al \le 1\to \forall b.\ b}{\cdot}}
 	}
 	{\cdot\vdash \jcons{\forall a.\ 1\to a \le 1\to \forall b.\ b}{\cdot }}
 	\end{aligned}$
@@ -294,21 +294,21 @@ judgment list with only one element.
 % 	\begin{tabular}{|c|c|c|c|}\hline
 % 		\# & Context & Worklist & Rule\\\hline
 % 		1&$\cdot$ & $\forall x.\ x\to 1\le (\forall x.\ x\to x)\to 1$ & $\mathtt{{\le_a}\forall L}$\\\hline
-% 		2&$\alpha$ & $\alpha\to 1\le (\forall x.\ x\to x)\to 1$ & $\mathtt{{\le_a}{\to}}$\\\hline
-% 		3&$\alpha$ & $\forall x.\ x\to x\le \alpha : 1\le 1$ & $\mathtt{{\le_a}\forall L}$\\\hline
-% 		4&$\alpha,\beta$ & $\beta\to \beta\le \alpha : 1\le 1$ & $\mathtt{instR}$\\\hline
-% 		5&$\alpha_1,\alpha_2, \beta$ & $\beta\to \beta\le \alpha_1\to \alpha_2 : 1\le 1$ & $\mathtt{{\le_a}{\to}}$\\\hline
-% 		6&$\alpha_1,\alpha_2, \beta$ & $\alpha_1\le \beta : \beta\le \alpha_2 : 1\le 1$ & $\mathtt{{\le_a}solve\_ex (\beta\leftarrow \alpha_1)}$\\\hline
-% 		7&$\alpha_1,\alpha_2$ & $\alpha_1\le \alpha_2 : 1\le 1$ & $\mathtt{{\le_a}solve\_ex (\alpha_2\leftarrow \alpha_1)}$\\\hline
-% 		8&$\alpha_1$ & $1\le 1$ & $\mathtt{{\le_a}unit}$\\\hline
+% 		2&$\al$ & $\al\to 1\le (\forall x.\ x\to x)\to 1$ & $\mathtt{{\le_a}{\to}}$\\\hline
+% 		3&$\al$ & $\forall x.\ x\to x\le \al : 1\le 1$ & $\mathtt{{\le_a}\forall L}$\\\hline
+% 		4&$\al,\bt$ & $\bt\to \bt\le \al : 1\le 1$ & $\mathtt{instR}$\\\hline
+% 		5&$\al[1],\al[2], \bt$ & $\bt\to \bt\le \al[1]\to \al[2] : 1\le 1$ & $\mathtt{{\le_a}{\to}}$\\\hline
+% 		6&$\al[1],\al[2], \bt$ & $\al[1]\le \bt : \bt\le \al[2] : 1\le 1$ & $\mathtt{{\le_a}solve\_ex (\bt\leftarrow \al[1])}$\\\hline
+% 		7&$\al[1],\al[2]$ & $\al[1]\le \al[2] : 1\le 1$ & $\mathtt{{\le_a}solve\_ex (\al[2]\leftarrow \al[1])}$\\\hline
+% 		8&$\al[1]$ & $1\le 1$ & $\mathtt{{\le_a}unit}$\\\hline
 % 	\end{tabular}
 % \end{center}
 
 In step 1, we have only one judgment, and that one has a top-level $\forall$ on
 the left hand side. So the only choice is rule $\mathtt{{\le_a}\forall L}$, which
 opens the universally quantified type with an unknown existential variable
-$\alpha$. Variable $\alpha$ will be solved later to some monotype that is well-formed
-within the context before $\alpha$. That is, the empty context $\cdot$ in this
+$\al$. Variable $\al$ will be solved later to some monotype that is well-formed
+within the context before $\al$. That is, the empty context $\cdot$ in this
 case.
 In step 2, rule $\mathtt{{\le_a}{\to}}$ is applied to the worklist,
 splitting the first judgment into two.
@@ -317,26 +317,26 @@ judgment is opened according to rule $\mathtt{{\le_a}\forall L}$ with a fresh
 existential variable.
 In step 4, the first judgment has an arrow on the left hand side, but the
 right-hand-side type is an existential variable. It is obvious
-that $\alpha$ should be solved to a monotype of the form
+that $\al$ should be solved to a monotype of the form
 $\sigma \to \tau$. Rule $\mathtt{instR}$ implements this, but avoids
-guessing $\sigma$ and $\tau$ by ``splitting'' $\alpha$ into two existential
-variables, $\alpha_1$ and $\alpha_2$, which will be solved to some $\sigma$ and
+guessing $\sigma$ and $\tau$ by ``splitting'' $\al$ into two existential
+variables, $\al[1]$ and $\al[2]$, which will be solved to some $\sigma$ and
 $\tau$ later.
 Step 5 applies Rule $\mathtt{{\le_a}{\to}}$ again. Notice that after the
-split, $\beta$ appears in two judgments. When the first $\beta$ is solved
-during any step of derivation, the next $\beta$ will be substituted by that
+split, $\bt$ appears in two judgments. When the first $\bt$ is solved
+during any step of derivation, the next $\bt$ will be substituted by that
 solution.  This propagation mechanism ensures the consistent solution of the
 variables, while keeping the context as simple as possible.
 Steps 6 and 7 solve existential variables. The existential
 variable that is right-most in the context is always solved in terms of the other. Therefore in step 6,
-$\beta$ is solved in terms of $\alpha_1$, and in step 7, $\alpha_2$ is solved in terms of $\alpha_1$.
-Additionally, in step 6, when $\beta$ is solved, the substitution $[\alpha_1 /
-\beta]$ is propagated to the rest of the judgment list, and thus the second
-judgment becomes $\alpha_1\le\alpha_2$.
-Steps 8 and 9 trivially finish the derivation. Notice that $\alpha_1$ is not
+$\bt$ is solved in terms of $\al[1]$, and in step 7, $\al[2]$ is solved in terms of $\al[1]$.
+Additionally, in step 6, when $\bt$ is solved, the substitution $[\al[1] /
+\bt]$ is propagated to the rest of the judgment list, and thus the second
+judgment becomes $\al[1]\le\al[2]$.
+Steps 8 and 9 trivially finish the derivation. Notice that $\al[1]$ is not
 instantiated at the end. This means that any well-scoped instantiation is fine.
 
-\paragraph{A Failing Derivation} We illustrate the role of ordered contexts through another example: $\forall a.\ 1\to a \le 1\to \forall b.\ b$. From the declarative perspective, $a$ should be instantiated to some $\tau$ first, then $b$ is introduced to the context, so that $b\notin FV(\tau)$. As a result, we cannot find $\tau$ such that $\tau \le b$. The right of Figure~\ref{fig:alg_samples} shows the algorithmic derivation, which also fails due to the scoping---$\alpha$ is introduced earlier than $b$, thus it cannot be solved to $b$.
+\paragraph{A Failing Derivation} We illustrate the role of ordered contexts through another example: $\forall a.\ 1\to a \le 1\to \forall b.\ b$. From the declarative perspective, $a$ should be instantiated to some $\tau$ first, then $b$ is introduced to the context, so that $b\notin FV(\tau)$. As a result, we cannot find $\tau$ such that $\tau \le b$. The right of Figure~\ref{fig:alg_samples} shows the algorithmic derivation, which also fails due to the scoping---$\al$ is introduced earlier than $b$, thus it cannot be solved to $b$.
 
 
 
