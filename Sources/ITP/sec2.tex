@@ -97,32 +97,37 @@ of type variables.
 \end{figure}
 
 In Figure~\ref{fig:decl:wf_sub}, we give the well-formedness and
-subtyping relation for the declarative system. The cases without 
-universal quantifiers are handled by Rules~$\mathtt{{\le}Var}$,
-$\mathtt{{\le}Unit}$ and $\mathtt{{\le}{\to}}$. The subtyping rule 
-for function types ($\mathtt{{\le}{\to}}$) is standard, 
-being contravariant on the argument types.
-Rule~$\mathtt{{\le}\forall R}$ says that if $A$ is a subtype of $B$
-under the context extended with $a$, where $a$ is fresh in $A$, then
-$A\le \forall a. B$. Intuitively, if $A$ is more general than
-the universally quantified type $\forall a. B$, then $A$ must
-instantiate to $[\tau/a]B$ for every $\tau$. 
-%With $A\le B$, where $A$ is
-%instantiated to $B$, which is opened by a fresh variable, we can
-%conclude that for all $\tau$, $A$ have the potential to instantiate to
-%$[\tau/a]B$, therefore $A\le \forall a. B$.
+subtyping relation for the declarative system,
+which is identical to the subtyping relation introduced in Subsection~\ref{subsec:dk:decl}.
 
-Finally, the most interesting rule is $\mathtt{{\le}\forall L}$, which instantiates $\forall a. A$ to
-$[\tau/a]A$, and concludes the subtyping $\forall a. A \le B$
-if the instantiation is a subtype of $B$. Notice that $\tau$ is
-\emph{guessed}, 
-and the algorithmic system should provide the means to compute this
-guess. Furthermore, the guess is a \emph{monotype}, which rules 
-out the possibility of polymorphic (or impredicative)
-instantiation. The restriction to monotypes and predicative
-instantiation is used by both Peyton Jones et al.~\cite{jones2007practical} and Dunfield and 
-Krishnaswami's~\cite{dunfield2013complete} algorithms, which are
-adopted by several practical implementations of programming languages.
+
+% In Figure~\ref{fig:decl:wf_sub}, we give the well-formedness and
+% subtyping relation for the declarative system. The cases without 
+% universal quantifiers are handled by Rules~$\mathtt{{\le}Var}$,
+% $\mathtt{{\le}Unit}$ and $\mathtt{{\le}{\to}}$. The subtyping rule 
+% for function types ($\mathtt{{\le}{\to}}$) is standard, 
+% being contravariant on the argument types.
+% Rule~$\mathtt{{\le}\forall R}$ says that if $A$ is a subtype of $B$
+% under the context extended with $a$, where $a$ is fresh in $A$, then
+% $A\le \forall a. B$. Intuitively, if $A$ is more general than
+% the universally quantified type $\forall a. B$, then $A$ must
+% instantiate to $[\tau/a]B$ for every $\tau$. 
+% %With $A\le B$, where $A$ is
+% %instantiated to $B$, which is opened by a fresh variable, we can
+% %conclude that for all $\tau$, $A$ have the potential to instantiate to
+% %$[\tau/a]B$, therefore $A\le \forall a. B$.
+
+% Finally, the most interesting rule is $\mathtt{{\le}\forall L}$, which instantiates $\forall a. A$ to
+% $[\tau/a]A$, and concludes the subtyping $\forall a. A \le B$
+% if the instantiation is a subtype of $B$. Notice that $\tau$ is
+% \emph{guessed}, 
+% and the algorithmic system should provide the means to compute this
+% guess. Furthermore, the guess is a \emph{monotype}, which rules 
+% out the possibility of polymorphic (or impredicative)
+% instantiation. The restriction to monotypes and predicative
+% instantiation is used by both Peyton Jones et al.~\cite{jones2007practical} and Dunfield and 
+% Krishnaswami's~\cite{dunfield2013complete} algorithms, which are
+% adopted by several practical implementations of programming languages.
 
 \begin{comment}
 The conclusions of the declarative subtyping rules do not overlap with

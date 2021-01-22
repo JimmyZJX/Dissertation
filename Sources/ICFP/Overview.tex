@@ -1,7 +1,7 @@
 \section{Overview}
 
-This section starts by introducing DK's declarative type system. Then
-it discusses several techniques that have been used in algorithmic
+This section starts with a discussion on DK's declarative type system.
+Then it introduces several techniques that have been used in algorithmic
 formulations, and which have influenced our own algorithmic design.
 Finally we introduce the novelties of our new algorithm.
 In particular the support for inference judgments in
@@ -10,9 +10,149 @@ that the unifies \emph{ordered contexts} and the worklists themselves.
 
 % DK's declarative system TODO point to background
 
+\subsection{DK's Declarative System}
+
+\begin{figure}[t]
+	\[
+	\begin{array}{l@{\qquad}lcl}
+	\text{Type variables}\qquad&a, b
+	\\
+	\text{Types}\qquad&A, B, C &::=&\quad 1 \mid a \mid \all A \mid A\to B\\
+	\text{Monotypes}\qquad&\tau,\sigma &::=&\quad 1 \mid a \mid \tau\to \sigma
+	\\
+	\text{Expressions}\qquad&e &::=&\quad x \mid () \mid \lam e \mid e_1~e_2 \mid (e:A)
+	\\
+	\text{Contexts}\qquad&\Psi &::=&\quad \nil \mid \Psi, a \mid \Psi, x:A
+	\end{array}
+	\]
+	\Description{Syntax of Declarative System}
+	\caption{Syntax of Declarative System}
+\end{figure}
+
+\begin{figure}[t]
+\centering \framebox{$\Psi \vdash A$} Well-formed declarative type
+\begin{gather*}
+\inferrule*[right=$\mathtt{wf_d unit}$]
+    {~}{\Psi\vdash 1}
+\qquad
+\inferrule*[right=$\mathtt{wf_d var}$]
+    {a\in\Psi}{\Psi\vdash a}
+\qquad
+\inferrule*[right=$\mathtt{wf_d{\to}}$]
+    {\Psi\vdash A\quad \Psi\vdash B}
+    {\Psi\vdash A\to B}
+\qquad
+\inferrule*[right=$\mathtt{wf_d\forall}$]
+    {\Psi, a\vdash A}
+    {\Psi\vdash \forall a. A}
+\end{gather*}
+
+\centering \framebox{$\Psi \vdash e$} Well-formed declarative expression
+\begin{gather*}
+\inferrule*[right=$\mathtt{wf_d tmvar}$]
+    {x:A\in\Psi}{\Psi\vdash x}
+\qquad
+\inferrule*[right=$\mathtt{wf_d tmunit}$]
+    {~}{\Psi\vdash ()}
+\qquad
+\inferrule*[right=$\mathtt{wf_d abs}$]
+    {\Psi,x:A\vdash e}
+    {\Psi\vdash \lam e}
+\\
+\inferrule*[right=$\mathtt{wf_d app}$]
+    {\Psi\vdash e_1 \quad \Psi\vdash e_2}
+    {\Psi\vdash e_1~e_2}
+\qquad
+\inferrule*[right=$\mathtt{wf_d anno}$]
+    {\Psi\vdash A \quad \Psi\vdash e}
+    {\Psi\vdash (e:A)}
+\end{gather*}
+
+\centering \framebox{$\Psi \vdash A \le B$} Declarative subtyping
+\begin{gather*}
+\inferrule*[right=$\mathtt{{\le}Var}$]
+    {a\in\Psi}{\Psi\vdash a\le a}
+\qquad
+\inferrule*[right=$\mathtt{{\le}Unit}$]
+    {~}{\Psi \vdash 1 \le 1}
+\qquad
+\inferrule*[right=$\mathtt{{\le}{\to}}$]
+    {\Psi \vdash B_1 \le A_1 \quad \Psi \vdash A_2 \le B_2}
+    {\Psi\vdash A_1\to A_2 \le B_1\to B_2}
+\\
+\inferrule*[right=$\mathtt{{\le}\forall L}$]
+    {\Psi\vdash \tau \quad \Psi\vdash [\tau/a] A \le B}
+    {\Psi\vdash \all A \le B}
+\qquad
+\inferrule*[right=$\mathtt{{\le}\forall R}$]
+    {\Psi, b\vdash A\le B}
+    {\Psi\vdash A \le \all[b]B}
+\end{gather*}
+\Description{Declarative Well-formedness and Subtyping}
+\caption{%Well-formedness of Declarative Types and 
+Declarative Well-formedness and Subtyping}
+\end{figure}
+
+\begin{figure}[t]
+\begin{tabular}{rl}
+    \framebox{$\Psi \vdash e \Lto A$} & $e$ checks against input type $A$.\\[0.5mm]
+    \framebox{$\Psi \vdash e \To A$} & $e$ synthesizes output type $A$.\\[0.5mm]
+    \framebox{$\Psi \vdash \appInf{A}{e}{C}$} & Applying a function of type $A$ to $e$ synthesizes type $C$.
+\end{tabular}
+\begin{gather*}
+\inferrule*[right=$\mathtt{DeclVar}$]
+    {(x:A)\in\Psi}{\Psi\vdash x\To A}
+\qquad
+\inferrule*[right=$\mathtt{DeclSub}$]
+%e \neq \lam e' \quad B \neq \all B' \quad 
+    {\Psi\vdash e\To A \quad \Psi\vdash A\le B}
+    {\Psi \vdash e\Lto B}
+\\
+\inferrule*[right=$\mathtt{DeclAnno}$]
+    {\Psi \vdash A \quad \Psi\vdash e\Lto A}
+    {\Psi\vdash (e:A)\To A}
+\qquad
+\inferrule*[right=$\mathtt{Decl1I}$]
+    {~}{\Psi\vdash () \Lto 1}
+\qquad
+\inferrule*[right=$\mathtt{Decl1I{\To}}$]
+    {~}{\Psi\vdash () \To 1}
+\\
+\inferrule*[right=$\mathtt{Decl\forall I}$]
+    {\Psi,a \vdash e \Lto A}
+    {\Psi\vdash e\Lto \all A}
+\qquad
+\inferrule*[right=$\mathtt{Decl\forall App}$]
+    {\Psi \vdash \tau \quad \Psi\vdash \appInf{[\tau/a]A}{e}{C} }
+    {\Psi\vdash \appInf{\all A}{e}{C}}
+\\
+\inferrule*[right=$\mathtt{Decl{\to}I}$]
+    {\Psi,x:A \vdash e\Lto B}
+    {\Psi\vdash \lam e \Lto A \to B}
+\qquad
+\inferrule*[right=$\mathtt{Decl{\to}I{\To}}$]
+    {\Psi\vdash \sigma\to\tau \quad \Psi,x:\sigma \vdash e\Lto \tau}
+    {\Psi\vdash \lam e \To \sigma\to\tau}
+\\
+\inferrule*[right=$\mathtt{Decl{\to} E}$]
+    {\Psi\vdash e_1\To A \quad \Psi\vdash \appInf{A}{e_2}{C}}
+    {\Psi\vdash e_1~e_2 \To C}
+\qquad
+\inferrule*[right=$\mathtt{Decl{\to}App}$]
+    {\Psi\vdash e \Lto A}
+    {\Psi\vdash \appInf{A \to C}{e}{C}}
+\end{gather*}
+\Description{Declarative Typing}
+\caption{Declarative Typing}
+\end{figure}
+
+Subsection~\ref{subsec:dk:decl} introduces DK's
+declarative subtyping and typing systems.
+We also duplicate the rules here for the convenience of the reader.
 
 \paragraph{Overlapping Rules}
-Some of the declarative rules overlap with each other.
+A problem we found in the declarative system is that
+some of the rules overlap with each other.
 Declarative subtyping rules $\mathtt{{\le}\forall L}$ and $\mathtt{{\le}\forall R}$
 both match the conclusion $\Psi\vdash \all A \le \all B$.
 In such case, choosing $\mathtt{{\le}\forall R}$ first is always better,
@@ -22,30 +162,30 @@ The declarative typing rule $\mathtt{DeclSub}$ overlaps with
 both $\mathtt{Decl\forall I}$ and $\mathtt{Decl{\to}I}$.
 However, we argue that more specific rules are always the best choices,
 i.e. $\mathtt{Decl\forall I}$ and $\mathtt{Decl{\to}I}$ should have
-higher priority than $\mathtt{DeclSub}$. We will come back to this
-topic in Section~\ref{sec:metatheory:non-overlapping}.
-\begin{comment}
+higher priority than $\mathtt{DeclSub}$.
+
 For example, $\Psi\vdash \lam x \Lto \all a\to a$ succeeds if derived from
-Rule $\mathtt{Decl\forall I}$, but fails when applied to $\mathtt{DeclSub}$:
+Rule $\mathtt{Decl\forall I}$:
 $$
 \inferrule*[right={$\mathtt{Decl\forall I}$}]
-	{\inferrule*[Right={$\mathtt{Decl\to I}$}]
+	{\inferrule*[Right={$\mathtt{Decl{\to}I}$}]
 		{\Psi,a,x:a \vdash x \Lto a}
 		{\Psi,a \vdash \lam x \Lto a \to a}
 	}
-	{\Psi\vdash \lam x \Lto \all a \to a}
+	{\Psi\vdash \lam x \Lto \all a \to a},
 $$
+but fails when applied to $\mathtt{DeclSub}$:
 $$
 \inferrule*[right={$\mathtt{DeclSub}$}]
 	{
-		\inferrule*[right=$\mathtt{Decl\to I\To}$]
+		\inferrule*[right=$\mathtt{Decl{\to}I{\To}}$]
 			{\Psi \vdash \blue\sigma\to \blue\tau \quad \Psi,x:\blue\sigma\vdash e \Lto \blue\tau}
 			{\Psi \vdash \lam x \To \blue\sigma\to \blue\tau}\quad
 		\inferrule*[Right=$\mathtt{{\le}\forall R}$]
 			{\inferrule*[Right=$\mathtt{{\le}{\to}}$]
 				{
 					\inferrule*[Right=$?$]
-						{\text{Impossible! }\blue\sigma \neq a}
+						{\textit{Impossible!} \\\\ a \notin \text{FV}(\blue\sigma)}
 						{\Psi,a \vdash a \le \blue\sigma}
 					\quad \Psi,a \vdash \blue\tau \le a
 				}
@@ -53,10 +193,10 @@ $$
 			}
 			{\Psi\vdash \blue\sigma\to \blue\tau\le \all a \to a}
 	}
-{\Psi\vdash \lam x \Lto \all a \to a}
+{\Psi\vdash \lam x \Lto \all a \to a}.
 $$
 
-Rule $\mathtt{Decl\to I}$ is also better at handling higher-order types.
+Rule $\mathtt{Decl{\to}I}$ is also better at handling higher-order types.
 When the lambda-expression to be inferred has a polymorphic input type,
 such as $\all a \to a$,
 $\mathtt{DeclSub}$ may not derive some judgments.
@@ -64,12 +204,15 @@ For example, $\Psi,id:\all a\to a \vdash \lam[f] f~id~(f~()) \Lto (\all a\to a) 
 requires the argument of the lambda-expression to be a polymorphic type,
 otherwise it could not be applied to both $id$ and $()$.
 If Rule $\mathtt{DeclSub}$ was chosen for derivation,
-the type of its argument is restricted by Rule $\mathtt{Decl\to I\To}$,
+the type of its argument is restricted by Rule $\mathtt{Decl{\to}I{\To}}$,
 which is not a polymorphic type.
 By contrast,
-Rule $\mathtt{Decl\to I}$ keeps the polymorphic argument type $\all a\to a$,
+Rule $\mathtt{Decl{\to}I}$ keeps the polymorphic argument type $\all a\to a$,
 and will successfully derive the judgment.
-\end{comment}
+
+We will come back to this
+topic in Section~\ref{sec:metatheory:non-overlapping}
+and formally derive a system without overlapping rules.
 
 %-------------------------------------------------------------------------------
 \subsection{DK's Algorithm}\label{ssec:DK_Algorithm}
