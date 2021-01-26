@@ -218,7 +218,7 @@ $\Psi'$ that it subsumes.
 We have tried to follow DK's manual proof of this lemma,
 but we discovered several problems in their reasoning that we have been unable to address.
 Fortunately we have found a different way to prove the lemma.
-The details of this issue can be found in Appendix. %~\ref{appendix:subsumption}.
+The details of this issue can be found in Chapter~\ref{appendix:subsumption}.
 
 \paragraph{Three-Way Soundness and Completeness Theorems}
 We now have three systems that can be related: DK's overlapping declarative system,
@@ -342,6 +342,80 @@ Given \emph{wf }$\Gm$ containing no judgments:
 %-------------------------------------------------------------------------------
 \subsection{Decidability}
 
+
+\begin{figure}[h!]
+    \begin{minipage}[t]{.5\textwidth}
+        \centering\framebox{$|\Gm|_e$, $|\jg|_e$, $|e|_e$} {Size measure.}
+        \begin{gather*}
+            \begin{aligned}
+            |\Gm|_e &= \sum_{\jg \in \Gm} |\jg|_e\\[2mm]
+            |A \le B|_e &= 0\\
+            |e \Lto A|_e &= |e|_e\\
+            |e \To \jg|_e &= |e|_e + |\jg|_e\\
+            |\appInfAlg{A}{e}|_e &= |e|_e + |\jg|_e\\[2mm]
+            |x|_e &= |()|_e = 1\\
+            \qquad |\lam e|_e &= |e|_e + 1\\
+            |e_1~e_2|_e &= |e_1|_e + |e_2|_e + 1\\
+            |e:A|_e &= |e|_e + 1
+            \end{aligned}
+        \end{gather*}
+        
+        \centering\framebox{$|\Gm|_\Leftrightarrow$, $|\jg|_\Leftrightarrow$} {Judgment measure.}
+        \begin{gather*}
+            \begin{aligned}
+            |\Gm|_\Leftrightarrow &= \sum_{\jg \in \Gm} |\jg|_e\\[2mm]
+            % 2\cdot\#_{e\Lto A\in\Gm} +
+            %    \#_{e\To_a \jg\in\Gm} + 3\cdot\#_{\appInfAlg{A}{e}\in\Gm}
+            |A \le B|_\Leftrightarrow &= 0\\
+            |e \Lto A|_\Leftrightarrow &= 2\\
+            |e \To \jg|_\Leftrightarrow &= |\jg|_\Leftrightarrow + 1\\
+            |\appInfAlg{A}{e}|_\Leftrightarrow &= |\jg|_\Leftrightarrow + 3
+            \end{aligned}
+        \end{gather*}
+        \centering\framebox{$|\Gm|_{\al}$} {Existential measure.}
+        \begin{gather*}
+            \begin{aligned}
+            |\Gm|_{\al} &= \#_{\al\in\Gm}\\
+            \end{aligned}
+        \end{gather*}
+    \end{minipage}%
+    \begin{minipage}[t]{.5\textwidth}
+        \centering\framebox{$|\Gm|_\forall$, $|\jg|_\forall$, $|A|_\forall$} {Polymorphism measure.}
+        \begin{gather*}
+            \begin{aligned}
+            |\Gm|_\Leftrightarrow &= \sum_{\jg \in \Gm} |\jg|_\forall\\[2mm]
+            |A \le B|_\forall &= |A|_\forall + |B|_\forall\\
+            |e \Lto A|_\forall &= |A|_\forall\\
+            |e \To \jg|_\forall &= |\jg|_\forall\\
+            |\appInfAlg{A}{e}|_\forall &= |A|_\forall + |\jg|_\forall\\[2mm]
+            |1|_\forall &= |a|_\forall = |\al|_\forall = 1\\
+            |A\to B|_\forall &= |A|_\forall + |B|_\forall\\
+            |\all A|_\forall &= |A|_\forall + 1
+            \end{aligned}
+        \end{gather*}
+        
+        \centering\framebox{$|\Gm|_\to$, $|\jg|_\to$, $|A|_\to$} {Function measure.}
+        \begin{gather*}
+            \begin{aligned}
+            |\Gm|_\to &= \sum_{\jg \in \Gm} |\jg|_\forall\\[2mm]
+            |A \le B|_\forall &= |A|_\forall + |B|_\forall\\
+            |e \Lto A|_\forall &= |A|_\forall\\
+            |e \To \jg|_\forall &= |\jg|_\forall\\
+            |\appInfAlg{A}{e}|_\forall &= |A|_\forall + |\jg|_\forall\\[2mm]
+            |1|_\to &= |a|_\to = |\al|_\to = 1\\
+            |A\to B|_\to &= |A|_\to + |B|_\to + 1\\
+            |\all A|_\to &= |A|_\to
+            % \sum_{e\Lto A\in\Gm}|A|_\to + \sum_{\appInfAlg{A}{e}\in\Gm}|A|_\to +
+            %     \sum_{A\le B\in\Gm} |A|_\to + |B|_\to\\
+            \end{aligned}
+        \end{gather*}
+    \end{minipage}
+\Description{Worklist measures}
+\caption{Worklist measures}
+\label{fig:measures}
+\end{figure}
+
+
 Finally, we show that our algorithm is decidable:
 \begin{theorem}[Decidability]
 Given \emph{wf} $\Gm$, it is decidable whether $\Gm\redto\nil$ or not.
@@ -349,8 +423,8 @@ Given \emph{wf} $\Gm$, it is decidable whether $\Gm\redto\nil$ or not.
 Our decidability proof is based on a lexicographic group of induction measures\\
 $\langle |\Gm|_e, |\Gm|_\Leftrightarrow, |\Gm|_\forall, |\Gm|_{\al}, |\Gm|_\to + |\Gm| \rangle$
 on the worklist $\Gm$. Formal definitions of these measures can be found in
-%Figure~\ref{fig:measures} in
-the Appendix. The first two, 
+Figure~\ref{fig:measures}.
+The first two, 
 $|\cdot|_e$ and $|\cdot|_\Leftrightarrow$, measure the total size of terms
 and the total difficulty of judgments, respectively. In the latter, check judgments
 count for 2, inference judgments for 1 and function inference judgments for 3.
@@ -511,3 +585,66 @@ The files are linearly dependent due to limitations of Abella.
 \end{tabular}
 \label{table:proof_statistics}
 \end{table}
+
+
+\paragraph{Translation Table for the Proof Scripts}
+In the proof scripts, we use textual relational definitions
+rather than the symbolic ones used in the paper.
+The mapping, shown in Table~\ref{table:translation_table}, should be helpful for anyone who reads the script.
+
+\afterpage{%
+\clearpage% Flush earlier floats (otherwise order might not be correct)
+\begin{landscape}% Landscape page
+
+\begin{table}[ht]
+\renewcommand{\arraystretch}{1.3} 
+\caption{Translation Table for the Proof Scripts}
+\centering
+\begin{tabular}{@{}llll@{}}
+\toprule
+Symbol & Abella textual relation & File (.thm) & Description\\
+\midrule
+$A$    & \texttt{ty, wft, wfta} & typing &
+    The "type" type, decl./alg. well-formedness\\
+$e$    & \texttt{tm, wftm} & typing &
+    The "term" type, (alg.) well-formedness\\
+$\Psi, \Gm$ & \texttt{olist, wfj} & typing &
+    \texttt{olist} is Abella's built-in list type, i.e. \texttt{[o]}\\
+$\jg$  & \texttt{judgment, wfjg} & typing &
+    Judgment chain and its well-formedness\\
+
+$\Gm\rto\Gm'$ & \texttt{reduction} & smallStep &
+    Algorithmic reduction: paper version\\
+$\Gm\redto\nil$ & \texttt{judge} & typing &
+    (\texttt{judge} $\Gm$): a success reduction on $\Gm$\\
+
+$\Gm \sto \Om$ & \texttt{tex} & trans &
+    "transfer existential variables"\\
+$\Om\redto\nil$ & \texttt{dc, dcl} & trans, dcl &
+    Declarative chain representation\\
+
+$\Psi'\le\Psi$ & \texttt{esub} & declTyping & Declarative context subtyping\\
+
+$\Gm\jExt\Gm'$ & \texttt{jExt} & inst\_decidable & "Judgment extension"\\
+$\Gm_i$ & \texttt{iexp} & inst\_decidable & instantiation judgments ($\Gm \vdash_{wf} \Gm_i$)\\
+$\Gm_\le$ & \texttt{subExp} & inst\_decidable & subtyping judgments\\
+
+$|\cdot|_e$ & \texttt{tmSize, tmSizeJ, tmSizel} & declTyping, decidability &
+    Size measure for term, judgment chain or context\\
+$|\cdot|_\Leftrightarrow$ & \texttt{m\_judgeJ, m\_judge} & decidability &
+    Judgment measure for judgment chain or context\\
+$|\cdot|_{\al}$ & \texttt{nVar} & inst\_decidable &
+    Existential measure for context\\
+$|\cdot|_\forall$ & \texttt{order, orderJ, orderl} & order, inst\_decidable &
+    Polymorphism measure for type, judgment chain or context\\
+$|\cdot|_\to$ & \texttt{depth, depthJ, depthl} & order, decidability &
+    Function measure for type, judgment chain or context\\
+\bottomrule
+\end{tabular}
+\label{table:translation_table}
+\end{table}
+
+\end{landscape}
+\clearpage% Flush page
+}
+

@@ -1,3 +1,56 @@
 
-\section{Introduction and Motivation}
+\section{Overview}
 
+In this chapter, we present a worklist algorithm
+which further supports subtyping,
+by introducing the top and bottom types.
+Such type inference algorithms are known to be hard to design,
+due to the complication of unifying variables under subtyping inequality
+rather than equality.
+Therefore, algorithmic existential variables that appear in subtyping judgments
+might have more solutions than before,
+and the eager substitution rules miss some possibilities.
+Our new \emph{backtracking} algorithm extends the existing one by some overlapping rules that
+non-deterministically try different sorts of solutions instead of a single sort,
+improving the rate of success guessing.
+
+Formalization of the algorithm in the Abella theorem prover shows soundness of the algorithm
+with respect to our declarative specification.
+Although the backtracking algorithm is still incomplete in some corner cases,
+the proof script indicates that the only source of incompleteness comes from
+higher-ranked subtyping relations.
+Following that discovery, we formally proved a partial completeness of our subtyping algorithm
+under the rank-1 restriction,
+and is at least comparable to local type inference algorithms.
+
+\subsection{Type Inference in Presence of Subtyping}
+
+In all previous chapters, ``subtyping'' refers to a relation that compares
+the degree of polymorphism between two types.
+In addition to that, we also include the top and bottom types.
+Bothe of the types have practical uses, especially in object-oriented programming languages.
+The top type, $\top$, is the super type of any type,
+i.e. any type is more general than $\top$
+and thus can be considered as an instance of type $\top$.
+In typical object-oriented programming languages, the \texttt{Object} class,
+as the base class of any class, is the $\top$ type.
+In contrast, the bottom type, $\bot$, is dual to $\top$.
+An instance of $\bot$ can be casted to a value of any type, which is usually impossible,
+except when that is a \texttt{null pointer} value (\texttt{(void *)} in C++, for example).
+Another practical use for bottom types is for exceptions.
+The type $\text{Exception} \to \bot$ given to the \texttt{raise}
+function may pass type checkers natually.
+The type $\text{Exception} \to \all a$ is also a reasonable choice,
+which in fact reveals that $\bot$ behaves almost identical to $\all a$.
+In the theoretical point of view, both of them are considered ``falsity''.
+
+
+
+\subsection{Judgment List and Eager Substitution}
+
+\subsection{Lazy Substitution and Non-terminating Loops}
+
+Since eager substitution does not ...
+
+
+\subsection{Our Solution: Backtracking Algorithm}

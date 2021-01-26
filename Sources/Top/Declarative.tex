@@ -21,21 +21,7 @@ is similar to the previous systems by having
 a primitive type $1$, type variables $a$,
 polymorphic types $\all A$ and function types $A \to B$.
 Additionally, top and bottom types are introduced to the type system.
-The top type, $\top$, is the super type of any type,
-i.e. any type is more general than $\top$
-and thus can be considered as an instance of type $\top$.
-In typical object-oriented programming languages, the \texttt{Object} class,
-as the base class of any class, is the $\top$ type.
-In contrast, the bottom type, $\bot$, is dual to $\top$.
-An instance of $\bot$ can be casted to a value of any type, which is usually impossible,
-except when that is a \texttt{null pointer} value (\texttt{(void *)} in C++, for example).
-Another practical use for bottom types is exception.
-The type $\text{Exception} \to \bot$ given to the \texttt{raise}
-function may pass type checkers natually.
-The type $\text{Exception} \to \all a$ is also a reasonable choice,
-which in fact reveals that $\bot$ behaves almost identical to $\all a$.
-In the theoretical point of view, both of them are considered ``falsity''.
-\jimmy{The discussion might be moved to intro/motivation part}
+% intro of top/bot moved to intro
 
 The well-formedness for the system is standard and almost identical to the previous systems,
 therefore we omit the formal definitions.
