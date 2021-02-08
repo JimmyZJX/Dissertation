@@ -1,6 +1,15 @@
 
 \section{Metatheory}
 
+In this section we present several properties formally verified.
+For the declarative system, the typing subsumption and subtyping
+transitivity lemmas are discussed in detail.
+The algorithmic system is proven to be sound with respect
+to the declarative system via a transfer relation.
+A partial completeness theorem is shown under the rank-1 restriction.
+We then briefly describe the challenges we face when proving termination.
+Lastly, proof statistics of Abella are discussed.
+
 \subsection{Declarative Properties}\label{sec:meta:decl}
 
 An important desired property for a type system is \emph{checking subsumption},
@@ -64,8 +73,17 @@ A basic property of worklist subtyping is that they acts similarly when viewed a
 
 The two new declarative rules $\mathtt{Decl\top}$ and $\mathtt{Decl{\bot}App}$ are
 discovered through it and verified against it.
+Without these rules, for any checking relation $\Psi \vdash e \Lto A$,
+one definitely expects that $e$ may be checked by any super type of $A$,
+therefore $\Psi \vdash e \Lto \top$ should hold.
+Similarly, a more general type $\bot$ should behave as if it was any function types,
+or simply the most general form $\top \to \bot$,
+which accepts any input and returns the $\bot$ type,
+resulting in the derivation $\Psi \vdash \appInf{\bot}{e}{\bot}$.
+
+
 To the best of the authors' knowledge,
-they are the minimal set of rules that keep the lemma hold.
+they are the minimal set of rules that make the lemma hold.
 
 
 \paragraph{Subtyping Transitivity}
@@ -87,7 +105,7 @@ The proof depends on the following subtyping derivation size relation and an aux
     \end{gather*}
 \end{definition}
 
-\begin{lemma}[Subtyping Substiting Mono-type]
+\begin{lemma}[Monotype Subtyping Substitution]
     If $\Psi \vdash \tau$ and $\Psi, a, \Psi_R \vdash A \le B$, then
     $\Psi, [\tau/a]\Psi_R \vdash [\tau/a]A \le [\tau/a]B$.
 \end{lemma}
@@ -97,7 +115,7 @@ The proof depends on the following subtyping derivation size relation and an aux
     finishes the proof.
 \end{proof}
 
-\begin{corollary}[Subtyping Substiting Type Var with a Mono-type]
+\begin{corollary}[Monotype Subtyping Substitution for Type Variables]
     \label{cor:subtyping_subst_mono}
     If $\Psi \vdash \tau$ and $\Psi, a \vdash A \le B$, then
     $\Psi \vdash [\tau/a]A \le [\tau/a]B$.
@@ -124,6 +142,75 @@ The proof depends on the following subtyping derivation size relation and an aux
     By induction hypothesis we get $\Psi \vdash A \le C$ and finishes this case.
 \end{proof}
 
+\subsection{Transfer}
+
+\begin{figure}[t]
+    \begin{gather*}
+    \begin{aligned}
+    \text{Declarative worklist}\qquad&\Om &::=&\quad \nil \mid \Om, a \mid \Om, x: A \mid \Om \Vdash \jg
+    \end{aligned}
+    \end{gather*}
+    \hfill \framebox{$\Gm \sto \Om$} \hfill $\Gm$ instantiates to $\Om$.
+    \begin{gather*}
+    \inferrule*[right=$\mathtt{{\sto}}\Om$]
+    {~}
+    {\Om \sto \Om}
+    \quad
+    \inferrule*[right=$\mathtt{{\sto}\al}$]
+    {\Om\vdash\tau \\ \Om,[\tau/\al]\Gm \sto \Om}
+    {\Om,\al,\Gm \sto \Om}
+    \end{gather*}
+    \Description{Declarative Worklists and Instantiation}
+    \caption{Declarative Worklists and Instantiation}
+    \label{fig:top:trans}
+\end{figure}
+
+Follow the approach of Section~\ref{sec:metatheory},
+the transfer relation and the declarative instantiation relation are defined
+in Figure~\ref{fig:top:trans}.
+
+Similarly, Lemmas~\ref{lem:top:insert} and \ref{lem:top:extract}
+generalizing Rule $\mathtt{{\sto}\al}$ hold as well.
+
+\begin{lemma}[Insert]\label{lem:top:insert}
+If $\Gm_L, [\tau/\al]\Gm_R \sto \Om$ and $\Gm_L\vdash \tau$
+, then $\Gm_L, \al, \Gm_R \sto \Om$.
+\end{lemma}
+\begin{lemma}[Extract]\label{lem:top:extract}
+If $\Gm_L, \al, \Gm_R \sto \Om$
+, then there exists $\tau$ s.t. $\Gm_L\vdash\tau$ and $\Gm_L, [\tau/\al]\Gm_R \sto \Om$.
+\end{lemma}
+
+\begin{figure}[ht]
+\hfill \framebox{$\|\Om\|$} \hfill Judgment erasure.
+\begin{gather*}
+\begin{aligned}
+\|\nil\| &= \nil\\
+\|\Om,a\| &= \|\Om\|, a\\
+\|\Om,x:A\| &= \|\Om\|, x:A\\
+\|\Om\Vdash\jg\| &= \|\Om\|
+\end{aligned}
+\end{gather*}
+
+\hfill \framebox{$\Om \rto \Om'$} \hfill Declarative transfer.
+\begin{gather*}
+\begin{aligned}
+\Om,a &\rto \Om \\  \Om,x:A & \rto \Om\\
+\Om\Vdash A\le B &\rto \Om &\text{ when } \|\Om\| \vdash A\le B\\
+\Om\Vdash e\Lto A &\rto \Om & \text{ when } \|\Om\| \vdash e\Lto A\\
+\Om\Vdash e\To_a \jg &\rto \Om\Vdash[A/a]\jg & \text{ when } \|\Om\| \vdash e\To A\\
+\Om\Vdash \appInfAlg{A}{e} &\rto \Om\Vdash[C/a]\jg & \text{ when } \|\Om\| \vdash \appInf{A}{e}{C}\\
+\end{aligned}
+\end{gather*}
+\Description{Declarative Transfer}
+\caption{Declarative Transfer}
+\label{fig:top:decl:worklist}
+\end{figure}
+
+Figure~\ref{fig:top:decl:worklist} defines a relation $\Om \rto \Om'$,
+checking that every judgment entry in the worklist
+holds using a corresponding declarative judgment.
+
 \subsection{Soundness}
 
 Our algorithm is sound with respect to the declarative system.
@@ -132,13 +219,13 @@ there is a valid instantiation $\Om$ that transfers all judgments
 to the declarative system.
 \begin{theorem}[Soundness]
 If \emph{wf }$\Gm$ and $\Gm \redto \nil$,
-then there exists $\Om$ s.t. $\Gm\sto\Om$ and $\Om\redto\nil$.
+then there exists $\Om$ s.t. $\Gm \sto \Om$ and $\Om \redto \nil$.
 \end{theorem}
 
 \subsection{Partial Completeness of Subtyping: Rank-1 Restriction}
 
 The algorithm is incomplete due to the subtyping rules 14, 15, 20 and 21.
-However, subtyping is complete with respect to the declarative system in rank-1 setting.
+However, subtyping is complete with respect to the declarative system in a rank-1 setting.
 
 \paragraph{Declarative Rank-1 Restriction}
 
@@ -184,11 +271,13 @@ and creates a judgment like $\tau \le \tau_A$.
 Notice that $\sigma_A$ is not possible to occur to the right
 because the function type may not contain any polymorphic types as its argument type.
 
-\jimmy{TODO the detailed analysis, perhaps a graph?}
 After a detailed analysis on the judgments derivations,
 we found that the only possible judgments that a rank-1 declarative subtyping judgment
 might step to belong to the following two categories:
 $$\sigma_A \le \sigma \quad\text{or}\quad \tau \le \sigma_A$$
+All the possible judgment types shown above fall into these categories.
+For example, $\tau_A \le \tau$ is a special form of $\sigma_A \le \sigma$,
+and $\tau \le \tau_A$ belongs to $\tau \le \sigma_A$.
 
 An interesting observation is that $\al \le \bt$ does not belong to either category,
 neither does $\al \le A \to B$ when $\al \in \text{FV}(A \to B)$.
@@ -207,7 +296,7 @@ and our algorithm is complete.
 
 \subsection{Termination}
 
-The measure used in ICFP no longer works because subtyping judgments like
+The measure used in Chapter~\ref{chap:ICFP} no longer works because subtyping judgments like
 $$\al \le \bot \to \top$$
 cause $\al$ to split into $\al[1] \to \al[2]$, without solving any part of it,
 resulting in an increased number of existential variables
@@ -220,3 +309,52 @@ and all judgements terminated within a reasonable number of derivation depth.
 Unfortunately, we have not yet find any formal proof for the termination statement.
 
 \subsection{Formalization in the Abella Proof Assistant}
+
+We have chosen the Abella (v2.0.7-dev
+\footnote{We use a forked version \url{https://github.com/JimmyZJX/abella} by only enhancing the Abella prover with a handy
+``applys'' tactic.}
+) proof assistant~\cite{AbellaDesc} to develop our formalization.
+Equipped with HOAS, Abella ease the formalization and proof tasks a lot
+compared with various libraries in Coq.
+Additionally, our algorithm heavily use eager substitutions,
+and Abella greatly simplifies relavent proofs thanks to its built-in
+substitution representation and higher-order unification algorithms.
+
+\paragraph{Statistics of the Proof}
+The proof script consists of 7,301 lines of Abella code with a total of
+48 definitions and 592 theorems.
+Figure~\ref{table:top:proof_statistics} briefly summarizes the contents of each file.
+The files are linearly dependent due to limitations of Abella.
+
+\begin{table}[t]
+    \renewcommand{\arraystretch}{1.2}
+    \caption{Statistics for the proof scripts}
+    \centering\begin{tabular}{@{}lrrl@{}}
+    \toprule
+        File(s) & LOC & \#Thm & Description\\
+    \midrule
+        olist.thm, nat.thm  &   311 & 57  & Basic data structures\\
+        typing.thm          &   273 & 7   & Declarative \& algorithmic system, debug examples\\
+        decl.thm            &   241 & 33  & Basic declarative properties\\
+        order.thm           &   274 & 27  & The $|\cdot|_\forall$ measure; decl. subtyping strengthening\\
+        alg.thm             &   699 & 82  & Basic algorithmic properties\\
+        trans.thm           &   635 & 53  & \makecell[l]{Worklist instantiation and declarative transfer;\\
+                                Lemmas~\ref{lem:insert}, \ref{lem:extract}}\\
+        declTyping.thm      & 1,087 & 76  & \makecell[l]{Non-overlapping declarative system; \\
+                                Lemmas~\ref{lem:inv_allR}, \ref{lem:inv_chkAll},
+                                    \ref{lem:inv_chkLam}, \ref{lem:subsumption}}\\
+        soundness.thm       & 1,206 & 81  & Soundness theorem; aux. lemmas on transfer\\
+        dcl.thm             &   417 & 12  & Non-overlapping declarative worklist \\
+        scheme.thm          & 1,113 & 98  &
+                                Type scheme (rank-1 restriction)\\
+        completeness.thm    & 1,045 & 63  &
+                                Completeness theorem; aux. lemmas and relations\\
+    \midrule
+        \emph{Total}        & 7,301 & 592 & (48 definitions in total)\\
+    \bottomrule
+    \end{tabular}
+    \label{table:top:proof_statistics}
+\end{table}
+
+
+

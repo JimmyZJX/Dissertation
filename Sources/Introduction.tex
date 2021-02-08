@@ -133,7 +133,7 @@ type. For example, the type \verb|forall a. a -> a| is more
 general than \verb|Int -> Int|. 
 % Similarly, \verb|(Int -> Int) -> (Int, Char)| is more general than \verb|(forall a . a -> a) -> (Int, Char)|
 % (due to contravariance of argument types). 
-A simple declarative specification for polymorphic subtyping
+A simple declarative polymorphic subtyping relation
 was proposed by Odersky and L\"aufer~\cite{odersky1996putting}. Since then several
 algorithms have been proposed that implement it. Most
 notably, the algorithm proposed by Peyton Jones et al.~\cite{jones2007practical} forms the basis

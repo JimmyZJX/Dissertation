@@ -39,18 +39,146 @@ An instance of $\bot$ can be casted to a value of any type, which is usually imp
 except when that is a \texttt{null pointer} value (\texttt{(void *)} in C++, for example).
 Another practical use for bottom types is for exceptions.
 The type $\text{Exception} \to \bot$ given to the \texttt{raise}
-function may pass type checkers natually.
+function may pass type checkers naturally.
 The type $\text{Exception} \to \all a$ is also a reasonable choice,
-which in fact reveals that $\bot$ behaves almost identical to $\all a$.
-In the theoretical point of view, both of them are considered ``falsity''.
+which in fact reveals that $\bot$ behaves almost identically as $\all a$.
+From the theoretical point of view, both of them represent ``falsity''.
 
+A number of systems and algorithms are proposed for type inference with subtyping.
+Since subtyping contraints cannot be easily reduced in presence of subtyping,
+it is natual to extend the syntax of types so that unsolved constraints are carried with them,
+and the idea is studied by previous work~\cite{RecConstraint1995, subcon1996}.
+For example, the following function
+\begin{verbatim}
+select p v d = if (p v) then v else d
+\end{verbatim}
+is inferred to have type
+$$(\alpha \to \text{bool}) \to \alpha \to \beta \to \gamma \mid \alpha \le \gamma, \beta \le \gamma$$
+However, this representation usually contains a large set of constraints,
+which might confuse programmers.
+Besides, subtyping comparison between constraint types is also not easy.
 
+\paragraph{MLsub}
+MLsub~\cite{mlsub}, as introduced in Section~\ref{sec:mlsub},
+is based on a type system with lattices and polar types.
+Inspired by~\cite{pottier1998phd}, they separated input and output types into polar types,
+which greatly simplifies the subtyping judgment.
+With further help of their biunification algorithm,
+constraints are no longer carried with types,
+instead they are expressed directly on types.
+For example, the \verb|select| function defined above has type
+$$(\alpha \to \text{bool}) \to \alpha \to \beta \to \alpha \sqcup \beta$$
+in MLsub.
+The $\sqcup$ symbol in the output type indicate that
+any of the types might be returned when executed.
+On the other hand, $\sqcap$ symbol might occur on an input type,
+when that argument is used as different types,
+meaning that the type must be able to convert to all these types.
+
+Nevertheless, there are still drawbacks in practice.
+Firstly, the type inference algorithm produces types that have comparable size to
+previous systems with constraint types.
+Although a simplification algorithm is provided,
+it is not guaranteed to produce the most simple form.
+
+Secondly, MLsub always infers an expression and returns its principle type,
+but some of the types are not easy to understand.
+For example, the \verb|twice| function defined as \verb|twice f x = f (f x)|
+has type $(\alpha \sqcup \beta \to \alpha) \to \beta \to \alpha$,
+where normally people might expect $(\alpha \to \alpha) \to \alpha \to \alpha$.
+
+Thirdly, MLsub tries to infer on almost every possible expression,
+even those that might just be a mistake made by the programmer.
+For instance, the function
+\begin{verbatim}
+positive f x = if x > 0 then f x else f 0
+\end{verbatim}
+always checks the positivity of \verb|x| before applying to \verb|f|.
+However, a slight mistake is made in the following definition
+\begin{verbatim}
+    positive' f x = if x > 0 then f x else f
+\end{verbatim}
+then the algorithm might still accept the program by giving the type:
+$$\alpha \sqcap (\beta \to \alpha) \to \beta \sqcap \text{int} \to \alpha$$
+Type inference algorithms, as logical tools that help people program,
+should accept good programs and reject bad ones.
+Typically, such function is considered to be badly-written,
+but unfortunately, MLsub accepts it without giving any warnings.
 
 \subsection{Judgment List and Eager Substitution}
 
-\subsection{Lazy Substitution and Non-terminating Loops}
+The judgment list algorithm we discussed in the last chapter treat subtyping
+judgments mainly as equality unification.
+However, the algorithm may lose some solutions
+when top and bottom types are introduced.
+For example,
+the judgment $\al \le 1$ has a best solution $\al := 1$ in the previous system,
+but now $\al := \bot$ should also be allowed.
+As a result, several subtyping judgments cannot be reduced easily with a single
+eager substitution.
 
-Since eager substitution does not ...
+Similar incompleteness also affect the instantiation and existential variable solving rules
+\begin{gather*}
+\begin{aligned}
+    \Gm[\al] \Vdash \al \le A\to B &\rrule{10} [\al[1]\to\al[2]/\al] (\Gm[\al[1], \al[2]] \Vdash \al[1]\to \al[2] \le A \to B)\\
+    \Gm[\al][\bt] \Vdash \al \le \bt &\rrule{12} [\al/\bt](\Gm[\al][])
+\end{aligned}
+\end{gather*}
+The instantiation judgment $\al \le A \to B$ immediately split $\al$ into $\al[1] \to \al[2]$,
+which is no longer the case --- $\al$ can also be $\bot$.
+The existential variable solving rule $\al \le \bt$ is even more problematic,
+because the shapes of the instantiations of both existential variables are unknown,
+there are infinitely many possibilities if no additional constraints present.
+
+
+% \subsection{Lazy Substitution and Non-terminating Loops}
+% discussed later
 
 
 \subsection{Our Solution: Backtracking Algorithm}
+
+After examine the examples where the worklist algorithm behave incompletely,
+we propose some improvements to the worklist algorithm to accept some simple cases.
+We have observed that subtyping judgments like $\al \le A$ and $A \le \al$ have trivial solutions
+$\al := \bot$ and $\al := \top$ respectively,
+thus we can try these simple solutions before the more complicated analysis.
+
+For example, for the judgment list $\Gm \Vdash \al \le A \to B$,
+we first assign $\al := \bot$ and continue to check other judgments.
+If the judgment reduction succeeds, then we know that $\al := \bot$ is a possible solution.
+If the reduction failed, we continue to try the other possibility according to the
+previous instantiation rule by splitting $\al$ into two existential variables $\al[1]$ and $\al[2]$.
+Note that for the reduced judgment $\al[1] \to \al[2] \le A \to B$,
+$\al[1]$ and $\al[2]$ might be solve to $\top$ or $\bot$.
+
+For the type system, there are also interesting changes to
+both the declarative system and algorithmic system.
+Two algorithmic typing rules also adopt the backtracking approach:
+\begin{itemize}
+    \item Checking judgment $e \Lto \al$ now has a trivial solution $\al := \top$,
+        because $e \Lto \top$ should be accepted for any (well-formed) expression.
+    \item The introduction of top and bottom types come with another new declarative rule
+        $\appInf{\bot}{e}{\bot}$.
+        Therefore the application inference judgment $\appInfAlg{\al}{e}$
+        can be satisfied by $\al := \bot$,
+        with output $\bot$ applied to the rest of the judgment chain $\jg$.
+\end{itemize}
+
+By applying the above modifications,
+the algorithm remains sound w.r.t our new declarative system,
+and at the same time, we address most issues regarding the top and bottom types,
+obtaining a more complete algorithm.
+Furthermore, we formally verified that the subtyping algorithm
+is complete under the rank-1 restriction.
+However, for rank-2 judgments like $\al \le \bt$,
+completeness is impossible for any algorithm that reduces eagerly.
+
+Following the formal statements, we conclude that the backtracking algorithm
+is complete on most cases other than those where higher-ranked
+subtyping judgments are involved.
+In those cases, we only consider the equality case and ignore any other possibilities,
+and we believe that this is a practical tradeoff.
+In another perspective, our algorithm do not try to solve completely when
+parametric polymorphism and subtyping polymorphism occur at the same time.
+
+

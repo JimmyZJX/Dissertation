@@ -1,10 +1,34 @@
 
 \section{Discussion}
 
-\subsection{Design of Various Backtracing Patterns}
+% \subsection{Design of Various Backtracing Patterns}
 
 \subsection{A Complete Algorithm Under Monotype Guessing Restrictions}
 
+The incompleteness of the algorithm is mainly due to incomplete guesses
+for existential variable instantiations when dealing with subtyping.
+If the declarative system did not treat the bottom and top types
+as monotypes in the first place,
+the algorithm would not need to guess those types.
+Formally, if monotypes are defined as follows,
+$$\text{Monotypes}\qquad \tau' \quad  ::= \quad 1 \mid a \mid \tau_1\to \tau_2$$
+then unification based on equality regains completeness between monotypes.
+Incomplete examples mentioned before like $\al \le \bt$ can be safely treated as $\al = \bt$,
+because of the lemma:
+\begin{lemma}[Subtyping between Monotypes is Equality]~\\
+    If $\Psi \vdash \tau'_1 \le \tau'_2$, then $\tau'_1 = \tau'_2$.
+\end{lemma}
+
+On the meantime, algorithmic subtyping rules 12 and 13, and typing rules 27 and 37
+are removed from the algorithm under the monotype restriction,
+since these rules solves existential variables to $\top$ or $\bot$.
+As a result, both soundness and completeness are successfully mechanized.
+It is not a surprising finding,
+given that the algorithm reduce judgments in a similar way
+compared with the one in the previous chapter.
+However, it still reveals the fact that
+if we do not try to guess any subtyping relation,
+the algorithm should remain simple and complete.
 
 
 \subsection{Lazy Substitution and Non-terminating Loops}
@@ -15,7 +39,7 @@ A natural idea is to delay the solving procedure until all the corresponding
 constraints are collected.
 Constraint collection can be implemented by the following new worklist definition,
 where the existential variables also come with a set of upper bounds
-and a set of lower bounds. Both of the bounds are consist of algorithmic mono-types.
+and a set of lower bounds. Both of the bounds consist of algorithmic mono-types.
 
 \begin{gather*}
     \begin{aligned}
@@ -68,9 +92,10 @@ For example, the following derivation results in infinite instantiations:
 \rto~& \al, \{1\} \le \bt[1] \le \{\}, \{\} \le \bt[2] \le \{\al\},
         \{\} \le \bt \le \{\bt[1] \to \bt[2]\}
         \Vdash \al \le 1 \to \bt\\
+\rto~& \cdots\\
     \end{aligned}
 \end{gather*}
 
-\jimmy{Not sure whether this discussion is valueable;
-in fact the example is hard to demonstrate the infinite loop
-(not straightforward to understand)}
+% \jimmy{Not sure whether this discussion is valueable;
+% in fact the example is hard to demonstrate the infinite loop
+% (not straightforward to understand)}

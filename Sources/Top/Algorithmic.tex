@@ -141,10 +141,10 @@ We categorize them into 7 groups according to their behavior:
     \item Rules 16-19 solve existential variables against a type variable or the unit type.
         For instance, the judgment
         \[\al \le 1\]
-        only have two solutions: $\al = 1$ or $\al = \bot$.
+        only has two solutions: $\al = 1$ or $\al = \bot$.
         In similar cases, one of the solutions is produced by rule 12 or 13,
         and the other one is given by one of the rules in this group.
-        Additional well-formedness check is performed when type variables are encountered;
+        Additional well-formedness checks are performed when type variables are encountered;
         a solution to an existential variable must be well-formed in the context
         before the existential variable is defined.
     
@@ -159,7 +159,7 @@ We categorize them into 7 groups according to their behavior:
         \[ \al = \bt ~(\text{or } \bt = \al)
             \text{ or } \al = \bot \text{ or } \bt = \top \]
         Those are good attempts, but unfortunately,
-        they does not cover the complete set of possibilities.
+        they do not cover the complete set of possibilities.
         The following example worklist
         \[ \al, \bt \Vdash \bt \le 1 \to 1 \Vdash \al \le \bt \]
         has a solution $\al = 1 \to \top, \bt = 1 \to 1$ missed by our algorithm.
@@ -170,8 +170,8 @@ We categorize them into 7 groups according to their behavior:
         Although such treatment for existential variable solving is incomplete in theory,
         a large number of practical unification is simply equality,
         and the algorithm completely handles these programs.
-        Other programs that exploit complex guessing involving subtyping,
-        the programmer may put annotation when the type inference algorithm
+        For other programs that exploit complex guessing involving subtyping,
+        the programmer may put type annotations when the type inference algorithm
         does not find the optimal solution.
 \end{enumerate}
 
@@ -216,7 +216,7 @@ according to the category of the top-most judgment.
 
 \begin{enumerate}
     \item Checking mode. Rules 22-27 reduce top-level checking judgments.
-            Rules 22, 23, 24 and 26 directly reflects how the declarative system behaves.
+            Rules 22, 23, 24 and 26 directly reflect how the declarative system behaves.
             Rule 25 splits $\al$ into $\al[1] \to \al[2]$ to mimic the same logic as rule 24,
             since a lambda expression must be of an function type.
             Rule 27 is another backtracking rule, which overlaps with all other checking rules.
@@ -227,7 +227,7 @@ according to the category of the top-most judgment.
             accepts the judgment $() \Lto 1$.
     
     \item Inference mode. Rules 28-32 reduce inference judgments.
-            Like our previous work, encoding of the return type is by
+            Like the work presented in Chapter~\ref{chap:ICFP}, encoding of the return type is by
             an explicit substitution on the binder of a judgment chain.
             Rules 28, 29, 30 and 32 corresponds to the declarative system straightforwardly.
             Rule 31 guesses an unannotated lambda with a mono function type $\al \to \bt$.
@@ -247,9 +247,9 @@ according to the category of the top-most judgment.
             $\al$ as a function type.
             Rule 36 splits $\al$ into a function unknown type $\al[1] \to \al[2]$.
             Rule 37 tries the solution $\al = \bot$ and returns the $\bot$ type.
-            Both of the rules are not so useful in reality,
-            since it is derived from a parametric function type like $\all a$,
-            which behaves like the the $\bot$ type.
+            % Both of the rules are not so useful in reality,
+            % since it is derived from a parametric function type like $\all a$,
+            % which behaves like the the $\bot$ type.
 
 
 \end{enumerate}
