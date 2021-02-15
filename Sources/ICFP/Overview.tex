@@ -335,7 +335,7 @@ challenging to mechanize are the scoping of universal and existential type
 variables, and the propagation of the instantiation of existential type
 variables across judgments. 
 DK is already quite disciplined on these accounts, in particular compared to
-traditional constraint-based type-inference algorithms like Algorithm $\mathcal{W}$~\cite{milner1978theory} which
+traditional constraint-based type-inference algorithms like Algorithm $\mathcal{W}$~\citep{milner1978theory} which
 features an implicit global scope for all type variables. Indeed, DK uses its
 explicit and ordered context $\Gamma$ that tracks the relative scope of universal and
 existential variables and it is careful to only instantiate existential
@@ -387,7 +387,7 @@ In the above unification problem, all variables are implicitly bound in the same
 global scope. 
 Some constraint solving algorithms for Hindley-Milner type
   inference use similar ideas, but are more careful tracking the
-  scopes of variables~\cite{remy-attapl}. However they have separate phases for 
+  scopes of variables~\citep{remy-attapl}. However they have separate phases for 
 constraint generation and solving.
 Recent unification algorithms for dependently-typed languages
 are also more explicit about scopes. For instance, \citet{Reed2009} represents a unification
@@ -408,7 +408,7 @@ substitute solutions into these copies.
 % % dependent types that use a small-step approach. Credit them later for some ideas that 
 % % we also employ.
 % There are literals that make use of small-step unification for dependently typed
-% inference and reconstruction algorithms~\cite{Reed2009,Abel2011higher}.
+% inference and reconstruction algorithms~\citep{Reed2009,Abel2011higher}.
 % These approaches collect a list of constraints and process one at a time.
 % Similar to DK's algorithm, unification variables are used to represent the types to guess.
 % In order to solve unification variables to correctly scoped types

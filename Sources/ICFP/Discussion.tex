@@ -7,7 +7,7 @@ the scoping mechanisms we have employed with those in DK's algorithm.
 We also discuss a way to improve the precision of their scope tracking.
 Furthermore we discuss and sketch an extension of our algorithm with
 an elaboration to a target calculus, and discuss an extension of our algorithm
-with scoped type variables~\cite{scoped-type-variables}.
+with scoped type variables~\citep{scoped-type-variables}.
 
 \begin{comment}
 \subsection{Implementation}
@@ -114,7 +114,7 @@ However, this exploits markers in a way they were not intended to be used and se
 Type-inference algorithms are often extended with an
 associated elaboration. For example, for languages with implicit
 polymorphism, it is common to have an elaboration to a variant of
-System F~\cite{reynolds1983types}, which recovers type information and explicit type
+System F~\citep{reynolds1983types}, which recovers type information and explicit type
 applications. Therefore a natural question is whether our algorithm
 can also accommodate such elaboration.
 While our algorithmic reduction does not elaborate to System F,
@@ -156,7 +156,7 @@ The unit type $1$, as the simplest type in the system, is a good choice.
 
 \subsection{Lexically-Scoped Type Variables}
 We have further extended the type system with support for
-lexically-scoped type variables~\cite{scoped-type-variables}.
+lexically-scoped type variables~\citep{scoped-type-variables}.
 Our Abella formalization for this extension proves
 all the metatheory we discuss in Section~\ref{sec:metatheory}.
 

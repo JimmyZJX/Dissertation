@@ -47,7 +47,7 @@ From the theoretical point of view, both of them represent ``falsity''.
 A number of systems and algorithms are proposed for type inference with subtyping.
 Since subtyping contraints cannot be easily reduced in presence of subtyping,
 it is natual to extend the syntax of types so that unsolved constraints are carried with them,
-and the idea is studied by previous work~\cite{RecConstraint1995, subcon1996}.
+and the idea is studied by previous work~\citep{RecConstraint1995, subcon1996}.
 For example, the following function
 \begin{verbatim}
 select p v d = if (p v) then v else d
@@ -59,9 +59,9 @@ which might confuse programmers.
 Besides, subtyping comparison between constraint types is also not easy.
 
 \paragraph{MLsub}
-MLsub~\cite{mlsub}, as introduced in Section~\ref{sec:mlsub},
+MLsub~\citep{mlsub}, as introduced in Section~\ref{sec:mlsub},
 is based on a type system with lattices and polar types.
-Inspired by~\cite{pottier1998phd}, they separated input and output types into polar types,
+Inspired by~\citep{pottier1998phd}, they separated input and output types into polar types,
 which greatly simplifies the subtyping judgment.
 With further help of their biunification algorithm,
 constraints are no longer carried with types,

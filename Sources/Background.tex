@@ -116,7 +116,7 @@ This means that any expression (function) that has a polymorphic type
 can be automatically instantiated with a proper monotype for any reasonable application.
 The fact that only monotypes are guessed indicates that the system is \emph{predicative}.
 In contrast, an \emph{impredicative} system might guess polymorphic types.
-Unfortunately, type inference on impredicative systems is undecidable~\cite{wells1999typability}.
+Unfortunately, type inference on impredicative systems is undecidable~\citep{wells1999typability}.
 In this thesis, we focus on predicative systems only.
 
 \subsection{Algorithmic System and Principality}
@@ -165,7 +165,7 @@ The following property shows that the new system is (almost) equivalent to the o
 \paragraph{Type Inference Algorithm}
 Although being syntax-directed solves some problems, the rules still requires some guessings,
 including rule $\mathtt{HM \dash Abs}$ and $\mathtt{HM \dash Var \dash Inst}$.
-Algorithm W~\cite{milner1978theory}, based on unification,
+Algorithm W~\citep{milner1978theory}, based on unification,
 is proven to be sound and complete w.r.t the declarative specifications.
 
 \begin{theorem}[Algorithmic Completeness (Principality)]
@@ -182,7 +182,7 @@ is proven to be sound and complete w.r.t the declarative specifications.
 \subsection{Higher-Ranked Types}
 
 The \emph{rank} of a type represents how deep a universal quantifier
-appear at the contravariant position~\cite{rank1992kfoury}. Formally speaking,
+appear at the contravariant position~\citep{rank1992kfoury}. Formally speaking,
 
 \begin{gather*}
     \begin{aligned}
@@ -265,7 +265,7 @@ one may encode a function of higher rank in this system compared to HM's.
 
 Finally, contexts consist of not only variable bindings,
 but also type variable declarations.
-Here we adopt a slightly different approach than the original work~\cite{odersky1996putting},
+Here we adopt a slightly different approach than the original work~\citep{odersky1996putting},
 which does not track type variables explicitly in a context.
 Such explicit declarations reduce formalization difficulties especially
 when dealing with freshness conditions or variable name encodings.
@@ -421,7 +421,7 @@ with the help of the subtyping relation.
 \end{figure}
 
 \paragraph{Syntax.}
-The syntax of DK's declarative system~\cite{dunfield2013complete} is shown in Figure~\ref{fig:decl:syntax}.
+The syntax of DK's declarative system~\citep{dunfield2013complete} is shown in Figure~\ref{fig:decl:syntax}.
 A declarative type $A$ is either the unit type $1$, a type variable $a$,
 a universal quantification $\all A$ or a function type $A \to B$.
 Nested universal quantifiers are allowed for types,
@@ -529,7 +529,7 @@ The fact that $\tau$ is a monotype rules out the possibility of
 polymorphic (or impredicative) instantiation.
 However this restriction ensures that the subtyping relation remains
 decidable. Allowing an arbitrary type (rather than a monotype) in rule $\mathtt{{\le}\forall L}$
-is known to give rise to an undecidable subtyping relation~\cite{tiuryn1996subtyping}.
+is known to give rise to an undecidable subtyping relation~\citep{tiuryn1996subtyping}.
 \citet{jones2007practical} also impose the restriction of
 predicative instantiation in their type system.
 Both systems are adopted by several practical programming languages.
@@ -635,7 +635,7 @@ Rule $\mathtt{Decl{\to}I{\To}}$ is recursively applied.
 
 \section{MLsub}\label{sec:mlsub}
 
-MLsub~\cite{mlsub} extends the HM type system with subtyping.
+MLsub~\citep{mlsub} extends the HM type system with subtyping.
 In presence of subtyping, type inference does not simply handle equality during unification.
 Therefore, types are extended with lattice to express bounds properly.
 Furthermore, polar types are introduced to help separate input and output types,

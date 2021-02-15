@@ -1,6 +1,6 @@
 \section{The Choice of Abella}
 
-We have chosen the Abella (v2.0.5) proof assistant~\cite{AbellaDesc} to
+We have chosen the Abella (v2.0.5) proof assistant~\citep{AbellaDesc} to
 develop our formalization.
 Our development is only based on the reasoning logic of Abella, and does not make use of its specification logic.
 %Although Abella takes a two-level logic approach,
@@ -9,7 +9,7 @@ Our development is only based on the reasoning logic of Abella, and does not mak
 %difficulty of expressing our algorithmic rules with only the
 %specification.
 Abella is particularly helpful due to its built-in support for variable bindings, and
-its $\lambda$-tree syntax~\cite{miller2000abstract} is a form of HOAS,
+its $\lambda$-tree syntax~\citep{miller2000abstract} is a form of HOAS,
 which helps with the encoding and reasoning about substitutions.  For
 instance, the type $\forall x. x \to a$ is encoded as \abellae{all (x\  arrow x a)}, where \abellae{x\ arrow x a} is a lambda abstraction in
 Abella. An opening $[b/x](x\to a)$ is encoded as an application

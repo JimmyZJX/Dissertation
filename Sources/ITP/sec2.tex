@@ -46,7 +46,7 @@ that $A$ is ``more polymorphic than'' $B$, or $A\le B$.
 %of \verb|Int -> Int|.
 
 There is a very simple declarative formulation of
-polymorphic subtyping due to Odersky and La\"ufer~\cite{odersky1996putting}. The syntax
+polymorphic subtyping due to \citet{odersky1996putting}. The syntax
 of this declarative system is shown in Figure~\ref{fig:decl:syntax}. Types,
 represented by $A, B, C$, are the unit type $1$, type variables
 $a, b$, universal quantification $\forall a. A$ and function type
@@ -125,8 +125,8 @@ which is identical to the subtyping relation introduced in Subsection~\ref{subse
 % guess. Furthermore, the guess is a \emph{monotype}, which rules 
 % out the possibility of polymorphic (or impredicative)
 % instantiation. The restriction to monotypes and predicative
-% instantiation is used by both Peyton Jones et al.~\cite{jones2007practical} and Dunfield and 
-% Krishnaswami's~\cite{dunfield2013complete} algorithms, which are
+% instantiation is used by both Peyton Jones et al.~\citep{jones2007practical} and Dunfield and 
+% Krishnaswami's~\citep{dunfield2013complete} algorithms, which are
 % adopted by several practical implementations of programming languages.
 
 \begin{comment}
@@ -159,7 +159,7 @@ processing the first judgment should be transfered to the second judgement.
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 \paragraph{Dunfield and Krishnaswami's Approach}
 An elegant algorithmic solution to computing the monotypes is 
-presented by Dunfield and Krishnaswami~\cite{dunfield2013complete}. 
+presented by \citet{dunfield2013complete}.
 Their algorithmic subtyping judgement has the form:
 
 \[\Psi \vdash A \le B \dashv \Phi\]
@@ -172,7 +172,7 @@ processing the two types being compared for subtyping.
 Both $\Psi$ and $\Phi$ are \emph{ordered contexts} with the
 same structure. Ordered contexts are particularly useful to keep track
 of the correct scoping for variables, and
-are a notable different to older type-inference algorithms~\cite{damas1982principal} that use global
+are a notable different to older type-inference algorithms~\citep{damas1982principal} that use global
 unification variables or constraints collected in a set. 
 
 Output contexts

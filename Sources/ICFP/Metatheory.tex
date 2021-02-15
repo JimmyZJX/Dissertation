@@ -4,7 +4,7 @@ This section presents the metatheory of the algorithmic system
 presented in the previous section. We show that three main results hold: 
 \emph{soundness}, \emph{completeness} and \emph{decidability}.
 These three results have been mechanically formalized and proved in the 
-Abella theorem prover~\cite{AbellaDesc}.
+Abella theorem prover~\citep{AbellaDesc}.
 
 %-------------------------------------------------------------------------------
 \subsection{Declarative Worklist and Transfer}
@@ -533,10 +533,10 @@ We have chosen the Abella (v2.0.7-dev
 just fixed a serious bug that accepts a simple proof of false,
 which also affects our proof.
 Specifically, our scripts compile against commit 92829a of Abella's GitHub repository.}
-) proof assistant~\cite{AbellaDesc} to develop our formalization.
+) proof assistant~\citep{AbellaDesc} to develop our formalization.
 Abella is designed to help with formalizations of programming languages,
 due to its built-in support for variable binding and
-the $\lambda$-tree syntax~\cite{miller2000abstract}, which is a form of HOAS.
+the $\lambda$-tree syntax~\citep{miller2000abstract}, which is a form of HOAS.
 Nominal variables, or $\nabla$-quantified variables, are used as an unlimited name supply,
 which supports explicit freshness control and substitutions.
 Although Abella lacks packages, tactics and support for modules,

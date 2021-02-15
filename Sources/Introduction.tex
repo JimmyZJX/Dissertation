@@ -90,7 +90,7 @@ It feels a bit silly to write $\text{id}~@\text{Int}~3$ compared with $\text{id}
 because the missing type is quite easy to be figured out,
 in presence of the argument, which is of type $\text{Int}$ and
 should represent $a$ for the function application at the same time.
-With the feature called ``implicit parametric polymorphism''~\citet{reynolds1983types},
+With the feature called ``implicit parametric polymorphism''~\citep{reynolds1983types},
 type arguments like $@\text{Int}$ is not written by the programmer explicitly,
 in contrast, it is the type inference algorithm's responsibility to guess them.
 Unfortunately, there does not exist such a perfect algorithm that
@@ -115,7 +115,7 @@ under which type inference algorithms are capable of guessing the best types.
 
 \subsection{Hindley-Milner Type System}
 
-The Hindley-Milner (HM) type system~\cite{hindley1969principal,milner1978theory,damas1982principal} restricts System F types to \emph{type schemes},
+The Hindley-Milner (HM) type system~\citep{hindley1969principal,milner1978theory,damas1982principal} restricts System F types to \emph{type schemes},
 or \emph{first-order polymorphism},
 where polymorphic types can only have universal quantifiers in the top level.
 For example, $\all[a~b] (a \to b) \to a \to b$ is allowed,
@@ -146,7 +146,7 @@ We refer to such system as \emph{predicative}.
 In contrast, System F does not restrict the types to instantiate,
 thus being a impredicative system.
 An important challenge is that full type inference for impredicative
-polymorphism is known to be undecidable~\cite{wells1999typability}.
+polymorphism is known to be undecidable~\citep{wells1999typability}.
 There are works that focus on practical inference of impredicative systems \jimmy{cite}.
 However, throughout this work, we study predicative type systems only.
 
@@ -159,7 +159,7 @@ Thus one expected feature is to allow
 \emph{higher-ranked polymorphism} where polymorphic types can
 occur anywhere in a type signature.
 This enables more code reuse and more expressions to type-check, and has
-numerous applications~\cite{jones1995functional,gill1993short,launchbury1995state,lammel2003scrap}.
+numerous applications~\citep{jones1995functional,gill1993short,launchbury1995state,lammel2003scrap}.
 
 One of the interesting examples is the ST monad of Haskell,
 where the \verb|runST| function is only possible to express in a rank-2 type system:
@@ -173,7 +173,7 @@ otherwise the type checker should reject in advance.
 In order to support higher-ranked types, we need to extend the type system of HM,
 but not taking a too big step since type inference for full System F would be impossible.
 A simple polymorphic subtyping relation
-proposed by Odersky and L\"aufer~\cite{odersky1996putting}
+proposed by \citet{odersky1996putting}
 extends the HM system by allowing higher-ranked types,
 but instantiations are still limited to monotypes,
 thus the system remains predicative.
@@ -183,7 +183,7 @@ thus the system remains predicative.
 In order to improve the expressiveness for higher-ranked systems,
 some type annotations are necessary to guide type inference.
 In response to this challenge several decidable type systems requiring some annotations 
-have been proposed~\cite{dunfield2013complete,
+have been proposed~\citep{dunfield2013complete,
 jones2007practical,Serrano2018,le2003ml,leijen2008hmf,vytiniotis2008fph}.
 
 As an example,
@@ -236,16 +236,27 @@ firstly, the type of the function is inferred to $A$;
 then the application inference judgment calls the checking mode,
 to verify if the argument $e$ checks against the argument part of $A$;
 finally, output the return part of $A$.
+$$\inferrule*[right=$\mathtt{Decl\forall App}$]
+    {\Psi \vdash \tau \quad \Psi\vdash \appInf{[\tau/a]A}{e}{C} }
+    {\Psi\vdash \appInf{\all A}{e}{C}}$$
 The use of application inference judgment avoids implicit instantiations
 of types like HM, instead,
 when the function type $A$ is a polymorphic type,
 it is explicitly instantiated by the application inference until it becomes a function type:
-$$TODO DK rule$$
+$$
+\inferrule*[right=$\mathtt{Decl{\to} E}$]
+    {\Psi\vdash e_1\To A \quad \Psi\vdash \appInf{A}{e_2}{C}}
+    {\Psi\vdash e_1~e_2 \To C}
+\qquad
+\inferrule*[right=$\mathtt{Decl{\to}App}$]
+    {\Psi\vdash e \Lto A}
+    {\Psi\vdash \appInf{A \to C}{e}{C}}
+$$
 As a result, DK is in a more syntax-directed system compared with HM-like systems.
 
 DK also provided an elegant formalization of their sound and complete algorithm,
 which has also inspired implementations of type inference in some polymorphic 
-programming languages (such as PureScript~\cite{PureScript} or DDC~\cite{Disciple}).
+programming languages (such as PureScript~\citep{PureScript} or DDC~\citep{Disciple}).
 
 
 
@@ -271,14 +282,14 @@ have been mechanically formalized in theorem provers, there is little work on
 formalizing algorithms related to type-inference. The main exceptions to the rule
 are mechanical formalizations of algorithm $\mathcal{W}$ and other aspects
 of traditional Hindler-Milner 
-type-inference~\cite{naraschewski1999type,dubois2000proving,
+type-inference~\citep{naraschewski1999type,dubois2000proving,
 dubois1999certification,urban2008nominal,garrigue2015certified}.
 However, as far as we know, there is no mechanisation of algorithms 
 used by modern functional languages like Haskell, and
 polymorphic subtyping included is no exception.  
 This is a shame because recently there has been a lot of effort
 in promoting the use of theorem provers to check the meta-theory 
-of programming languages, e.g., through well-known examples like the \textsc{POPLMark} challenge~\cite{aydemir2005mechanized} and the CompCert project~\cite{leroy2012compcert}.
+of programming languages, e.g., through well-known examples like the \textsc{POPLMark} challenge~\citep{aydemir2005mechanized} and the CompCert project~\citep{leroy2012compcert}.
 Mechanical formalizations are especially valuable for proving the
 correctness of the semantics and type systems 
 of programming languages. Type-inference algorithms are arguably among
@@ -300,7 +311,7 @@ that this is the primary reason why theorem provers have still not been widely
 adopted for formalizing type-inference algorithms.
 
 \paragraph{Abella}
-The Abella theorem prover~\cite{AbellaDesc} is one that specifically ease
+The Abella theorem prover~\citep{AbellaDesc} is one that specifically ease
 formalization on binders.
 Its $\lambda$-tree syntax, or HOAS, and features including the $\nabla$ quantifier
 and higher-order unification, have better experiences than using Coq libraries.

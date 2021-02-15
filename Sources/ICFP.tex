@@ -15,7 +15,7 @@ Unison. The DK type system has two variants: a declarative
 and an algorithmic one. The two variants have been
 \emph{manually} proved to be \emph{sound}, \emph{complete} and
 \emph{decidable}.
-We present a mechanical formalization in the Abella theorem prover~\cite{AbellaDesc} for
+We present a mechanical formalization in the Abella theorem prover~\citep{AbellaDesc} for
 DK's declarative type system using a different algorithm.
 
 \paragraph{Challenges}
@@ -42,7 +42,7 @@ on their part. Instead it should be an indicator that reinforces the arguments
 for mechanical formalizations: manual formalizations are error-prone due to the multiple
 tedious details involved in them.
 There are several other examples of manual formalizations that were found to have
-similar problems. For example, Klein et al.~\cite{KleinRunYourResearch}
+similar problems. For example, \citet{KleinRunYourResearch}
 mechanized formalizations
 in Redex for nine ICFP 2009 papers and all were found to have mistakes.
 
@@ -58,24 +58,24 @@ type inference. However modeling output contexts in a theorem prover
 is non-trivial.
 
 Due to those two challenges, our work takes a different approach by refining and
-extending the idea of \emph{worklist judgments}~\cite{itp2018},
+extending the idea of \emph{worklist judgments}~\citep{itp2018},
 proposed recently to mechanically formalize an algorithm for
-\emph{polymorphic subtyping}~\cite{odersky1996putting}. A key innovation in our work is how
+\emph{polymorphic subtyping}~\citep{odersky1996putting}. A key innovation in our work is how
 to adapt the idea of worklist judgments to
 \emph{inference judgments}, which are not needed for polymorphic
 subtyping, but are necessary for type-inference.  The idea is to use a \emph{continuation
 passing style} to enable the transfer of inferred information across
 judgments. A further refinement to the idea of worklist judgments is
 the \emph{unification between ordered
-  contexts~\cite{gundry2010type,dunfield2013complete} and worklists}.
+  contexts~\citep{gundry2010type,dunfield2013complete} and worklists}.
 This enables precise scope tracking of free variables in
 judgments. Furthermore it avoids the duplication of context
 information across judgments in worklists that occurs in other
-techniques~\cite{Reed2009,Abel2011higher}.
+techniques~\citep{Reed2009,Abel2011higher}.
 Despite the use of a different algorithm we prove the
 same results as DK, although with significantly different proofs and
 proof techniques. The calculus and its metatheory
-have been fully formalized in the Abella theorem prover~\cite{AbellaDesc}.
+have been fully formalized in the Abella theorem prover~\citep{AbellaDesc}.
 
 
 \input{Sources/ICFP/Overview.tex}
