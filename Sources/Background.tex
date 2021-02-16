@@ -3,8 +3,36 @@
 \label{chap:Background}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
+In this chapter we introduce some type systems which are basic concepts
+in order to help understand the rest of the thesis better.
+Section~\ref{sec:bg:hm} introduces the
+Hindley-Milner type system~\citep{hindley1969principal,
+milner1978theory,damas1982principal},
+a widely used system that support rank-1 (prenex) polymorphism.
+Section~\ref{sec:bg:ol} presents the Odersky-L\"aufer type system,
+which is an extension of the Hindley-Milner by allowing higher-ranked types.
+Section~\ref{sec:bg:dk} describes the Dunfield-Krishnaswami
+bidirectional type system,
+a bidirectional type system that further extends Odersky-L\"aufer's.
+Finally in Section~\ref{sec:mlsub} we introduce
+one of the recent advancements in the ML family,
+namely the MLsub type system,
+which integrets object-oriented subtyping with the Hindley-Milner type inference.
 
-\section{Hindley-Milner Type System}
+
+\section{Hindley-Milner Type System}\label{sec:bg:hm}
+
+The Hindley-Milner type system, hereafter called ``HM'' for short,
+is a classical lambda calculus with parametric polymorphism.
+Thanks to its simple formulation and powerful inference algorithm,
+many modern functional programming languages are still using HM as their base,
+including the ML family and Haskell.
+The system is also known as Damas–Milner or Damas–Hindley–Milner.
+Hindley~\citep{hindley1969principal} and Milner~\citep{milner1978theory}
+independently discovered equivalent algorithms for the polymorphic typing problem
+and also proved the soundness of their algorithms.
+Later on, Damas and Milner~\citep{damas1982principal} proved the completeness of their
+algorithm.
 
 \subsection{Declarative System}
 
@@ -176,8 +204,43 @@ is proven to be sound and complete w.r.t the declarative specifications.
     \end{enumerate}
 \end{theorem}
 
+
+
+
 \section{Odersky-L\"aufer Type System}\label{sec:bg:ol}
 
+The HM type system is simple, powerful and easy-to-use.
+However, it only accepts types of rank-1, i.e. the $\forall$
+quantifier can only appear in the top-level.
+In practice, there are cases where \emph{higher-ranked} types are needed.
+The rank-1 limitation prevents those programs to type check and thus loses expressiveness.
+The problem is that full type inference for System F
+is proven to be undecidable~\citep{wells1999typability}.
+\citet{odersky1996putting} then proposed a system where programmer can
+make use of type annotations to guide the type system especially on higher-ranked types.
+This extension of HM preserves nice properties of HM,
+while accepting higher-ranked types to be checked with the help of the programmers.
+
+For example, consider the following function definition
+$$\lam[f] (f~1, f~'c')$$
+This is not typeable in HM, because the argument of the lambda abstraction, $f$,
+is applied to both an integer and a character,
+which means that is should be of a polymorphic unknown type,
+thus the type of the lambda abstraction cannot be inferred by the HM type system.
+This seems reasonable, since there are several polymorphic types that fits the function,
+for example,
+$$\lam[f] (f~1, f~'c') :: (\all a \to a) \to (\text{Int}, \text{Char})$$
+$$\lam[f] (f~1, f~'c') :: (\all a \to \text{Int}) \to (\text{Int}, \text{Int})$$
+
+The solution is also natural: if the programmer may pick the type of argument she wants,
+the type system can figure out the rest. By adding type annotation on $f$,
+OL now accepts the definition
+$$\lam[(f:\all a \to a)] (f~1, f~'c')$$
+and infers type $(\all a \to a) \to (\text{Int}, \text{Char})$.
+
+In what follows, we will first formally define the rank of a type,
+and then introduce the declarative system of OL,
+finally discuss the relationship between OL and HM.
 
 \subsection{Higher-Ranked Types}
 
@@ -396,10 +459,36 @@ with the help of the subtyping relation.
 
 \subsection{Relating to HM}
 
+The OL type system accepts higher-ranked types,
+but it only try to instantiate monotypes like HM.
+Therefore, OL extends HM in a conservative way, such that
+every typed expression in HM is also typed in OL.
+In the meantime, all the ``guessing'' jobs OL needs to do
+remains in instantiating monotypes,
+thus the algorithm can be extended directly from any one for HM.
+In other words, it is the typing rules that helps the type system to reason about
+higher-ranked types, without actually complicates the type inference algorithm.
 
 
+\section{Dunfield-Krishnaswami Bidirectional Type System}\label{sec:bg:dk}
 
-\section{Dunfield's Bidirectional Type System}
+Bidirectional typing is popular among new type systems.
+Compared with the ML-style systems,
+bidirectional typing additionally make use of checking mode,
+which checks an expression against a known type.
+This is especially helpful dealing with unannotated lambda functions,
+and when the type of the function can be inferred from the neigher nodes in the syntax tree.
+For example,
+$$\lam[f] (f~1, f~'c') : (\all a \to a) \to (\text{Int} \to \text{Char})$$
+is typeable in higher-ranked bidirectional systems,
+as the outer type annotation may act as if both the argument type and return type
+of the lambda is given.
+The Dunfield-Krishnaswami type system~\citep{dunfield2013complete},
+hereafter referred to as DK,
+extends the OL system by exploiting bidirectional typing.
+In this section, we only introduce the declarative system
+and leave the discussion of their algorithmic system to
+Chapters~\ref{chap:ITP} and \ref{chap:ICFP}.
 
 \subsection{Declarative System}\label{subsec:dk:decl}
 

@@ -6,34 +6,66 @@
 
 \section{Conclusion}
 
-In this paper we have shown how to mechanise an algorithmic subtyping relation
-for higher-order polymorphism, together with its proofs of soundness,
-completeness and decidability, in the Abella proof assistant. 
-In ongoing work we are extending our mechanisation with a bidirectional type
-inference algorithm. The main difficulty there is communicating the
-instantiations of existential variables from the subtyping algorithm to the
-type inference. To make this possible we are exploring a continuation passing
-style formulation, which generalises the worklist approach.
-Another possible extension is to have the algorithm return an explicit witness
-for the subtyping as part of type-directed elaboration into System F.
+In this thesis, we proposed new bidirectional type inference algorithms for
+predicative higher-ranked implicit parametric polymorphic systems.
+We showed how worklists ease the design of algorithms
+and also mechanical formalizations.
+By collecting all judgments in a single worklist,
+the algorithm performs unification with a bird's-eye view of all the judgments,
+therefore propagation between judgments is as simple as a global substitution.
+Compared with classical HM unification procedure,
+Our algorithm does not need seperated relations (or fixpoints) for unification.
+In the formalization point of view,
+eager substitutions are also easier to state and reason in a proof assistant.
+Therefore, we obtained fully formalized properties for all our developments
+relatively easily.
+Overall, we developed the following systems and/or type inference algorithms:
 
+\begin{itemize}
+    \item We developed a worklist algorithm for OL's higher-ranked subtyping system.
+        The algorithm operates on a worklist of subtyping judgments and
+        a single context where variable declaration is shared across the worklist.
+        Compared with DK's algorithm, our approach avoids the use of output contexts,
+        which complicates the scoping of variables and is hard to formalize
+        in a proof assistant.
+        Eager substitutions that solves existential variables are directly applied to
+        the worklist, therefore passing the partial information to the rest judgments.
+        We proved \emph{soundness}, \emph{completeness} and \emph{decidability} of
+        the algorithm in the Abella theorem prover.
 
-In this paper we have shown how to mechanise an algorithmic subtyping relation
-for higher-order polymorphism, together with its proofs of soundness,
-completeness and decidability, in the Abella proof assistant. 
-In ongoing work we are extending our mechanisation with a bidirectional type
-inference algorithm. The main difficulty there is communicating the
-instantiations of existential variables from the subtyping algorithm to the
-type inference. To make this possible we are exploring a continuation passing
-style formulation, which generalises the worklist approach.
-Another possible extension is to have the algorithm return an explicit witness
-for the subtyping as part of type-directed elaboration into System F.
+    \item We developed a worklist algorithm for DK's higher-ranked bidirectional type system.
+        In order to properly encode judgments that
+        output types, such as the type inference judgment,
+        continuation-passing-style \emph{judgment chain} is developed.
+        Compared with the previous work that uses a single context,
+        we further unifies the worklist with variable declarations.
+        Such unification results in a much more accurate track of variable scopings,
+        and the algorithm will garbage-collect variables
+        as soon as they are not referred to any more.
+        Unlike using output contexts as DK's algorithm,
+        designing rules for worklist context is less likely to contain bugs
+        in terms of variable scoping.
+        Once again, based on eager substitutions, the algorithm is easy to formalize.
+        We showed \emph{soundness}, \emph{completeness} and \emph{decidability}
+        in the Abella theorem prover.
 
-
+    \item We developed a backtracking-based algorithm for a higher-ranked
+        bidirectional type system with object-oriented subtyping.
+        With the introduction of the top and bottom types and relavent subtyping relations,
+        meta-variable instantiations are no longer deterministic like the HM system.
+        The backtracking-based algorithm preserves most characteristics of the previous
+        worklist context, and it ``tries'' obvious solutions in parallel with detailed analysis
+        as previous work.
+        We proved that the algorithm is always \emph{sound},
+        and subtyping is complete under the rank-1 restriction.
+\end{itemize}
 
 
 \section{Future Work}
 
+In this section, we discuss several interesting possibilities to explore in the future.
+
+\paragraph{Practical}
 
 \paragraph{Elaboration}
 

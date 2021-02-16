@@ -99,7 +99,52 @@ This work provides a nice means for programmers to control how type inference al
 deals with impredicative instantiations.
 
 \section{Type Inference Algorithms with Subtyping}
+Type systems in presence of subtyping usually encounters constraints that
+are not simply equality as in HM.
+Therefore constraint solvers used in HM, where unifications are based on equality,
+cannot be easily extend to support subtyping.
+Instead, constraints are usually collected as subtyping relations
+and may delay resolving as the constraints accumulates.
+\citet{EIFRIG1995,Eifrig1995sound} proposed systems that is based on
+\emph{constraint types}, i.e. types expressed together with a set of constraints
+$\tau \mid \{\overline{\tau_1 \le \tau_2}\}$.
+Their type checking algorithm checks at each step whether
+each constraint in the closure of constraint set is \emph{consistent},
+which is a set of rules that prevent obvious contradictions appear,
+such as $\text{Int} \le \text{Bool}$.
+Our attempt in Section~\ref{subsec:lazy_subst} is similar to the concept,
+where we exhaustively check if every subtyping relation derived from the bounds are valid.
+However, our algorithm tries to solve the bounds into concrete types,
+and it turns out that it never terminates in some complicated cases.
 
+Constraint types improves the expressiveness of type system,
+yet the type inference algorithm is slow.
+The size of constraint is linear in the program size,
+and the closure would grow to cubic size.
+\citet{pottier1998phd} proposed three methods to simplify constraints in his Ph.D. thesis,
+aiming at improving the efficiency of type inference algorithms and
+improving the readability of the resulting types.
+By \emph{canonization}, constraints are converted to canonical forms
+with the introduction of new meta-variables;
+\emph{garbage collection} eliminates constraints that do not affect the type;
+finally, \emph{minimization} shares nodes within the constraint graph.
+
+Inspired by the simplification strategies of Pottier's,
+MLsub~\citep{mlsub} suggest that the data flow on the constraint graph
+can be fully replaced by lattices that directly encode on the types.
+Polar types distinguishes between input types and output types,
+and poses different restrictions on them.
+As a result, constraints can easily be transformed into canonical forms,
+and the bi-unification algorithm can solve them by simple substitutions.
+One can also view the MLsub system as a different way to encode the constraint types:
+instead of a set of constraints that is stated along with the type,
+types themselves now contain subtyping contraints with the help of lattice operations.
+Similarly, the size of contraints may grow with the size of program
+and affect the readability.
+Therefore, various simplification algorithms should be used in real applications.
+A more recent work, the Simple-sub~\citep{Parreaux2020simple}, further simplifies
+the algorithm of MLsub and is implemented in 500 lines of code.
+While being equivalent to MLsub, it is a more efficient varient.
 
 \section{Techniques Used in Type Inference Algorithms}
 

@@ -94,7 +94,7 @@ With the feature called ``implicit parametric polymorphism''~\citep{reynolds1983
 type arguments like $@\text{Int}$ is not written by the programmer explicitly,
 in contrast, it is the type inference algorithm's responsibility to guess them.
 Unfortunately, there does not exist such a perfect algorithm that
-can automatically guess missing type applications for every possible program \jimmy{cite}.
+can automatically guess missing type applications for every possible program~\citep{tiuryn1996subtyping}.
 
 For example, the following expression is ambiguous
 when the implicit type argument is not given:
@@ -147,7 +147,9 @@ In contrast, System F does not restrict the types to instantiate,
 thus being a impredicative system.
 An important challenge is that full type inference for impredicative
 polymorphism is known to be undecidable~\citep{wells1999typability}.
-There are works that focus on practical inference of impredicative systems \jimmy{cite}.
+There are works that focus on practical inference of
+impredicative systems~\citep{le2003ml,leijen2008hmf,
+vytiniotis2008fph,Serrano2018,quicklook2020,FreezeML}.
 However, throughout this work, we study predicative type systems only.
 
 \subsection{Higher-Ranked Polymorphism}
@@ -272,8 +274,16 @@ on predicative implicit higher-ranked bidirectional type inference algorithms.
  Chapters \ref{chap:ITP} and \ref{chap:ICFP} only focus on this type of subtyping relation.
  The other one is the subtyping usually seen in object-oriented programming,
  where there are some built-in or user-defined type convertion rules.
- We introduce object-oriented subtyping as a feature in Chapter~\ref{chap:Top}.
- We will then introduce the top and bottom types as the minimal support.
+
+Type system in presence of object-oriented-style subtyping allows
+programmers to abstract functionalities inside a class
+and thus benefit from another form of polymorphism.
+Introduced by~\citet{Mitchell1984,Reynolds1985,Cardelli1988},
+subtyping is studied for explicitly typed programs.
+Compared with functional programming languages,
+mainstream object-oriented languages lacks competitive type inference algorithms.
+We will further introduce object-oriented subtyping as a feature in Chapter~\ref{chap:Top},
+where we also introduce the top and bottom types as the minimal support for subtyping.
 
 \section{Machanical Formalizations and Theorem Provers}
 
@@ -344,7 +354,7 @@ In summary, the main contributions of this thesis are:
 \begin{itemize}
   \item {\bf Chapter~\ref{chap:ITP}} presents a predicative polymorphic subtyping judging algorithm
     for OL's higher-ranked subtyping specification.
-    Central to type inference, subtyping is the most difficult conponent.
+    % Central to type inference, subtyping is the most difficult conponent.
     Similar to DK's algorithm, we employ an ordered context to collect
     type variables and existential variables (used as placeholders for guessing monotypes).
     However, our unification process is novel.
