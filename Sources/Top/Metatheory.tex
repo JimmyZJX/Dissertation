@@ -12,6 +12,7 @@ Lastly, proof statistics of Abella are discussed.
 
 \subsection{Declarative Properties}\label{sec:meta:decl}
 
+\paragraph{The Typing Subsumption Lemma.}
 An important desired property for a type system is \emph{checking subsumption},
 which basically says that any expression can
 check against any super type of its actual type.
@@ -19,39 +20,50 @@ Since our bidirectional type system defines the checking mode, inference mode an
 application inference mode mutually,
 we formalize the generalized \emph{typing subsumption}.
 
+First of all, we give the definition of worklist subtyping,
+which is used to further generalize the typing subsumption lemma.
+This is necessary because rules like $\mathtt{Decl{\to}I}$
+will push the argument type $A$ into the context,
+thus when checking against a super type of $A \to B$, say $C \to D$,
+will cause the bind of $x$ in the context to a subtype of $A$ (since $C \le A$).
+
 \begin{definition}[Worklist Subtyping]
     Worklist subtyping compares the type of variables bound in the worklist.
-    $\Gm <: \Gm'$ iff each binding in $\Gm$ is converted to one with a super type.
+    $\Psi <: \Psi'$ iff each binding in $\Psi$ is converted to one with a super type.
     \begin{gather*}
         \inferrule*[right=$\mathtt{<:nil}$]
             {~}{\cdot <: \cdot}
         \qquad
         \inferrule*[right=$\mathtt{<:ty}$]
-            {\Gm <: \Gm'}
-            {\Gm, a <: \Gm', a}
+            {\Psi <: \Psi'}
+            {\Psi, a <: \Psi', a}
         \\
         \inferrule*[right=$\mathtt{<:of}$]
-            {\Gm' \vdash A \le B \\ \Gm <: \Gm'}
-            {\Gm, x:A <: \Gm', x:B}
+            {\Psi' \vdash A \le B \\ \Psi <: \Psi'}
+            {\Psi, x:A <: \Psi', x:B}
         \qquad
         \inferrule*[right=$\mathtt{<:\omega}$]
-            {\Gm <: \Gm'}
-            {\Gm \Vdash \jg <: \Gm' \Vdash \jg}
+            {\Psi <: \Psi'}
+            {\Psi \Vdash \jg <: \Psi' \Vdash \jg}
     \end{gather*}
 \end{definition}
 
-A basic property of worklist subtyping is that they acts similarly when viewed as contexts.
-\begin{lemma}[Worklist Subtyping Equivalence]
-    Given $\Gm <: \Gm'$, $\Gm \vdash A \le B \Longleftrightarrow \Gm' \vdash A \le B$.
+A basic property of worklist subtyping is that they acts similarly when
+dealing with subtyping between well-formed types.
+\begin{lemma}[Worklist Subtyping Equivalence]~\\
+    Given $\Psi <: \Psi'$, $\Psi \vdash A \le B \Longleftrightarrow \Psi' \vdash A \le B$.
 \end{lemma}
 
+Finally, we give the statement of typing subsumption lemma,
+which is generalized by the worklist subtyping relation.
+
 \begin{lemma}[Typing Subsumption]
-    Given $\Gm <: \Gm'$,
+    Given $\Psi <: \Psi'$,
     \begin{enumerate}[1)]
-        \item If $\Gm' \vdash e \Lto A$ and $\Gm' \vdash A \le B$, then $\Gm \vdash e \Lto B$;
-        \item If $\Gm' \vdash e \To A$, then $\exists B$ s.t. $\Gm' \vdash B \le A$ and $\Gm \vdash e \To B$.
-        \item If $\Gm' \vdash \appInf{C}{e}{A}$ and $\Gm' \vdash D \le C$, then
-            $\exists B$ s.t. $\Gm' \vdash B \le A$ and $\Gm \vdash \appInf{D}{e}{B}$.
+        \item If $\Psi' \vdash e \Lto A$ and $\Psi' \vdash A \le B$, then $\Psi \vdash e \Lto B$;
+        \item If $\Psi' \vdash e \To A$, then $\exists B$ s.t. $\Psi' \vdash B \le A$ and $\Psi \vdash e \To B$.
+        \item If $\Psi' \vdash \appInf{C}{e}{A}$ and $\Psi' \vdash D \le C$, then
+            $\exists B$ s.t. $\Psi' \vdash B \le A$ and $\Psi \vdash \appInf{D}{e}{B}$.
     \end{enumerate}
 \end{lemma}
 
@@ -64,29 +76,37 @@ A basic property of worklist subtyping is that they acts similarly when viewed a
     \end{itemize}
     Most of the cases are straightforward.
     When rule $\mathtt{{\le}\forall L}$ is applied for the subtyping predicate
-    like $\Gm' \vdash A \le B$,
+    like $\Psi' \vdash A \le B$,
     a mono-type substitution is performed on $\all A$,
     resulting in $[\tau/a]A$.
     Since $\tau$ is a mono-type, the result type reduces the number of $\forall$'s,
     and thus reduces the size measure.
 \end{proof}
 
-The two new declarative rules $\mathtt{Decl\top}$ and $\mathtt{Decl{\bot}App}$ are
-discovered through it and verified against it.
-Without these rules, for any checking relation $\Psi \vdash e \Lto A$,
-one definitely expects that $e$ may be checked by any super type of $A$,
-therefore $\Psi \vdash e \Lto \top$ should hold.
-Similarly, a more general type $\bot$ should behave as if it was any function types,
-or simply the most general form $\top \to \bot$,
+Interestingly, the two new declarative rules
+$\mathtt{Decl\top}$ and $\mathtt{Decl{\bot}App}$ are
+discovered when we were trying to prove the property instead of
+before exploring the meta-theory.
+Given the typing and subtyping judgments $\Psi \vdash e \Lto A$ and $\Psi \vdash A \le \top$,
+we should derive $\Psi \vdash e \Lto \top$ from the lemma,
+therefore Rule $\mathtt{Decl\top}$ is required,
+saying that any expression can be checked against the top type.
+Similarly, the most general type $\bot$,
+being able to convert to any type due to Rule $\mathtt{{\le}Bot}$,
+can be converted to any function type,
+or simply the most general one $\top \to \bot$,
 which accepts any input and returns the $\bot$ type,
 resulting in the derivation $\Psi \vdash \appInf{\bot}{e}{\bot}$.
+From the lemma we can also derive that by
+$\Psi \vdash \appInf{C}{e}{A}$, $\Psi \vdash \bot \le C$ and $\Psi \vdash \bot \le A$.
 
-
+With the addition of Rules $\mathtt{Decl\top}$ and $\mathtt{Decl{\bot}App}$,
+we can prove the typing subsumption lemma.
 To the best of the authors' knowledge,
 they are the minimal set of rules that make the lemma hold.
 
 
-\paragraph{Subtyping Transitivity}
+\paragraph{Transitivity of Subtyping}
 
 The transitivity lemma for declarative subtyping is a commonly expected property.
 The proof depends on the following subtyping derivation size relation and an auxiliary lemma.
@@ -121,13 +141,29 @@ The proof depends on the following subtyping derivation size relation and an aux
     $\Psi \vdash [\tau/a]A \le [\tau/a]B$.
 \end{corollary}
 
+The above lemma and corollary reveal the fact
+that a type variable occured in the subtyping relation
+represents \emph{arbitrary} well-formed monotype.
+And it also explains the difference in treatment of polymorphic types between
+Rules $\mathtt{{\le}{\forall}L}$ and $\mathtt{{\le}{\forall}R}$:
+Rule $\mathtt{{\le}{\forall}R}$ is in fact equivalent to:
+$$
+\inferrule*[right=$\mathtt{{\le}{\forall}R'}$]
+    {\forall \tau \text{ s.t. } \Psi \vdash \tau \Longrightarrow \Psi \vdash A \le [\tau/b]B}
+    {\Psi \vdash A \le \all[b] B}
+$$
+
+Finally, with the size measure defined and required lemma proven,
+we can obtain the transitivity lemma for declarative subtyping.
+
 \begin{lemma}[Subtyping Transitivity]
     If $\Psi \vdash A \le B$ and $\Psi \vdash B \le C$ then
     $\Psi \vdash A \le C$.
 \end{lemma}
 
 \begin{proof}
-    Induction on $\langle |B|_\forall, |A \le B| + |B \le C| \rangle$.
+    Induction on the lexicographical order defined by
+    $\langle |B|_\forall, |A \le B| + |B \le C| \rangle$.
     Most cases preserve the first element of the size measures $|B|_\forall$,
     and are relatively easy to prove.
     The difficult case is when $B$ is a polymorphic type,
@@ -221,6 +257,10 @@ to the declarative system.
 If \emph{wf }$\Gm$ and $\Gm \redto \nil$,
 then there exists $\Om$ s.t. $\Gm \sto \Om$ and $\Om \redto \nil$.
 \end{theorem}
+
+Soundness is a basic desired property of a type inference algorithm,
+which ensures that the algorithm is always producing
+valid declarative derivations when the judgments are accepted.
 
 \subsection{Partial Completeness of Subtyping: Rank-1 Restriction}
 

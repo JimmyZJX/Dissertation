@@ -126,9 +126,17 @@ Similar incompleteness also affect the instantiation and existential variable so
 \end{gather*}
 The instantiation judgment $\al \le A \to B$ immediately split $\al$ into $\al[1] \to \al[2]$,
 which is no longer the case --- $\al$ can also be $\bot$.
-The existential variable solving rule $\al \le \bt$ is even more problematic,
+
+The rule that solves one existential variable against another,
+$\al \le \bt$, is even more problematic,
 because the shapes of the instantiations of both existential variables are unknown,
 there are infinitely many possibilities if no additional constraints present.
+For example, if $\al$ is finally instantiated to $\text{Int} \to \text{Int}$,
+then $\bt$ may be solved to the same type as $\al$,
+or other types that satisfies the subtyping relationship,
+including $\text{Int} \to \top$, $\bot \to \text{Int}$ or $\bot \to \top$.
+What's worse, given only this single subtyping judgment $\al \le \bt$,
+we have no assumption on both existential variables.
 
 
 % \subsection{Lazy Substitution and Non-terminating Loops}
