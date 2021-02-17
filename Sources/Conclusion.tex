@@ -65,15 +65,114 @@ Overall, we developed the following systems and/or type inference algorithms:
 
 In this section, we discuss several interesting possibilities to explore in the future.
 
-\paragraph{Practical}
+\paragraph{Termination Theorem for Type Inference with Subtyping}
+
+\paragraph{Practical Impredicative}
 
 \paragraph{Elaboration}
 
 \paragraph{Optimization}
 
+All the three type inference algorithms described
+in this thesis are based on eager global substitution on the worklists.
+The benefit is to reduce the difficulty for mechanical formalizations
+in theorem provers, especially in Abella.
+Additionally, eager substitutions represent simple equivalent transformations
+on the state of worklist,
+alleviating the complication of variable scoping and reasoning for correctness.
+However, a naive implementation of our algorithm will be very inefficient,
+since the worklist is iterated so often
+whenever an existential variable is solved or partially solved.
+
+Compared with mature algorithms like the algorithm $\mathcal{W}$~\citep{milner1978theory}
+and the OutsideIn(X)~\citep{outsidein} type inference algorithm,
+which produces substitutions once all the constraints are collected and reduced,
+our algorithms manipulate the judgments themselves on-the-fly.
+Efficient implementations will model meta-variables as mutable references
+and apply the results if they are solved by the constraint solver.
+DK's algorithm~\citep{dunfield2013complete} requires output contexts,
+which is likely to be implemented in a state monad or other stateful approaches.
+Solved existential variable is encoded in their algorithmic context different from ours.
+Instead of removing the declaration of the variable and propagate its solution to
+all the rest judgments, they extend the entry in the context with its solution,
+$\al = \tau$, and pass it to the output context.
+Such entry is easy to implement with the efficient approach using mutable references.
+We can also adopt such idea and reformulate our eager substitution with
+lazy ones by keeping track of solutions to existential variables,
+and only perform substitution when the judgment is just about to be reduced.
+
+Unfortunately, lazy substitution only solves part of the problem.
+By using ordered contexts, the scoping of variables are precisely captured by
+the relative positions in which they are declared in the context.
+Some algorithmic rules are designed to use the position information,
+where swapping positions might lead to unsound implementation.
+For example, the algorithmic system of Chapter~\ref{chap:Top}
+include these rules:
+\begin{gather*}
+\begin{aligned}
+    \Gm[a][\bt] \Vdash a \le \bt &\rrule{16} \{\bt := a\}~\Gm[a][\bt]\\
+    \Gm[a][\bt] \Vdash \bt \le a &\rrule{17} \{\bt := a\}~\Gm[a][\bt]\\
+\end{aligned}
+\end{gather*}
+The hole notation $\Gm[a][\bt]$ is used to ensure that $a$ is declared before $\bt$,
+therefore it is fine for the monotype represented by $\bt$ to be $a$.
+In a naive implementation, frequent iteration is required to look up the
+relative positions of variable declarations.
+
+Moreover, there are also reduction rules that \emph{remove}
+and/or \emph{insert} variables from(to) the middle of the ordered context,
+as occured in the following rules:
+\begin{gather*}
+\begin{aligned}
+\Gm[\al] \Vdash \al \le A\to B &\rrule{14}
+    \{\al := \al[1] \to \al[2]\}~(\Gm[\al] \Vdash \al \le A\to B)\\
+    &\qquad\qquad \text{when } \al\notin FV(A \to B)\\
+\Gm[\al] \Vdash A\to B \le \al &\rrule{15}
+    \{\al := \al[1] \to \al[2]\}~(\Gm[\al] \Vdash A\to B \le \al)\\
+    &\qquad\qquad \text{when } \al\notin  FV(A \to B)\\
+\end{aligned}
+\end{gather*}
+
+To sum up,
+we plan to propose a implementation-friendly version of the algorithm
+that does not require many eager substitutions,
+and we also hope that there will be suitable data structures or algorithms
+which optimizes the complexity of those time-consuming operations on the ordered context.
+
+
 \paragraph{Class Hierarchy of Nominal Subtyping}
+Nowadays, most mainstream object-oriented programming language
+support nominal subtyping,
+which means that the subtyping relation is defined by the programmers explicitly
+through language constructs such as inheritance.
+For example, we may define a $\text{Pos}$ class to represent positive integers,
+which inherits the $\text{Int}$ class.
+The subtyping relation $\text{Pos} \le \text{Int}$ automatically holds.
+An algorithmic subtyping judgment $\al \le \text{Int}$
+now might have several solutions: $\text{Int}, \text{Pos},$ or $\bot$.
+In order to calculate a \emph{range} of solutions intead of
+just simple types,
+lazy algorithms that operates on bounds fits the task better.
+We plan to explore on extensions of the algorithm described in Section~\ref{subsec:lazy_subst}.
+The algorithm progressively collect upper and lower bounds of existential variables,
+and finally checks if there are valid solutions satisfying all the bounds.
+
+Nonetheless, we encounter termination problems when trying to adopt the lazy approach.
+Experiments indicate that loop dependency in combination with the
+instantiation rule ($\al \le A \to B$) might cause infinite loops.
+As a practical compromise,
+we may impose restrictions on existential variables
+so that they are not instantiated to function types
+when they are likely to be a class type.
+We also hope that better treatment on loop dependencies can be
+developed, especially under assumptions of real-world programming tasks.
+For future work,
+we aim at a terminating and sound algorithm for practical object-oriented type inference.
+
 
 \paragraph{Type Inference with Recursive Types}
+
+
 
 \paragraph{Bounded Quantification / F-Bounded Quantification}
 
