@@ -5,8 +5,9 @@
 
 This chapter presents the first fully mechanized formalization of the
 metatheory for higher-ranked polymorphic type inference.
-The system that we formalize
-is the bidirectional type system by \citet{dunfield2013complete}.
+Following the woirklist subtyping algorithm in the previous chapter,
+we address several drawbacks and extend the technique to
+DK's bidirectional type system~\citep{dunfield2013complete}.
 We chose DK's type system because it is
 quite elegant, well-documented and it comes with detailed manually
 written proofs. Furthermore the system is adopted in practice by a few
@@ -58,12 +59,19 @@ type inference. However modeling output contexts in a theorem prover
 is non-trivial.
 
 Due to those two challenges, our work takes a different approach by refining and
-extending the idea of \emph{worklist judgments}~\citep{itp2018},
-proposed recently to mechanically formalize an algorithm for
-\emph{polymorphic subtyping}~\citep{odersky1996putting}. A key innovation in our work is how
+extending the idea of \emph{worklist judgments}
+in Chapter~\ref{chap:ITP},
+where we mechanically formalized an algorithm for
+\emph{polymorphic subtyping}~\citep{odersky1996putting}.
+The algorithm eliminates output contexts compared to DK's algorithm,
+and therefore the problem of variable binding is solved.
+Unfortunately, the subtyping algorithm cannot be naively extend
+to support the bidirectional type system.
+A key innovation in the new algorithm to be introduced in this chapter is how
 to adapt the idea of worklist judgments to
 \emph{inference judgments}, which are not needed for polymorphic
-subtyping, but are necessary for type-inference.  The idea is to use a \emph{continuation
+subtyping, but are necessary for type inference.
+The idea is to use a \emph{continuation
 passing style} to enable the transfer of inferred information across
 judgments. A further refinement to the idea of worklist judgments is
 the \emph{unification between ordered

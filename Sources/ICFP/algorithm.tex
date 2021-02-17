@@ -2,8 +2,8 @@
 
 This section introduces a novel algorithmic system that implements 
 DK's declarative specification. The new algorithm extends the idea
-of worklists proposed by \citet{itp2018} in two ways. Firstly,
-unlike \citet{itp2018}'s worklists, the scope of variables is precisely tracked
+of worklists in Chapter~\ref{chap:ITP} in two ways. Firstly,
+unlike its worklists, the scope of variables is precisely tracked
 and variables do not escape their scope. This is achieved by unifying algorithmic contexts and the worklists themselves.
 Secondly, our algorithm also
 accounts for the type system (and not just subtyping). To deal with
@@ -303,7 +303,8 @@ Then we apply Rule 8 to reduce the $\forall$ quantifier on the left side.
 The rule introduces an existential variable $\al$ to the context (even though 
 the type $\all 1 \to 1$ does not actually refer to the quantified type
 variable $a$).
-In the following 3 steps we satisfy the judgment $1 \to 1 \le 1 \to 1$ by Rules 7, 4 and 4.
+In the following 3 steps we satisfy the judgment $1 \to 1 \le 1 \to 1$
+by Rules 7, 4, and 4 (again).
 
 Now the existential variable $\al$, introduced before but still unsolved,
 is at the top of the worklist and Rule 2 garbage-collects it.

@@ -151,7 +151,7 @@ declarative subtyping and typing systems.
 We also duplicate the rules here for the convenience of the reader.
 
 \paragraph{Overlapping Rules}
-A problem we found in the declarative system is that
+A problem that we found in the declarative system is that
 some of the rules overlap with each other.
 Declarative subtyping rules $\mathtt{{\le}\forall L}$ and $\mathtt{{\le}\forall R}$
 both match the conclusion $\Psi\vdash \all A \le \all B$.
@@ -310,20 +310,61 @@ proofs without affecting the appeals to these lemmas.
 % thus are easily misused.
 
 More seriously, we have also found a lemma that simply does not hold:
-Lemma 29 (Parallel Admissibility)\footnote{Ningning Xie found the issue with Lemma 29 in 2016 while
-  collaborating with the second author on an earlier attempt to mechanically
+Lemma 29 (Parallel Admissibility)\footnote{Ningning Xie found the issue with Lemma 29 in 2016 on an earlier attempt to mechanically
   formalize DK's algorithm. The authors acknowledged the problem after we contacted them through email.
   Although they briefly mentioned that it should be possible to use a weaker lemma instead they did
   not go into details.}.
-See Appendix %~\ref{appendix:false_lemmas}
-for a detailed explanation
-and counterexample. This lemma is a cornerstone of the two metatheoretical results 
+This lemma is a cornerstone of the two metatheoretical results 
 of the algorithm, soundness and completeness with respect to the declarative system.
 In particular, both instantiation soundness (i.e. a part of subtyping
 soundness) and typing completeness directly require the broken lemma.
 Moreover, Lemma 54 (Typing Extension) also requires the broken lemma and is
 itself used 13 times in the proof of typing soundness and completeness.
 Unfortunately, we have not yet found a way to fix this problem.
+
+In what follows, we briefly discuss the problem through counterexamples.
+False lemmas are found in the manual proofs of DK' two papers
+\citep{dunfield2013complete} and \citep{DunfieldIndexed}.
+\begin{itemize}
+    \item
+        In the first paper, Lemma 29 on page 9 of its appendix says:
+        \begin{lemma}[Parallel Admissibility of~\citep{dunfield2013complete}]~\\
+        If $\Gamma_L \longrightarrow \Delta_L$ and
+        $\Gamma_L, \Gamma_R \longrightarrow \Delta_L, \Delta_R$ then:
+        \begin{enumerate}
+            \item $\Gamma_L,\al,\Gamma_R \longrightarrow \Delta_L, \al, \Delta_R$
+            \item If $\Delta_L \vdash \tau'$ then
+                $\Gamma_L,\al,\Gamma_R \longrightarrow \Delta_L, \al = \tau', \Delta_R$.
+            \item If $\Gamma_L \vdash \tau$ and $\Delta_L \vdash \tau'$ and
+                $[\Delta_L]\tau = [\Delta_L]\tau'$, then
+                $\Gamma_L, \al = \tau, \Gamma_R \longrightarrow \Delta_L, \al = \tau', \Delta_R$.
+        \end{enumerate}
+        \end{lemma}
+
+        We give a counter-example to this lemma:\\
+        Pick $\Gm_L = \nil, \Gm_R = \bt, \Delta_L = \bt, \Delta_R = \nil$, then both conditions
+        $\nil\longrightarrow \bt$ and $\bt\longrightarrow \bt$ hold, but the first conclusion
+        $\al,\bt \longrightarrow \bt,\al$ does not hold.
+    \item
+        In the second paper, as an extended work to the first paper, Lemma 26 on page 22 of its appendix says:
+        \begin{lemma}[Parallel Admissibility of~\citep{DunfieldIndexed}]~\\
+        If $\Gamma_L \longrightarrow \Delta_L$ and
+        $\Gamma_L, \Gamma_R \longrightarrow \Delta_L, \Delta_R$ then:
+        \begin{enumerate}
+            \item $\Gamma_L,\al:\kappa,\Gamma_R \longrightarrow \Delta_L, \al:\kappa, \Delta_R$
+            \item If $\Delta_L \vdash \tau' : \kappa$ then
+                $\Gamma_L,\al:\kappa,\Gamma_R \longrightarrow \Delta_L, \al:\kappa = \tau', \Delta_R$.
+            \item If $\Gamma_L \vdash \tau : \kappa$ and $\Delta_L \vdash \tau' types$ and
+                $[\Delta_L]\tau = [\Delta_L]\tau'$, then
+                $\Gamma_L, \al:\kappa = \tau, \Gamma_R \longrightarrow \Delta_L, \al:\kappa = \tau', \Delta_R$.
+        \end{enumerate}
+        \end{lemma}
+        
+        A similar counter-example is given:\\
+        Pick $\Gm_L = \nil, \Gm_R = \bt:\star, \Delta_L = \bt:\star, \Delta_R = \nil$, then both conditions
+        $\nil\longrightarrow \bt:\star$ and $\bt:\star\longrightarrow \bt:\star$ hold, but the first conclusion
+        $\al:\kappa,\bt:\star \longrightarrow \bt:\star,\al:\kappa$ does not hold.
+\end{itemize}
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 \paragraph{Complex Scoping and Propagation}
@@ -463,10 +504,12 @@ substitute solutions into these copies.
 %-------------------------------------------------------------------------------
 \subsection{Single-Context Worklist Algorithm for Subtyping}
 
-In recent work, \citet{itp2018} have shown how to mechanize a variant of DK's
-subtyping algorithm and shown it correct with respect to DK's declarative
-subtyping judgment. This approach overcomes some problems in DK's formulation
-by using a \emph{worklist}-based judgment of the form $$\Gamma \vdash \Omega$$
+As we have seen in Chapter~\ref{chap:ITP},
+an algorithm based on \emph{worklist judgements} is mechanized
+and shown to be correct with respect to DK's declarative
+subtyping judgment.
+This approach overcomes some problems in DK's algorithmic formulation
+by using a worklist-based judgment of the form $$\Gamma \vdash \Omega$$
 where $\Omega$ is a worklist (or sequence) of subtyping problems of the
 form $A \leq B$.  The judgment is defined by case analysis on the first
 element of $\Omega$ and recursively processes the worklist until it is empty.

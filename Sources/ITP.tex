@@ -5,11 +5,14 @@
 
 In this chapter, we present a new algorithm for polymorphic subtyping
 with mechanical formalizations in the Abella theorem prover.
-%
-In particular, we show that the problem we have identified from existing systems
-can be overcome by means of \emph{worklist judgments}.
-These are a form of judgement that turns the complicated
-global propagation of unifications into a simple local substitution.
+There is little work on formalizing type inference algorithms before,
+especially for higher-ranked systems,
+due to the fact that environments and variable bindings are
+tricky to machanize in theorem provers.
+In order to overcome the difficulty in formalization,
+we propose the novel algorithm by means of \emph{worklist judgments}.
+Worklist judgments turn complicated
+global propagation of unification contraints into simple local substitutions.
 Moreover, we exploit several ideas in the recent inductive
 formulation of a type-inference algorithm by
 \citet{dunfield2013complete}, which turn out to be useful

@@ -195,8 +195,8 @@ Rule $\mathtt{{\le}\forall L}$: $$\frac{\cdot\vdash 1\quad \cdot\vdash 1
 
 \noindent Dunfield and Krishnaswami introduce an \emph{existential variable}---denoted
 with $\al,\bt$---whenever a monotype $\tau$ needs to be guessed. Below is a sample
-derivation of their algorithm; we omit the full set of algorithmic rules due to
-lack of space:
+derivation of their algorithm:
+\jimmy{TODO perhaps a figure with the algorithmic rules that we use in this and other examples}
 $$\inferrule*[right=$\mathtt{{<:}\forall L}$]
 {\inferrule*[right=$\mathtt{{<:}{\to}}$]
 	{
@@ -249,7 +249,7 @@ Krishnaswami's approach.
 %\jimmy{Mention the relation to constraint solving, e.g. in unification. Possibly talk about nondeterminism.}
 
 Firstly, as already stated, there are no output
-contexts. Secondly the form of the ordered contexts become simpler.
+contexts. Secondly the form of the ordered contexts becomes simpler.
 The transfer of information across judgements is simplified because 
 all judgements share the input context. Moreover the order of the
 judgements in the list allows information discovered when processing

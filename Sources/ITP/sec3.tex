@@ -227,8 +227,7 @@ where most of them are straightforward to prove,
 except for the strengthening lemma of the declarative system, which is a little trickier.
 
 \begin{figure}[t]
-\begin{tabular}{cc}
-$\begin{aligned}
+$$
 	\inferrule*[Right=$\mathtt{{\le_a}\forall L}$]
 	{\inferrule*[Right=$\mathtt{{\le_a}{\to}}$]
 		{\inferrule*[Right=$\mathtt{{\le_a}\forall L}$]
@@ -256,10 +255,14 @@ $\begin{aligned}
 		{\al \vdash \jcons{\al \to 1 \le (\forall a.\ a \to a) \to 1}{\cdot}}
 	}
 	{\cdot \vdash \jcons{\forall a.\ a\to 1\le (\forall a.\ a\to a)\to 1}{\cdot }}
-	\end{aligned}\qquad\quad$
-	%\label{fig:alg_sample}
-&
-	$\begin{aligned}
+$$
+  %\label{fig:alg_sample}
+\caption{A Success Derivation for the Algorithmic Subtyping Relation}
+\label{fig:alg_sample_success}
+\end{figure}
+
+\begin{figure}[t]
+	$$
 	\inferrule*[Right=$\mathtt{{\le_a}\forall L}$]
 	{\inferrule*[Right=$\mathtt{{\le_a}{\to}}$]
 		{\inferrule*[Right=$\mathtt{{\le_a}unit}$]
@@ -276,16 +279,15 @@ $\begin{aligned}
 		{\al \vdash \jcons{1 \to \al \le 1\to \forall b.\ b}{\cdot}}
 	}
 	{\cdot\vdash \jcons{\forall a.\ 1\to a \le 1\to \forall b.\ b}{\cdot }}
-	\end{aligned}$
-	%\label{fig:alg_sample2}
-\end{tabular}
-\caption{Successful and Failing Derivations for the Algorithmic Subtyping Relation}
-\label{fig:alg_samples}
+	$$
+\caption{A Failing Derivation for the Algorithmic Subtyping Relation}
+\label{fig:alg_sample_fail}
 \end{figure}
 
 \paragraph{Example}
-We illustrate the subtyping rules through a sample derivation in the left of
-Figure~\ref{fig:alg_samples}, which shows that that $\forall a.\ a\to 1\le (\forall a.\ a\to
+We illustrate the subtyping rules through a sample derivation in
+Figure~\ref{fig:alg_sample_success},
+which shows that that $\forall a.\ a\to 1\le (\forall a.\ a\to
 a)\to 1$. Thus the derivation starts with an empty context and a
 judgment list with only one element.
 
@@ -336,7 +338,7 @@ judgment becomes $\al[1]\le\al[2]$.
 Steps 8 and 9 trivially finish the derivation. Notice that $\al[1]$ is not
 instantiated at the end. This means that any well-scoped instantiation is fine.
 
-\paragraph{A Failing Derivation} We illustrate the role of ordered contexts through another example: $\forall a.\ 1\to a \le 1\to \forall b.\ b$. From the declarative perspective, $a$ should be instantiated to some $\tau$ first, then $b$ is introduced to the context, so that $b\notin FV(\tau)$. As a result, we cannot find $\tau$ such that $\tau \le b$. The right of Figure~\ref{fig:alg_samples} shows the algorithmic derivation, which also fails due to the scoping---$\al$ is introduced earlier than $b$, thus it cannot be solved to $b$.
+\paragraph{A Failing Derivation} We illustrate the role of ordered contexts through another example: $\forall a.\ 1\to a \le 1\to \forall b.\ b$. From the declarative perspective, $a$ should be instantiated to some $\tau$ first, then $b$ is introduced to the context, so that $b\notin FV(\tau)$. As a result, we cannot find $\tau$ such that $\tau \le b$. Figure~\ref{fig:alg_sample_fail} shows the algorithmic derivation, which also fails due to the scoping---$\al$ is introduced earlier than $b$, thus it cannot be solved to $b$.
 
 
 

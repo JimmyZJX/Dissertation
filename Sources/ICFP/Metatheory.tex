@@ -193,9 +193,9 @@ $$\begin{aligned}
 \inferrule*[right=$\mathtt{CtxSubEmpty}$]
 {~}{\nil \le \nil}\qquad
 \inferrule*[right=$\mathtt{CtxSubTyVar}$]
-{\Psi' \le \Psi}{\Psi', a \le \Psi, a}\qquad
+{\Psi' \le \Psi}{\Psi', a \le \Psi, a}\\
 \inferrule*[right=$\mathtt{CtxSubTmVar}$]
-{\Psi' \le \Psi \\ \Psi \vdash A' \le A}{\Psi', x:A' \le \Psi, x:A}\qquad
+{\Psi' \le \Psi \\ \Psi \vdash A' \le A}{\Psi', x:A' \le \Psi, x:A}
 \end{aligned}$$
 \Description{Context Subtyping}
 \caption{Context Subtyping}
@@ -215,10 +215,57 @@ Given $\Psi' \le \Psi$:
 This lemma expresses that any derivation in a context $\Psi$ has a corresponding derivation in any context
 $\Psi'$ that it subsumes.
 
-We have tried to follow DK's manual proof of this lemma,
+While being written in a clear format and providing enough details,
+some proof is not fully accepted by the proof assistant.
+Specifically for the subsumption lemma,
+we have tried to follow DK's manual proof,
 but we discovered several problems in their reasoning that we have been unable to address.
 Fortunately we have found a different way to prove the lemma.
-The details of this issue can be found in Chapter~\ref{appendix:subsumption}.
+A description of the problem and our fix are discussed in depth as follows.
+
+% \subsection{A Fix to DK's Subsumption Lemma}
+% \label{appendix:subsumption}
+
+In the appendix of DK's paper~\citep{dunfield2013complete},
+the first two applications of induction hypotheses on page 22 are not accepted.
+Either of them seems to use a slightly different ``induction hypothesis'' than the true one.
+In fact, we cannot think of simple ways to fix the problem,
+since the induction hypothesis seems not strong enough for these two cases.
+
+To fix the proof, we propose a new induction scheme
+by making use of our worklist measures.
+Recall that $|e|_e$ measures term size;
+and the judgment measure counts checking as 2,
+inference as 1 and application inference as 3;
+and $|A|_\forall$ counts the number of $\forall$'s in a type.
+
+\begin{proof}
+The proof is by a nested mutual induction on the lexicographical order of the measures
+$$\langle |e|_e, |\cdot|_\Leftrightarrow, |A|_\forall + |A'|_\forall \rangle,$$
+where the second measure is 2 for checking (1), 1 for inference (2) and 3 for application inference (3);
+and the third measure does not apply to case (2) since no $A$ is used.
+Compared with DK's, our third measure that counts the degree of polymorphism
+fixes problems occured in DK's proof: in both places
+our new induction hypothesis is more generalized.
+
+All but two cases can be finished easily following the declarative typing derivation,
+and the proof shares a similar structure to DK's.
+One tricky case related to Rule $\mathtt{Decl\forall I}$ indicates that $A$ has the shape $\all A_0$,
+thus the subtyping relation derives from either $\mathtt{{\le}\forall L}$ or $\mathtt{{\le}\forall R}$.
+For each of the case, the third measure $|A|_\forall + |A'|_\forall$ decreases
+(the $\mathtt{{\le}\forall L}$ case requires a type substitution lemma obtaining
+$\Psi \vdash e \Lto [\tau/a]A_0$ from the typing derivation).
+
+Another tricky case is $\mathtt{Decl{\to}I}$.
+When the subtyping relation is derived from $\mathtt{{\le}{\to}}$,
+a simple application of induction hypothesis finishes the proof.
+When the subtyping relation is derived from $\mathtt{{\le}\forall R}$,
+$|A'|_\forall$ decreases, and thus the induction hypothesis finishes this case.
+\end{proof}
+
+In short, we found a specific problem when trying to prove the subsumption lemma
+following DK's manual proof, yet we addressed the problem
+by using a slightly different induction scheme.
 
 \paragraph{Three-Way Soundness and Completeness Theorems}
 We now have three systems that can be related: DK's overlapping declarative system,
