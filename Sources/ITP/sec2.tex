@@ -197,7 +197,7 @@ Rule $\mathtt{{\le}\forall L}$: $$\frac{\cdot\vdash 1\quad \cdot\vdash 1
 \noindent Dunfield and Krishnaswami introduce an \emph{existential variable}---denoted
 with $\al,\bt$---whenever a monotype $\tau$ needs to be guessed. Below is a sample
 derivation of their algorithm:
-\jimmy{TODO perhaps a figure with the algorithmic rules that we use in this and other examples}
+% \jimmy{a figure with the algorithmic rules that we use in this and other examples}
 $$\inferrule*[right=$\mathtt{{<:}\forall L}$]
 {\inferrule*[right=$\mathtt{{<:}{\to}}$]
 	{
@@ -205,7 +205,7 @@ $$\inferrule*[right=$\mathtt{{<:}\forall L}$]
 		{\al\vdash 1\le \al \dashv \al=1}
 		\quad
 		\inferrule*[right=$\mathtt{{<:}Unit}$]{~}
-		{\al=1\vdash 1\le 1\vdash \al=1}
+		{\al=1\vdash 1\le 1\dashv \al=1}
 	}
 	{\al\vdash \al\to\al \le 1\to 1\dashv \al = 1}
 }

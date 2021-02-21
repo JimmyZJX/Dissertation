@@ -212,8 +212,39 @@ we aim at a terminating and sound algorithm for practical object-oriented type i
 
 
 \paragraph{Type Inference with Recursive Types}
+Among all the algorithms we proposed in this thesis,
+we reject subtyping judgments like
+$$\al \le A \to B \text{ where } \al \in \text{FV}(A) \cup \text{FV}(B)$$
+because no HM monotype satisfies a subtyping relation like
+$$\tau \le \tau \to \text{Int}$$
+and unfolding such algorithmic judgment might cause an infinite loop.
+However, recursive types may satisfy such judgment, for example,
+$$\mu x.~x \to \text{Int} \le (\mu x.~x \to \text{Int}) \to Int$$
+holds since the unfolding of $\mu x.~x \to \text{Int}$
+is $(\mu x.~x \to \text{Int}) \to \text{Int}$.
+In other words, if we extend our type system by including recursive types,
+we would accept such judgment instead of rejecting it.
+The MLsub~\citep{mlsub} already accepts recursive types,
+and it deals with recursive constraints in the way we described above.
+It is an interesting question
+if adding recursive types may improve the expressiveness
+of our system and remain complete at the same time.
 
+\paragraph{Bounded Quantification and F-Bounded Quantification}
+Bounded quantification
+\\ \citep{cardelli1985bounded} and
+F-bounded quantification~\citep{canning1989fbounded} are
+techniques commonly seen in object-oriented programming languages.
+Bounded quantification allows constraints imposed on
+universally quantified variables:
+$$\all[(a \le \text{Int})] a \to a \to \text{String}$$
+F-Bounded quantification further extends the constraints so that
+recursive references of the variables are also allowed.
+Although the subtyping is proven to be undecidable
+in presence of both F-bounded quantification and variance on generics,
+\citet{kennedy2007on} proposed three forms of restrictions that
+we can explore further.
+Combining bidirectional type checking with bounded quantifications
+may further improve the experience for object-oriented programmers.
 
-
-\paragraph{Bounded Quantification / F-Bounded Quantification}
 
