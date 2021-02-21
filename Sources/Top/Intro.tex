@@ -2,7 +2,7 @@
 \section{Overview}
 
 In this chapter, we present a worklist algorithm
-which further supports subtyping,
+that further supports subtyping,
 by introducing the top and bottom types.
 Such type inference algorithms are known to be hard to design,
 due to the complication of unifying variables under subtyping inequality
@@ -19,16 +19,16 @@ with respect to our declarative specification.
 Although the backtracking algorithm is still incomplete in some corner cases,
 the proof script indicates that the only source of incompleteness comes from
 higher-ranked subtyping relations.
-Following that discovery, we formally proved a partial completeness of our subtyping algorithm
+Following that discovery, we formally proved partial completeness of our subtyping algorithm
 under the rank-1 restriction,
 and is at least comparable to local type inference algorithms.
 
 \subsection{Type Inference in Presence of Subtyping}
 
-In all previous chapters, ``subtyping'' refers to a relation that compares
+In all previous chapters, ``subtyping'' refers to a relationship that compares
 the degree of polymorphism between two types.
 In addition to that, we also include the top and bottom types.
-Bothe of the types have practical uses, especially in object-oriented programming languages.
+Both of the types have practical uses, especially in object-oriented programming languages.
 The top type, $\top$, is the super type of any type,
 i.e. any type is more general than $\top$
 and thus can be considered as an instance of type $\top$.
@@ -45,14 +45,14 @@ which in fact reveals that $\bot$ behaves almost identically as $\all a$.
 From the theoretical point of view, both of them represent ``falsity''.
 
 A number of systems and algorithms are proposed for type inference with subtyping.
-Since subtyping contraints cannot be easily reduced in presence of subtyping,
-it is natual to extend the syntax of types so that unsolved constraints are carried with them,
+Since subtyping constraints cannot be easily reduced in presence of subtyping,
+it is natural to extend the syntax of types so that unsolved constraints are carried with them,
 and the idea is studied by previous work~\citep{RecConstraint1995, subcon1996}.
 For example, the following function
 \begin{verbatim}
 select p v d = if (p v) then v else d
 \end{verbatim}
-is inferred to have type
+is inferred to have the type
 $$(\alpha \to \text{bool}) \to \alpha \to \beta \to \gamma \mid \alpha \le \gamma, \beta \le \gamma$$
 However, this representation usually contains a large set of constraints,
 which might confuse programmers.
@@ -63,27 +63,31 @@ MLsub~\citep{mlsub}, as introduced in Section~\ref{sec:mlsub},
 is based on a type system with lattices and polar types.
 Inspired by~\citep{pottier1998phd}, they separated input and output types into polar types,
 which greatly simplifies the subtyping judgment.
-With further help of their biunification algorithm,
+With the further help of their biunification algorithm,
 constraints are no longer carried with types,
 instead they are expressed directly on types.
 For example, the \verb|select| function defined above has type
 $$(\alpha \to \text{bool}) \to \alpha \to \beta \to \alpha \sqcup \beta$$
 in MLsub.
-The $\sqcup$ symbol in the output type indicate that
+The $\sqcup$ symbol in the output type indicates that
 any of the types might be returned when executed.
-On the other hand, $\sqcap$ symbol might occur on an input type,
+On the other hand, the $\sqcap$ symbol might occur on an input type,
 when that argument is used as different types,
 meaning that the type must be able to convert to all these types.
 
 Nevertheless, there are still drawbacks in practice.
-Firstly, the type inference algorithm produces types that have comparable size to
+Firstly, the type inference algorithm produces types that
+have comparable sizes to
 previous systems with constraint types.
 Although a simplification algorithm is provided,
 it is not guaranteed to produce the most simple form.
 
 Secondly, MLsub always infers an expression and returns its principle type,
 but some of the types are not easy to understand.
-For example, the \verb|twice| function defined as \verb|twice f x = f (f x)|
+For example, the \verb|twice| function defined as
+\begin{verbatim}
+  twice f x = f (f x)
+\end{verbatim}
 has type $(\alpha \sqcup \beta \to \alpha) \to \beta \to \alpha$,
 where normally people might expect $(\alpha \to \alpha) \to \alpha \to \alpha$.
 
@@ -91,33 +95,35 @@ Thirdly, MLsub tries to infer on almost every possible expression,
 even those that might just be a mistake made by the programmer.
 For instance, the function
 \begin{verbatim}
-positive f x = if x > 0 then f x else f 0
+  positive f x = if x > 0 then f x else f 0
 \end{verbatim}
 always checks the positivity of \verb|x| before applying to \verb|f|.
 However, a slight mistake is made in the following definition
 \begin{verbatim}
-    positive' f x = if x > 0 then f x else f
+  positive' f x = if x > 0 then f x else f
 \end{verbatim}
 then the algorithm might still accept the program by giving the type:
 $$\alpha \sqcap (\beta \to \alpha) \to \beta \sqcap \text{int} \to \alpha$$
 Type inference algorithms, as logical tools that help people program,
 should accept good programs and reject bad ones.
-Typically, such function is considered to be badly-written,
+Typically, such a function is considered to be badly-written,
 but unfortunately, MLsub accepts it without giving any warnings.
 
 \subsection{Judgment List and Eager Substitution}
 
-The judgment list algorithm we discussed in the last chapter treat subtyping
+The judgment list algorithm we discussed in the last chapter treats subtyping
 judgments mainly as equality unification.
 However, the algorithm may lose some solutions
 when top and bottom types are introduced.
 For example,
-the judgment $\al \le 1$ has a best solution $\al := 1$ in the previous system,
+the judgment $\al \le 1$ has the best solution
+$\al := 1$ in the previous system,
 but now $\al := \bot$ should also be allowed.
 As a result, several subtyping judgments cannot be reduced easily with a single
 eager substitution.
 
-Similar incompleteness also affect the instantiation and existential variable solving rules
+Similar incompleteness also affects the instantiation and
+existential variable solving rules
 \begin{gather*}
 \begin{aligned}
     \Gm[\al] \Vdash \al \le A\to B &\rrule{10} [\al[1]\to\al[2]/\al] (\Gm[\al[1], \al[2]] \Vdash \al[1]\to \al[2] \le A \to B)\\
@@ -133,7 +139,7 @@ because the shapes of the instantiations of both existential variables are unkno
 there are infinitely many possibilities if no additional constraints present.
 For example, if $\al$ is finally instantiated to $\text{Int} \to \text{Int}$,
 then $\bt$ may be solved to the same type as $\al$,
-or other types that satisfies the subtyping relationship,
+or other types that satisfy the subtyping relationship,
 including $\text{Int} \to \top$, $\bot \to \text{Int}$ or $\bot \to \top$.
 What's worse, given only this single subtyping judgment $\al \le \bt$,
 we have no assumption on both existential variables.
@@ -145,7 +151,7 @@ we have no assumption on both existential variables.
 
 \subsection{Our Solution: Backtracking Algorithm}
 
-After examine the examples where the worklist algorithm behave incompletely,
+After examining the examples where the worklist algorithm behaves incompletely,
 we propose some improvements to the worklist algorithm to accept some simple cases.
 We have observed that subtyping judgments like $\al \le A$ and $A \le \al$ have trivial solutions
 $\al := \bot$ and $\al := \top$ respectively,
@@ -157,7 +163,7 @@ If the judgment reduction succeeds, then we know that $\al := \bot$ is a possibl
 If the reduction failed, we continue to try the other possibility according to the
 previous instantiation rule by splitting $\al$ into two existential variables $\al[1]$ and $\al[2]$.
 Note that for the reduced judgment $\al[1] \to \al[2] \le A \to B$,
-$\al[1]$ and $\al[2]$ might be solve to $\top$ or $\bot$.
+$\al[1]$ and $\al[2]$ might be solved to $\top$ or $\bot$.
 
 For the type system, there are also interesting changes to
 both the declarative system and algorithmic system.
@@ -182,11 +188,11 @@ However, for rank-2 judgments like $\al \le \bt$,
 completeness is impossible for any algorithm that reduces eagerly.
 
 Following the formal statements, we conclude that the backtracking algorithm
-is complete on most cases other than those where higher-ranked
+is complete in most cases other than those where higher-ranked
 subtyping judgments are involved.
 In those cases, we only consider the equality case and ignore any other possibilities,
 and we believe that this is a practical tradeoff.
-In another perspective, our algorithm do not try to solve completely when
+In another perspective, our algorithm does not try to solve completely when
 parametric polymorphism and subtyping polymorphism occur at the same time.
 
 

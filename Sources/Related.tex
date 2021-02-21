@@ -3,7 +3,7 @@
 \label{chap:related}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Throughout the thesis we have already discussed much of the closest related work.
+Throughout the thesis, we have already discussed much of the closest related work.
 In this section we summarize the key differences and novelties,
 and discuss some other related work.
 
@@ -52,17 +52,17 @@ For example,
 $$\all{\all[b] a \to b \to b} \le \all a \to (\all[b] b \to b)$$
 this subtyping relation does not hold in OL's subtyping relation,
 because the instantiation of $b$ in the left-hand-side type
-happends strictly before the introduction of
+happens strictly before the introduction of
 the variable $b$ in the right-hand-side type.
 Deep skolemisation can be achieved through
-a pre-processing that extract all the $\forall$'s
+a pre-processing that extracts all the $\forall$'s
 in the return position of a function type to the top level.
 After such pre-processing, the right-hand-side type becomes
 $\all {\all[b] a \to b \to b}$ and the subtyping relation holds.
 
 In terms of handling applications where type parameters are implicit,
 they do not use the application inference judgment as DK's type system.
-Instead, they empoly a complicated mechanism for implicit instantiation
+Instead, they employ a complicated mechanism for implicit instantiation
 taken care by the unification process for the algorithm.
 A manual proof is given, showing that the algorithm is sound and
 complete with respect to their declarative specification.
@@ -73,7 +73,7 @@ Type information flows from arguments to
 functions with an additional \emph{application} mode. This variant 
 allows more higher-order typed programs to be inferred without additional annotations.
 Following the new mode, the let-generalization of the Hindley-Milner system
-is well supported as a syntactic sugar. The formalization includes some
+is well supported as syntactic sugar. The formalization includes some
 mechanized proofs for the declarative type system, but all proofs regarding
 the algorithmic type system are manual.
 
@@ -88,7 +88,7 @@ and thus less adopted in real-world programming languages.
 
 $\text{ML}^\text{F}$~\citep{le2003ml,remy2008from,Botlan2009recasting}
 extends types of System F with a form of bounded quantification
-and propose an impredicative system.
+and proposes an impredicative system.
 The type inference algorithm always infers principle types given proper type annotations.
 Through the technique called ``monomorphic abstraction of polymorphic types'',
 polymorphic instantiations are expressed by constraints
@@ -99,7 +99,7 @@ Moreover, their type system is robust against a wide range of program transforma
 including let-expansion, let-reduction and $\eta$-expansion.
 However, the extended type structure of $\text{ML}^\text{F}$
 introduces non-compatible types with System F,
-and it complicates metatheory and implementation of the type system.
+and it complicates the metatheory and implementation of the type system.
 
 HMF~\citep{leijen2008hmf} takes a slightly different approach
 by not extending types with bounds,
@@ -108,8 +108,8 @@ The algorithm works similarly compared to $\text{ML}^\text{F}$,
 except that it does not output richer types.
 Instead, when there are ambiguity and no principal type can be inferred,
 being a conservative algorithm,
-HMF perfers predicative instantiations
-to maintain backward compatibility of HM.
+HMF prefers predicative instantiations
+to maintain backward the compatibility of HM.
 Soon after HMF, HML~\citep{leijen2009flexible} is proposed as
 an extension of HMF with flexible types.
 The system eliminates rigid quantifications ($\alpha = \sigma$)
@@ -123,7 +123,7 @@ types or ambiguous implicit instantiations.
 FPH~\citep{vytiniotis2008fph} employ a box notion \framebox{$\sigma$} to
 encapsulate polymorphic instantiations internally in the algorithm.
 A type inside a box indicates that the instantiation is impredicative.
-Therefore a inferred type with a box type in it means that
+Therefore an inferred type with a box type in it means that
 incomparable System F types may be produced,
 and that is rejected before entering the environment.
 Although more annotations might be required compared with other approaches,
@@ -154,7 +154,7 @@ In the meantime, they treat the function arrow ($\to$)
 as invariant like normal type constructors.
 This change significantly restricts the subtyping relation and thus
 simplifies guesses for implicit parameters.
-Manual $\eta$-expansions is required to regain
+Manual $\eta$-expansions are required to regain
 the co- and contravariance of function types.
 
 FreezeML~\citep{FreezeML} is another recent work that extends the ML type system
@@ -173,9 +173,9 @@ deals with impredicative instantiations.
 Type systems in presence of subtyping usually encounter constraints that
 are not simply equalities as in HM.
 Therefore constraint solvers used in HM, where unifications are based on equality,
-cannot be easily extend to support subtyping.
+cannot be easily extended to support subtyping.
 Instead, constraints are usually collected as subtyping relations
-and may delay resolving as the constraints accumulates.
+and may delay resolving as the constraints accumulate.
 \citet{EIFRIG1995,Eifrig1995sound} proposed systems that are based on
 \emph{constraint types}, i.e. types expressed together with a set of constraints
 $\tau \mid \{\overline{\tau_1 \le \tau_2}\}$.
@@ -184,7 +184,7 @@ each constraint in the closure of constraint set is \emph{consistent},
 which is a set of rules that prevent obvious contradictions appear,
 such as $\text{Int} \le \text{Bool}$.
 Our attempt in Section~\ref{subsec:lazy_subst} is similar to this idea,
-where we exhaustively check if every subtyping relation derived from the bounds are valid.
+where we exhaustively check if every subtyping relation derived from the bounds is valid.
 However, our algorithm tries to solve the bounds into concrete types,
 and it turns out that it never terminates in some complex cases.
 
@@ -203,15 +203,15 @@ finally, \emph{minimization} shares nodes within the constraint graph.
 Inspired by the simplification strategies of Pottier's,
 MLsub~\citep{mlsub} suggest that the data flow on the constraint graph
 can reflect directly on types extended by a richer type system,
-where lattices operations are used to represent constraints imposed on type varibles.
+where lattices operations are used to represent constraints imposed on type variables.
 Polar types distinguish between input types and output types,
-and poses different restrictions on them.
+and pose different restrictions on them.
 As a result, constraints can easily be transformed into canonical forms,
 and the bi-unification algorithm can solve them by simple substitutions.
 One can also view the MLsub system as a different way to encode the constraint types:
 instead of a set of constraints that is stated along with the type,
-types themselves now contain subtyping contraints with the help of lattice operations.
-Similarly, the size of contraints may grow with the size of program
+types themselves now contain subtyping constraints with the help of lattice operations.
+Similarly, the size of constraints may grow with the size of program
 and affect the readability.
 Therefore, various simplification algorithms should be used in real applications.
 A more recent work, the Simple-sub~\citep{Parreaux2020simple}, further simplifies
@@ -223,7 +223,7 @@ While being equivalent to MLsub, it is a more efficient variant.
 \subsection{Ordered Contexts in Type Inference}
 \citet{gundry2010type} revisit algorithm $\mathcal{W}$ and
 propose a new unification algorithm with the help of ordered contexts.
-Similar to DK's algorithm, information of meta variables flows from input contexts to output contexts.
+Similar to DK's algorithm, information of meta-variables flows from input contexts to output contexts.
 Not surprisingly, its information increase relation has a similar role to DK's context extension.
 Our algorithm, in contrast,
 eliminates output contexts and solution records ($\al = \tau$),

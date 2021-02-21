@@ -15,12 +15,12 @@ subtyping. The third result is our algorithm's decidability.
 
 To state the correctness of the algorithmic subtyping rules,
 Figure~\ref{fig:transfer} 
-introduces two \textit{transfer} judgements to
+introduces two \textit{transfer} judgments to
 relate the declarative and the algorithmic system. 
-The first judgement, transfer of contexts $\Gamma \to \Psi$, removes
+The first judgment, transfer of contexts $\Gamma \to \Psi$, removes
 existential variables from the algorithmic context $\Gamma$ to obtain a
 declarative context $\Psi$.
-The second judgement, transfer of the judgement list $\Gamma \mid \exps \rightsquigarrow \exps'$,
+The second judgment, transfer of the judgment list $\Gamma \mid \exps \rightsquigarrow \exps'$,
 replaces all occurrences of existential variables in $\exps$  by well-scoped mono-types.
 Notice that this judgment is not decidable, i.e. a pair of
 $\Gamma$ and $\exps$ may be related with multiple $\exps'$. However, if there
@@ -126,7 +126,7 @@ The difficult cases correspond to the $\mathtt{{\le_a}instL}$ and
 $\mathtt{{\le_a}instR}$ rules.  When the proof by induction on $\Psi\vdash
 \exps'$ reaches the $\mathtt{{\le}{\to}}$ case, the first declarative
 judgment has a shape like $A_1\to A_2 \le B_1\to B_2$. 
-One of the possibile cases for the first corresponding algorithmic judgement
+One of the possible cases for the first corresponding algorithmic judgment
 is $\al\le A\to B$. However, the case analysis does not indicate
 that $\al$ is fresh in $A$ and $B$. Thus we cannot apply
 Rule~$\mathtt{{\le_a}instL}$ and make use of the induction hypothesis.
@@ -180,14 +180,14 @@ It is not difficult to see that all but two of the algorithm's rules decrease
 one of the three measures. The two exceptions are the Rules $\mathtt{{\le_a}instL}$ and $\mathtt{{\le_a}instR}$; both increment the number of existential
 variables and the number of function types without affecting the number of
 universal quantifiers.
-To handle these rules, we handle a special class of judgements, which
-we call \emph{instantiation judgements} $\exps_i$, separately. They 
+To handle these rules, we handle a special class of judgments, which
+we call \emph{instantiation judgments} $\exps_i$, separately. They 
 take the form:
 \begin{definition}[$\exps_i$]
 $$\exps_i := \cdot \mid \jcons{\al\le A}{\exps_i'} \mid \jcons{A\le \al}{\exps_i'}
 \quad\text{where } \al\notin FV(A)\cup FV(\exps_i')$$
 \end{definition}
-These instantiation judgements are these ones consumed and
+These instantiation judgments are these ones consumed and
 produced by the Rules $\mathtt{{\le_a}instL}$ and $\mathtt{{\le_a}instR}$.
 The following lemma handles their decidability.
 \begin{lemma}[Instantiation Decidability]

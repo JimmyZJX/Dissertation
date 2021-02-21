@@ -6,7 +6,7 @@ formulations, and which have influenced our own algorithmic design.
 Finally we introduce the novelties of our new algorithm.
 In particular the support for inference judgments in
 worklist judgments, and a new form of worklist judgment
-that the unifies \emph{ordered contexts} and the worklists themselves. 
+that unifies \emph{ordered contexts} and the worklists themselves. 
 
 % DK's declarative system TODO point to background
 
@@ -155,7 +155,7 @@ A problem that we found in the declarative system is that
 some of the rules overlap with each other.
 Declarative subtyping rules $\mathtt{{\le}\forall L}$ and $\mathtt{{\le}\forall R}$
 both match the conclusion $\Psi\vdash \all A \le \all B$.
-In such case, choosing $\mathtt{{\le}\forall R}$ first is always better,
+In such a case, choosing $\mathtt{{\le}\forall R}$ first is always better,
 since we introduce the type variable $a$ to the context earlier,
 which gives more flexibility on the choice of $\tau$.
 The declarative typing rule $\mathtt{DeclSub}$ overlaps with
@@ -287,8 +287,8 @@ $$
 %Due to the complication of its scoping control method,
 %it is hard to argue the preciseness of scoping for each variable when designing algorithms.
 
-At first sight, the DK algorithm would seem a good basis for mechanization. After
-all it comes with a careful description and extensive manual proofs.
+At first sight, the DK algorithm would seem to be a good basis for mechanization. After all,
+ it comes with a careful description and extensive manual proofs.
 Unfortunately, we ran into several obstacles that have prompted us to formulate
 a different, more mechanization-friendly algorithm.
 
@@ -315,7 +315,7 @@ Lemma 29 (Parallel Admissibility)\footnote{Ningning Xie found the issue with Lem
   Although they briefly mentioned that it should be possible to use a weaker lemma instead they did
   not go into details.}.
 This lemma is a cornerstone of the two metatheoretical results 
-of the algorithm, soundness and completeness with respect to the declarative system.
+of the algorithm, soundness, and completeness with respect to the declarative system.
 In particular, both instantiation soundness (i.e. a part of subtyping
 soundness) and typing completeness directly require the broken lemma.
 Moreover, Lemma 54 (Typing Extension) also requires the broken lemma and is
@@ -396,7 +396,7 @@ judgment in turn, rather than immediately to all remaining judgments at once.
 Also, as we have mentioned above, the stack discipline of the ordered contexts
 does not mesh well with the use of output contexts; explicit marker entries are
 needed in two places to demarcate the end of an existential variable's scope.
-Actually we found a scoping issue related to the subsumption rule $\mathtt{DK\_Sub}$,
+Actually, we found a scoping issue related to the subsumption rule $\mathtt{DK\_Sub}$,
 which might cause existential variables to leak across judgments.
 In Section~\ref{sec:discussion:scoping} we give a detailed discussion.
 %A detailed discussion on this issue with a possible fix is .
@@ -505,7 +505,7 @@ substitute solutions into these copies.
 \subsection{Single-Context Worklist Algorithm for Subtyping}
 
 As we have seen in Chapter~\ref{chap:ITP},
-an algorithm based on \emph{worklist judgements} is mechanized
+an algorithm based on \emph{worklist judgments} is mechanized
 and shown to be correct with respect to DK's declarative
 subtyping judgment.
 This approach overcomes some problems in DK's algorithmic formulation
@@ -621,7 +621,7 @@ which has a term variable declaration as the top element.
 %just as what we have mentioned above about the scope tracking.
 After removing the garbage term variable declaration from the worklist, we process the last remaining
 inference judgment $(\lam x)~()\To~?$, with the unit type $1$ as its result.
-Finally the last judgment becomes $1 \le 1$, a trivial base case.
+Finally, the last judgment becomes $1 \le 1$, a trivial base case.
 
 
 % Our algorithm borrows some ideas from previous work, while adding new ones. 

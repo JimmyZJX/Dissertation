@@ -14,8 +14,8 @@ By collecting all judgments in a single worklist,
 the algorithm performs unification with a bird's-eye view of all the judgments,
 therefore propagation between judgments is as simple as a global substitution.
 Compared with classical HM unification procedure,
-Our algorithm does not need seperated relations (or fixpoints) for unification.
-In the formalization point of view,
+Our algorithm does not need separated relations (or fixpoints) for unification.
+From the formalization point of view,
 eager substitutions are also easier to state and reason in a proof assistant.
 Therefore, we obtained fully formalized properties for all our developments
 relatively easily.
@@ -24,11 +24,11 @@ Overall, we developed the following systems and/or type inference algorithms:
 \begin{itemize}
     \item We developed a worklist algorithm for OL's higher-ranked subtyping system.
         The algorithm operates on a worklist of subtyping judgments and
-        a single context where variable declaration is shared across the worklist.
+        a single context where a variable declaration is shared across the worklist.
         Compared with DK's algorithm, our approach avoids the use of output contexts,
         which complicates the scoping of variables and is hard to formalize
         in a proof assistant.
-        Eager substitutions that solves existential variables are directly applied to
+        Eager substitutions that solve existential variables are directly applied to
         the worklist, therefore passing the partial information to the rest judgments.
         We proved \emph{soundness}, \emph{completeness} and \emph{decidability} of
         the algorithm in the Abella theorem prover.
@@ -36,12 +36,12 @@ Overall, we developed the following systems and/or type inference algorithms:
     \item We developed a worklist algorithm for DK's higher-ranked bidirectional type system.
         In order to properly encode judgments that
         output types, such as the type inference judgment,
-        continuation-passing-style \emph{judgment chain} is developed.
+        continuation-passing-style \emph{judgment chains} are developed.
         Compared with the previous work that uses a single context,
-        we further unifies the worklist with variable declarations.
+        we further unify the worklist with variable declarations.
         Such unification results in a much more accurate track of variable scopings,
         and the algorithm will garbage-collect variables
-        as soon as they are not referred to any more.
+        as soon as they are not referred to anymore.
         Unlike using output contexts as DK's algorithm,
         designing rules for worklist context is less likely to contain bugs
         in terms of variable scoping.
@@ -51,7 +51,7 @@ Overall, we developed the following systems and/or type inference algorithms:
 
     \item We developed a backtracking-based algorithm for a higher-ranked
         bidirectional type system with object-oriented subtyping.
-        With the introduction of the top and bottom types and relavent subtyping relations,
+        With the introduction of the top and bottom types and relevant subtyping relations,
         meta-variable instantiations are no longer deterministic like the HM system.
         The backtracking-based algorithm preserves most characteristics of the previous
         worklist context, and it ``tries'' obvious solutions in parallel with detailed analysis
@@ -77,7 +77,7 @@ For example, subtyping between function types may increase the number of judgmen
 and instantiation judgments that split existential variables may increase the number of
 unsolved existential variables.
 We are mostly convinced by the fact that
-a large set of tests performed on random generated
+a large set of tests performed on randomly generated
 subtyping judgments do terminate.
 And we hope that a clever termination argument may be proposed in the near future.
 
@@ -107,7 +107,7 @@ which requires a system that allows impredicative instantiation to do so.
 There are many impredicative systems developed out of various techniques~
 \cite{le2003ml,leijen2008hmf,leijen2009flexible,vytiniotis2008fph,
 Serrano2018,quicklook2020,FreezeML},
-and we leave the extension of impredicativity to our algorithms as a future work.
+and we leave the extension of impredicativity to our algorithms as future work.
 
 % \paragraph{Elaboration}
 % \jimmy{Already discussed before... consider removing}
@@ -132,18 +132,18 @@ our algorithms manipulate the judgments themselves on-the-fly.
 Efficient implementations will model meta-variables as mutable references
 and apply the results if they are solved by the constraint solver.
 DK's algorithm~\citep{dunfield2013complete} requires output contexts,
-which is likely to be implemented in a state monad or other stateful approaches.
+which are likely to be implemented in a state monad or other stateful approaches.
 Solved existential variable is encoded in their algorithmic context different from ours.
 Instead of removing the declaration of the variable and propagate its solution to
 all the rest judgments, they extend the entry in the context with its solution,
 $\al = \tau$, and pass it to the output context.
-Such entry is easy to implement with the efficient approach using mutable references.
-We can also adopt such idea and reformulate our eager substitution with
+Such entry is easy to implement with an efficient approach using mutable references.
+We can also adopt such an idea and reformulate our eager substitution with
 lazy ones by keeping track of solutions to existential variables,
 and only perform substitution when the judgment is just about to be reduced.
 
 Unfortunately, lazy substitution only solves part of the problem.
-By using ordered contexts, the scoping of variables are precisely captured by
+By using ordered contexts, the scoping of variables is precisely captured by
 the relative positions in which they are declared in the context.
 Some algorithmic rules are designed to use the position information,
 where swapping positions might lead to unsound implementation.
@@ -162,7 +162,7 @@ relative positions of variable declarations.
 
 Moreover, there are also reduction rules that \emph{remove}
 and/or \emph{insert} variables from(to) the middle of the ordered context,
-as occured in the following rules:
+as occurred in the following rules:
 \begin{gather*}
 \begin{aligned}
 \Gm[\al] \Vdash \al \le A\to B &\rrule{14}
@@ -175,14 +175,14 @@ as occured in the following rules:
 \end{gather*}
 
 To sum up,
-we plan to propose a implementation-friendly version of the algorithm
+we plan to propose an implementation-friendly version of the algorithm
 that does not require many eager substitutions,
 and we also hope that there will be suitable data structures or algorithms
 which optimizes the complexity of those time-consuming operations on the ordered context.
 
 
 \paragraph{Class Hierarchy of Nominal Subtyping}
-Nowadays, most mainstream object-oriented programming language
+Nowadays, most mainstream object-oriented programming languages
 support nominal subtyping,
 which means that the subtyping relation is defined by the programmers explicitly
 through language constructs such as inheritance.
@@ -191,12 +191,12 @@ which inherits the $\text{Int}$ class.
 The subtyping relation $\text{Pos} \le \text{Int}$ automatically holds.
 An algorithmic subtyping judgment $\al \le \text{Int}$
 now might have several solutions: $\text{Int}, \text{Pos},$ or $\bot$.
-In order to calculate a \emph{range} of solutions intead of
+In order to calculate a \emph{range} of solutions instead of
 just simple types,
-lazy algorithms that operates on bounds fits the task better.
-We plan to explore on extensions of the algorithm described in Section~\ref{subsec:lazy_subst}.
-The algorithm progressively collect upper and lower bounds of existential variables,
-and finally checks if there are valid solutions satisfying all the bounds.
+lazy algorithms that operate on bounds fit the task better.
+We plan to explore extensions of the algorithm described in Section~\ref{subsec:lazy_subst}.
+The algorithm progressively collects upper and lower bounds of existential variables,
+and finally checks if valid solutions are satisfying all the bounds.
 
 Nonetheless, we encounter termination problems when trying to adopt the lazy approach.
 Experiments indicate that loop dependency in combination with the

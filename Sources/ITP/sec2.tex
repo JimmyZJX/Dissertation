@@ -149,7 +149,7 @@ subtyping needs to solve is to find an algorithmic way to compute the
 monotypes, instead of guessing them. An additional challenge is that
 the declarative rule $\mathtt{{\le}{\to}}$ splits one judgment
 into two, and the (partial) solutions found for existential variables when
-processing the first judgment should be transfered to the second judgement.
+processing the first judgment should be transfered to the second judgment.
 %Traditionaly algorithms address this problem using techniques 
 %similar to unification. Basically existential (unification) variables
 %are introduced through the derivation and solved while traversing the
@@ -160,23 +160,24 @@ processing the first judgment should be transfered to the second judgement.
 \paragraph{Dunfield and Krishnaswami's Approach}
 An elegant algorithmic solution to computing the monotypes is 
 presented by \citet{dunfield2013complete}.
-Their algorithmic subtyping judgement has the form:
+Their algorithmic subtyping judgment has the form:
 
 \[\Psi \vdash A \le B \dashv \Phi\]
 
 \noindent 
-A notable difference to the declarative judgement is the presence of a
+A notable difference to the declarative judgment is the presence of a
 so-called \emph{output context} $\Phi$, which refines the \emph{input
 context} $\Psi$ with solutions for existential variables found while
 processing the two types being compared for subtyping. 
 Both $\Psi$ and $\Phi$ are \emph{ordered contexts} with the
 same structure. Ordered contexts are particularly useful to keep track
 of the correct scoping for variables, and
-are a notable different to older type-inference algorithms~\citep{damas1982principal} that use global
+are a notable difference to older type-inference
+algorithms~\citep{damas1982principal} that use global
 unification variables or constraints collected in a set. 
 
 Output contexts
-are useful to transfer information across judgements in Dunfield and
+are useful to transfer information across judgments in Dunfield and
 Krishnaswami's approach. For example, the algorithmic rule
 corresponding to $\mathtt{{\le}{\to}}$ in their approach is:
 $$\inferrule*[right=$\mathtt{{<:}{\to}}$]
@@ -184,8 +185,8 @@ $$\inferrule*[right=$\mathtt{{<:}{\to}}$]
 	{\Psi\vdash A_1\to A_2 <: B_1\to B_2 \dashv \Phi'}
 $$
 \noindent The information gathered by the output context when comparing the
-input types of the functions for subtyping is transfered to the second
-judgement by becoming the new input context, while any solution derived from the first judgment is applied to the types of the second judgment.
+input types of the functions for subtyping is transferred to the second
+judgment by becoming the new input context, while any solution derived from the first judgment is applied to the types of the second judgment.
 
 \paragraph{Example} If we want to show that $\forall a. a\to a$ is a subtype
 of $1\to 1$, the declarative system will guess the proper $\tau=1$ for
@@ -225,10 +226,10 @@ propagates the output context back.
 
 Dunfield and Krishnaswami's algorithmic specification is elegant
 and contains several useful ideas for a mechanical
-formalization of polymorphic subtyping. For example 
+formalization of polymorphic subtyping. For example,
 \emph{ordered contexts} and \emph{existential variables} enable a purely inductive formulation 
-of polymorphic subtyping. However the binding/scoping structure of their 
-algorithmic judgement is still fairly complicated and poses 
+of polymorphic subtyping. However, the binding/scoping structure of their 
+algorithmic judgment is still fairly complicated and poses 
 challenges when porting their approach to a theorem prover. 
 
 \subsection{The Worklist Approach}
@@ -237,23 +238,23 @@ challenges when porting their approach to a theorem prover.
 %solution immediately to all the judgments.
 We inherit Dunfield and Krishnaswami's ideas of ordered contexts,
 existential variables and the idea of solving those variables, but
-drop output contexts. Instead our algorithmic rule has the form:
+drop output contexts. Instead, our algorithmic rule has the form:
 
 \[\Gamma \vdash \exps\]
 
 \noindent where $\exps$ is a list of judgments $A \le B$ instead of a
-single one. This judgement form, which we call \emph{worklist judgement},
+single one. This judgment form, which we call \emph{worklist judgment},
 simplifies two aspects of Dunfield and
 Krishnaswami's approach.
 
 %\jimmy{Mention the relation to constraint solving, e.g. in unification. Possibly talk about nondeterminism.}
 
 Firstly, as already stated, there are no output
-contexts. Secondly the form of the ordered contexts becomes simpler.
-The transfer of information across judgements is simplified because 
-all judgements share the input context. Moreover the order of the
-judgements in the list allows information discovered when processing
-the earlier judgements to be easily transfered to the later judgements.
+contexts. Secondly, the form of the ordered contexts becomes simpler.
+The transfer of information across judgments is simplified because 
+all judgments share the input context. Moreover, the order of the
+judgments in the list allows information discovered when processing
+the earlier judgments to be easily transferred to the later judgments.
 In the worklist approach the rule for function types is:
 \[\inferrule*[right=$\mathtt{{\le_a}{\to}}$]
   {\Gamma \vdash \jcons{B_1\le A_1}{\jcons{A_2\le B_2}{\exps}}}
@@ -289,7 +290,7 @@ solution to each of the judgments.
 
 To derive $\cdot\vdash \forall a. a\to a \le 1\to 1$
 with the worklist approach, we first introduce an existential variable
-and change the judgement to
+and change the judgment to
 $\jcons{\al\vdash \al\to\al \le 1\to 1}{\cdot}$. Then, we
 split the judgment in two for the function types and the derivation
 comes to $\jcons{\al\vdash 1\le \al}{\jcons{\al \le 1}{\cdot}}$. When the first
@@ -310,7 +311,7 @@ We have proven 3 important properties for this algorithm:
 
 %----------------------------------------------------------------------------------------
 %\subsection{Worklist Algorithm}
-% key ideas: replace tree of judgments by a list of judgements...
+% key ideas: replace tree of judgments by a list of judgments...
 
 %\subsection{The Choice of Abella}
 

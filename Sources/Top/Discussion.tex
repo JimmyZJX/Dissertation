@@ -10,7 +10,7 @@ for existential variable instantiations when dealing with subtyping.
 For example, when reducing the algorithmic subtyping judgment
 $$\al \le \al \to 1$$
 we only consider the possibility $\al := \bot$
-and stop reducing because the judgment involves a self reference.
+and stop reducing because the judgment involves a self-reference.
 In fact, there are infinitely many valid solutions just in our type system,
 including $\al := \top \to \bot$ and $\al := \top \to 1$.
 The problem can be solved by introducing recursive types,
@@ -42,15 +42,16 @@ yet it does not hold for the system with subtyping when monotypes are not restri
 
 On the meantime, algorithmic subtyping rules 12 and 13, and typing rules 27 and 37
 should be removed from the algorithm under the monotype restriction,
-since these rules solves existential variables to $\top$ or $\bot$.
+since these rules solve existential variables to $\top$ or $\bot$.
 Other than that, the algorithm remains unchanged.
-Note that after removing these rules, the algorithm no longer have overlapping rules,
+Note that after removing these rules,
+the algorithm no longer has overlapping rules,
 therefore backtracking is not needed any more.
 
 Following the proof techniques in Chapter~\ref{chap:ICFP},
 both \emph{soundness} and \emph{completeness} theorems
 are successfully proven and also mechanized.
-Given that the algorithm reduce judgments in a similar way to the one in the previous chapter,
+Given that the algorithm reduces judgments in a similar way to the one in the previous chapter,
 the result is not so surprising.
 However, it still reveals two facts:
 firstly, if we do not try to guess any type involving subtyping relation
@@ -60,11 +61,11 @@ secondly, although the current algorithm for the system with subtyping is incomp
 all source of incompleteness comes from subtyping relations.
 
 \subsection{Lazy Substitution and Non-terminating Loops}\label{subsec:lazy_subst}
-In this substction, we propose a possible way to fix the incompleteness issue
+In this subsection, we propose a possible way to fix the incompleteness issue
 for the subtyping part of the algorithm and discuss its impact to the existing formalization.
 
-As we have analyzed before,
-one major source of incompleteness comes from rule 20 and 21,
+As we have analysed before,
+one major source of incompleteness comes from rules 20 and 21,
 where two different existential variables are compared.
 A natural idea is to delay the solving procedure until all the corresponding
 constraints are collected.
@@ -110,7 +111,7 @@ the two fresh existential variables representing a function type $\al[1] \to \al
 now acts as a bridge between $\al$ and $A \to B$.
 The algorithm breaks the judgment $\al \le \al[1] \to \al[2]$ into two sub-problems:
 $\al \le \al[1] \to \al[2]$ and $\al[1] \to \al[2] \le A \to B$.
-And it is not difficult to prove that the problem before and after
+And it is not difficult to prove that the problems before and after
 such transformation are equivalent to each other.
 
 The change of existential variable declaration and solving mechanisms
@@ -119,7 +120,7 @@ the algorithmic rule for garbage collecting them.
 When $\al$ is at the top of the worklist and thus going to be recycled,
 we need to further check if it can actually be solved,
 by ensuring that lower bounds are indeed subtypes of upper bounds:
-any type that is a subtype of $\al$ should be subtype of
+any type that is a subtype of $\al$ should be a subtype of
 any super type of $\al$.
 
 $$
@@ -139,7 +140,7 @@ therefore the instantiation of $l_i \le u_j$ holds for any $1 \le i \le n, 1 \le
 
 On the other hand, such check is sufficient. In other words,
 we can always find a proper solution for $\al$ if any lower bound
-is subtype of any upper bound.
+is a subtype of any upper bound.
 This is supported by the following property on declarative monotypes:
 \begin{lemma}[Sufficient Bound Check for Monotypes]~\\
     Given collections of monotypes $\{l_i\}^n$ and $\{u_j\}^m$,\\
@@ -187,6 +188,6 @@ we observe that the algorithm accepts more valid relations when there are no loo
 but may be trapped in infinite loops otherwise.
 We have also tried to formalize how a loop detection procedure might be used to help
 prevent the non-termination problem,
-but most of them turns out to be rather complicated and hard to machanically formalize.
+but most of them turn out to be rather complicated and hard to mechanically formalize.
 
 

@@ -3,21 +3,22 @@
 \label{chap:Background}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
-In this chapter we introduce some type systems which are basic concepts
-in order to help understand the rest of the thesis better.
+In this chapter, we introduce some highly related type systems.
+They are basic concepts and should help the reader
+understand the rest of the thesis better.
 Section~\ref{sec:bg:hm} introduces the
 Hindley-Milner type system~\citep{hindley1969principal,
 milner1978theory,damas1982principal},
-a widely used system that support rank-1 (prenex) polymorphism.
+a widely used system that supports rank-1 (prenex) polymorphism.
 Section~\ref{sec:bg:ol} presents the Odersky-L\"aufer type system,
 which is an extension of the Hindley-Milner by allowing higher-ranked types.
 Section~\ref{sec:bg:dk} describes the Dunfield-Krishnaswami
 bidirectional type system,
 a bidirectional type system that further extends Odersky-L\"aufer's.
-Finally in Section~\ref{sec:mlsub} we introduce
+Finally, in Section~\ref{sec:mlsub} we introduce
 one of the recent advancements in the ML family,
 namely the MLsub type system,
-which integrets object-oriented subtyping with the Hindley-Milner type inference.
+which integrates object-oriented subtyping with the Hindley-Milner type inference.
 
 
 \section{Hindley-Milner Type System}\label{sec:bg:hm}
@@ -31,7 +32,7 @@ The system is also known as Damas–Milner or Damas–Hindley–Milner.
 Hindley~\citep{hindley1969principal} and Milner~\citep{milner1978theory}
 independently discovered equivalent algorithms for the polymorphic typing problem
 and also proved the soundness of their algorithms.
-Later on, Damas and Milner~\citep{damas1982principal} proved the completeness of their
+Later on, \citet{damas1982principal} proved the completeness of their
 algorithm.
 
 \subsection{Declarative System}
@@ -119,20 +120,20 @@ substitutes $a$ by $b \to b$, and generalizes $b$ after the substitution.
 The typing relation $\Psi \vdash_{HM} e:\sigma$ synthesizes a type $\sigma$ for
 an expression $e$ under the context $\Psi$.
 Rule $\mathtt{HM \dash Var}$ looks up the binding of a variable $x$ in the context.
-Rule $\mathtt{HM \dash Unit}$ always give the unit type $1$ to the unit expression $()$.
+Rule $\mathtt{HM \dash Unit}$ always gives the unit type $1$ to the unit expression $()$.
 For a lambda abstraction $\lam e$, rule $\mathtt{HM \dash Abs}$ guesses its input type ($\tau_1$)
-and compute the type of its body ($\tau_2$) as the return type.
+and computes the type of its body ($\tau_2$) as the return type.
 Rule $\mathtt{HM \dash App}$ eliminates a function type by an application $e_1~e_2$,
 where the argument type must be the same as the input type of the function,
 and the type of the whole application is $\tau_2$.
 
-Rule $\mathtt{HM \dash Let}$ is also referred as let-polymorphism.
+Rule $\mathtt{HM \dash Let}$ is also referred to as let-polymorphism.
 In (untyped) lambda calculus, $\letin{e_1}{e_2}$ behaves the same as $(\lam e_2)~e_1$.
 However, the HM let rule derives the type of $e_1$ first,
 and binds the polymorphic type into the context before $e_2$.
 This enables polymorphic expressions to be reused multiple times in different instantiated types.
 
-Rules $\mathtt{HM \dash Gen}$ and $\mathtt{HM \dash Inst}$ changes the type of an expression
+Rules $\mathtt{HM \dash Gen}$ and $\mathtt{HM \dash Inst}$ change the type of an expression
 at any time during the derivation.
 Rule $\mathtt{HM \dash Gen}$ generalizes over fresh type variables $\overline{a}$.
 Rule $\mathtt{HM \dash Inst}$, as opposed to generalization, specializes a type
@@ -152,7 +153,7 @@ In this thesis, we focus on predicative systems only.
 \paragraph{Syntax-Directed System}
 The declarative system is not syntax-directed due to
 rules $\mathtt{HM \dash Gen}$ and $\mathtt{HM \dash Inst}$,
-which can be applied on any expression.
+which can be applied to any expression.
 A syntax-directed system can be obtained by
 replacing rules $\mathtt{HM \dash Var}$ and $\mathtt{HM \dash Let}$
 by the following rules:
@@ -191,13 +192,13 @@ The following property shows that the new system is (almost) equivalent to the o
 
 
 \paragraph{Type Inference Algorithm}
-Although being syntax-directed solves some problems, the rules still requires some guessings,
+Although being syntax-directed solves some problems, the rules still require some guessings,
 including rule $\mathtt{HM \dash Abs}$ and $\mathtt{HM \dash Var \dash Inst}$.
 Algorithm W~\citep{milner1978theory}, based on unification,
 is proven to be sound and complete w.r.t the declarative specifications.
 
 \begin{theorem}[Algorithmic Completeness (Principality)]
-    If $\Psi \vdash_{HM} e : \sigma$, then W computes a principal type sheme $\sigma_p$, i.e.
+    If $\Psi \vdash_{HM} e : \sigma$, then W computes a principal type scheme $\sigma_p$, i.e.
     \begin{enumerate}
         \item $\Psi \vdash_{HM} e : \sigma_p$
         \item $\sigma_p \sqsubseteq \sigma$.
@@ -209,15 +210,17 @@ is proven to be sound and complete w.r.t the declarative specifications.
 
 \section{Odersky-L\"aufer Type System}\label{sec:bg:ol}
 
-The HM type system is simple, powerful and easy-to-use.
+The HM type system is simple, powerful, and easy-to-use.
 However, it only accepts types of rank-1, i.e. the $\forall$
 quantifier can only appear in the top-level.
 In practice, there are cases where \emph{higher-ranked} types are needed.
-The rank-1 limitation prevents those programs to type check and thus loses expressiveness.
+The rank-1 limitation prevents those programs from type check
+and thus loses expressiveness.
 The problem is that full type inference for System F
 is proven to be undecidable~\citep{wells1999typability}.
-\citet{odersky1996putting} then proposed a system where programmer can
-make use of type annotations to guide the type system especially on higher-ranked types.
+\citet{odersky1996putting} then proposed a system where programmers can
+make use of type annotations to guide the type system,
+especially on higher-ranked types.
 This extension of HM preserves nice properties of HM,
 while accepting higher-ranked types to be checked with the help of the programmers.
 
@@ -225,9 +228,9 @@ For example, consider the following function definition
 $$\lam[f] (f~1, f~'c')$$
 This is not typeable in HM, because the argument of the lambda abstraction, $f$,
 is applied to both an integer and a character,
-which means that is should be of a polymorphic unknown type,
+which means that it should be of a polymorphic unknown type,
 thus the type of the lambda abstraction cannot be inferred by the HM type system.
-This seems reasonable, since there are several polymorphic types that fits the function,
+This seems reasonable, since there are several polymorphic types that fit the function,
 for example,
 $$\lam[f] (f~1, f~'c') :: (\all a \to a) \to (\text{Int}, \text{Char})$$
 $$\lam[f] (f~1, f~'c') :: (\all a \to \text{Int}) \to (\text{Int}, \text{Int})$$
@@ -245,7 +248,7 @@ finally discuss the relationship between OL and HM.
 \subsection{Higher-Ranked Types}
 
 The \emph{rank} of a type represents how deep a universal quantifier
-appear at the contravariant position~\citep{rank1992kfoury}. Formally speaking,
+appears at the contravariant position~\citep{rank1992kfoury}. Formally speaking,
 
 \begin{gather*}
     \begin{aligned}
@@ -269,7 +272,8 @@ The following example illustrates what rank a type belongs to:
 According to the definition, monotypes are types that does not contain any universal quantifier.
 In the HM type system, all polymorphic types have rank 1.
 
-\jimmy{TODO Background about System F incompleteness, examples about higher-rank types}
+%\jimmy{TODO Background about System F incompleteness, examples about higher-rank types}
+% covered in the intro part
 
 \subsection{Declarative System}
 
@@ -330,9 +334,9 @@ Finally, contexts consist of not only variable bindings,
 but also type variable declarations.
 Here we adopt a slightly different approach than the original work~\citep{odersky1996putting},
 which does not track type variables explicitly in a context.
-Such explicit declarations reduce formalization difficulties especially
+Such explicit declarations reduce formalization difficulties, especially
 when dealing with freshness conditions or variable name encodings.
-This also enables us to formally define well-formedness of types,
+This also enables us to formally define the well-formedness of types,
 shown in Figure~\ref{fig:ol_decl_wft}.
 
 
@@ -374,7 +378,7 @@ by a monotype $\tau$.
 Rule $\mathtt{OL \dash SUB \dash \forall R}$ picks a fresh type variable
 for the right-hand-side polymorphic type,
 which is made possible by renaming according to alpha-equivalence.
-Given that such implicit freshness condition is widely adopt,
+Given that such implicit freshness condition is widely adopted,
 we omit that throughout the thesis.
 
 \paragraph{Typing}
@@ -460,24 +464,24 @@ with the help of the subtyping relation.
 \subsection{Relating to HM}
 
 The OL type system accepts higher-ranked types,
-but it only try to instantiate monotypes like HM.
-Therefore, OL extends HM in a conservative way, such that
+but it only tries to instantiate monotypes like HM.
+Therefore, conservatively extends HM, such that
 every typed expression in HM is also typed in OL.
 In the meantime, all the ``guessing'' jobs OL needs to do
 remains in instantiating monotypes,
 thus the algorithm can be extended directly from any one for HM.
-In other words, it is the typing rules that helps the type system to reason about
-higher-ranked types, without actually complicates the type inference algorithm.
+In other words, it is the typing rules that help the type system to reason about
+higher-ranked types, without actually complicating the type inference algorithm.
 
 
 \section{Dunfield-Krishnaswami Bidirectional Type System}\label{sec:bg:dk}
 
 Bidirectional typing is popular among new type systems.
 Compared with the ML-style systems,
-bidirectional typing additionally make use of checking mode,
+bidirectional typing additionally makes use of checking mode,
 which checks an expression against a known type.
-This is especially helpful dealing with unannotated lambda functions,
-and when the type of the function can be inferred from the neigher nodes in the syntax tree.
+This is especially helpful in dealing with unannotated lambda functions,
+and when the type of the function can be inferred from the neighbor nodes in the syntax tree.
 For example,
 $$\lam[f] (f~1, f~'c') : (\all a \to a) \to (\text{Int} \to \text{Char})$$
 is typeable in higher-ranked bidirectional systems,
@@ -719,14 +723,17 @@ If $[\tau/a]A$ is a function type, Rule $\mathtt{Decl{\to}App}$ proceeds;
 if $[\tau/a]A$ is another universal quantified type,
 Rule $\mathtt{Decl{\to}I{\To}}$ is recursively applied.
 
-
+To conclude, DK employs a bidirectional declarative type system.
+The type system is mostly syntax-directed, but there are still
+some guesses of monotypes that need to be resolved by an algorithm.
+We will continue to discuss DK's algorithm in Chapters~\ref{chap:ITP} and \ref{chap:ICFP}.
 
 
 \section{MLsub}\label{sec:mlsub}
 
-MLsub~\citep{mlsub} extends the HM type system with subtyping.
+MLsub~\citep{mlsub} extends the HM type system with object-oriented subtyping.
 In presence of subtyping, type inference does not simply handle equality during unification.
-Therefore, types are extended with lattice to express bounds properly.
+Therefore, types are extended with lattice operations to express bounds properly.
 Furthermore, polar types are introduced to help separate input and output types,
 which simplifies the type inference algorithm.
 Like HM's type inference, MLsub always infers a principal type.
@@ -780,7 +787,7 @@ considering the definition of partial order:
 \]
 
 Type schemes are not defined as the usual $\sigma$.
-Instead, a monotype $\tau$ already represent a type scheme by
+Instead, a monotype $\tau$ already represents a type scheme by
 omitting the $\forall$ quantifiers---all the
 free type variables are implicitly generalized.
 
@@ -802,7 +809,7 @@ and negative types $\tau^-$ describe argument types.
 
 An important consequence is that all the constraints are of the form
 $\tau^+ \le \tau^-$, which represents the subtyping relation when
-using an output expression in a function application as argument.
+using an output expression in a function application as an argument.
 The following subtyping rules involving the lattice operations
 reflects their basic properties:
 \[
@@ -829,8 +836,8 @@ equality-based unification loses information about subtyping constraints.
 
 For the atomic constraint $\al = \tau$ where $\al \notin \text{FV}(\tau)$,
 the ML unification algorithm produces the substitution $[\tau/\al]$.
-In constrast, an MLsub atomic constraint might be $\al \le \tau$,
-and the substitution $[\tau/\al]$ treat the subtyping constraint as a equality constraint,
+In contrast, an MLsub atomic constraint might be $\al \le \tau$,
+and the substitution $[\tau/\al]$ treat the subtyping constraint as an equality constraint,
 which eliminates a whole set of possibilities.
 
 Luckily, lattices in MLsub helps express subtyping constraints on types directly.
@@ -844,7 +851,7 @@ and the substitution $[\al \sqcap \tau/\al]$ is equivalent to $[\tau_0/\al]$.
 In presence of polar types, the biunification algorithm of MLsub
 produces a \emph{bisubstitution} $[\al \sqcap \tau^-/\al^-]$
 against the constraint $\al \le \tau^-$,
-where only negative occurances are substituted,
+where only negative occurrences are substituted,
 keeping polar types properly ``polarized''.
 For example, a positive type $\al \to \al$ becomes $(\al \sqcap \tau^-) \to \al$
 under such substitution and remains a positive type.

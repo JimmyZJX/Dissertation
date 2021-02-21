@@ -10,7 +10,7 @@ we address several drawbacks and extend the technique to
 DK's bidirectional type system~\citep{dunfield2013complete}.
 We chose DK's type system because it is
 quite elegant, well-documented and it comes with detailed manually
-written proofs. Furthermore the system is adopted in practice by a few
+written proofs. Furthermore, the system is adopted in practice by a few
 real implementations of functional languages, including PureScript and
 Unison. The DK type system has two variants: a declarative
 and an algorithmic one. The two variants have been
@@ -26,9 +26,9 @@ an alternative formulation.
 
 The first challenge that we faced were missing details as well as
 a few incorrect proofs and lemmas in DK's formalization. While DK's
-original formalization comes with very well written manual proofs,
+original formalization comes with very well-written manual proofs,
 there are still several details missing. These complicate the task of
-writing a mechanically verified proof. Moreover some proofs and
+writing a mechanically verified proof. Moreover, some proofs and
 lemmas are wrong and, in some cases, it is not clear to us how to fix them.
 
 Despite the problems in DK's manual formalization,
@@ -39,7 +39,7 @@ and clearly written metatheory and proofs, which provided invaluable
 help to our own work.
 We expect that for most non-trivial manual
 proofs similar problems exist, so this should not be understood as a sign of sloppiness
-on their part. Instead it should be an indicator that reinforces the arguments
+on their part. Instead, it should be an indicator that reinforces the arguments
 for mechanical formalizations: manual formalizations are error-prone due to the multiple
 tedious details involved in them.
 There are several other examples of manual formalizations that were found to have
@@ -55,7 +55,7 @@ to deal with the complex forms of binding employed by type inference algorithms
 in theorem provers. To
 keep track of variable scoping, DK's algorithmic version employs input
 and output contexts to track information that is discovered through
-type inference. However modeling output contexts in a theorem prover
+type inference. However, modeling output contexts in a theorem prover
 is non-trivial.
 
 Due to those two challenges, our work takes a different approach by refining and
@@ -65,7 +65,7 @@ where we mechanically formalized an algorithm for
 \emph{polymorphic subtyping}~\citep{odersky1996putting}.
 The algorithm eliminates output contexts compared to DK's algorithm,
 and therefore the problem of variable binding is solved.
-Unfortunately, the subtyping algorithm cannot be naively extend
+Unfortunately, the subtyping algorithm cannot be naively extended
 to support the bidirectional type system.
 A key innovation in the new algorithm to be introduced in this chapter is how
 to adapt the idea of worklist judgments to
@@ -80,7 +80,7 @@ This enables precise scope tracking of free variables in
 judgments. Furthermore it avoids the duplication of context
 information across judgments in worklists that occurs in other
 techniques~\citep{Reed2009,Abel2011higher}.
-Despite the use of a different algorithm we prove the
+Despite the use of a different algorithm, we prove the
 same results as DK, although with significantly different proofs and
 proof techniques. The calculus and its metatheory
 have been fully formalized in the Abella theorem prover~\citep{AbellaDesc}.

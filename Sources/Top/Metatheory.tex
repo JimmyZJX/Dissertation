@@ -142,8 +142,8 @@ The proof depends on the following subtyping derivation size relation and an aux
 \end{corollary}
 
 The above lemma and corollary reveal the fact
-that a type variable occured in the subtyping relation
-represents \emph{arbitrary} well-formed monotype.
+that a type variable occurred in the subtyping relation
+represents an \emph{arbitrary} well-formed monotype.
 And it also explains the difference in treatment of polymorphic types between
 Rules $\mathtt{{\le}{\forall}L}$ and $\mathtt{{\le}{\forall}R}$:
 Rule $\mathtt{{\le}{\forall}R}$ is in fact equivalent to:
@@ -175,7 +175,7 @@ we can obtain the transitivity lemma for declarative subtyping.
     By Corollary~\ref{cor:subtyping_subst_mono}, $\Psi \vdash A \le [\tau/a]B$.
     Notice that the freshness condition is implicit for rule $\mathtt{{\le}\forall L}$.
     Clearly, $|[\tau/a]B|_\forall < |\all B|_\forall$, i.e. the first size measure decreases.
-    By induction hypothesis we get $\Psi \vdash A \le C$ and finishes this case.
+    By induction hypothesis we get $\Psi \vdash A \le C$ and finish this case.
 \end{proof}
 
 \subsection{Transfer}
@@ -344,8 +344,8 @@ and possibly increased complexity of the worklist through the size-increasing su
 $\{\al := \al[1] \to \al[2]\}$.
 
 We have performed a large set of tests on generated subtyping judgments
-that are consist of algorithmic mono types,
-and all judgements terminated within a reasonable number of derivation depth.
+that are consist of algorithmic monotypes,
+and all judgments terminated within a reasonable number of derivation depth.
 Unfortunately, we have not yet find any formal proof for the termination statement.
 
 \subsection{Formalization in the Abella Proof Assistant}
@@ -354,17 +354,17 @@ We have chosen the Abella (v2.0.7-dev
 \footnote{We use a forked version \url{https://github.com/JimmyZJX/abella} by only enhancing the Abella prover with a handy
 ``applys'' tactic.}
 ) proof assistant~\citep{AbellaDesc} to develop our formalization.
-Equipped with HOAS, Abella ease the formalization and proof tasks a lot
+Equipped with HOAS, Abella eases the formalization and proof tasks a lot
 compared with various libraries in Coq.
-Additionally, our algorithm heavily use eager substitutions,
-and Abella greatly simplifies relavent proofs thanks to its built-in
+Additionally, our algorithm heavily uses eager substitutions,
+and Abella greatly simplifies relevant proofs thanks to its built-in
 substitution representation and higher-order unification algorithms.
 
 \paragraph{Statistics of the Proof}
 The proof script consists of 7,301 lines of Abella code with a total of
 48 definitions and 592 theorems.
 Figure~\ref{table:top:proof_statistics} briefly summarizes the contents of each file.
-The files are linearly dependent due to limitations of Abella.
+The files are linearly dependent due to the limitations of Abella.
 
 \begin{table}[t]
     \renewcommand{\arraystretch}{1.2}

@@ -2,14 +2,14 @@
 
 This section presents our algorithm for polymorphic
 subtyping. A novel aspect of our algorithm is the use of worklist
-judgments: a form of judgement that facilitates the propagation 
+judgments: a form of judgment that facilitates the propagation 
 of information. 
 
 
 %-------------------------------------------------------------------------------
 \subsection{Syntax and Well-Formedness of the Algorithmic System}
 Figure~\ref{fig:alg:syntax} shows the
-syntax and the well-formedness judgement.  
+syntax and the well-formedness judgment.  
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 \paragraph{Existential Variables}
@@ -22,14 +22,14 @@ the type $\tau$ represented by the corresponding existential variable is
 always bound in the corresponding declarative context $\Psi$.
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-\paragraph{Worklist Judgements} The form of our algorithmic judgements is
+\paragraph{Worklist judgments} The form of our algorithmic judgments is
 non-standard. 
 %tracks the (partial) solutions of existential variables
 %in the algorithmic context; they denote a delayed substitution that is
 %incrementally applied to outstanding work as it is encoutered.  
 %Instead of reifying the substitution, 
 Our algorithm keeps track of an explicit list of
-outstanding work: the list $\Omega$ of (reified) \emph{algorithmic judgements} 
+outstanding work: the list $\Omega$ of (reified) \emph{algorithmic judgments} 
 of the form $A \leq B$,
 to which a substitution can be applied once and for all to propagate the solution
 of an existential variable. 
@@ -65,7 +65,7 @@ of an existential variable.
   {\Gamma, a\vdash A}
   {\Gamma\vdash \forall a. A}
 \end{gather*}
-\caption{Syntax and Well-Formedness Judgement for the Algorithmic System.}\label{fig:alg:syntax}
+\caption{Syntax and Well-Formedness judgment for the Algorithmic System.}\label{fig:alg:syntax}
 \end{figure}
 
 \begin{comment}
@@ -91,7 +91,7 @@ of an existential variable.
   {\Gamma, a\vdash A}
   {\Gamma\vdash \forall a. A}
 \end{gather*}
-\caption{Well-Formedness Judgement of the Algorithmic System}\label{fig:alg:wf}
+\caption{Well-Formedness judgment of the Algorithmic System}\label{fig:alg:wf}
 \end{figure}
 \end{comment}
 
@@ -104,12 +104,12 @@ Hole notations with the same name implicitly share the same $\Gamma_L$ and $\Gam
 %-------------------------------------------------------------------------------
 \subsection{Algorithmic Subtyping}
 
-The algorithmic subtyping judgement, defined in Figure~\ref{fig:alg}, has the form $\Gamma\vdash\exps$, where
+The algorithmic subtyping judgment, defined in Figure~\ref{fig:alg}, has the form $\Gamma\vdash\exps$, where
 $\exps$ collects multiple subtyping judgments $A\le B$. 
 % \bruno{Text comparing to Dunfield. Maybe mention in RW instead?:
 % In contrast to the
-% original formulation---which features 3 interdepenent judgements---our
-% algorithmic rules are all part of the same judgement. This is better for
+% original formulation---which features 3 interdepenent judgments---our
+% algorithmic rules are all part of the same judgment. This is better for
 % formalization in proof assistants and avoids mutual dependencies. 
 % }
 The algorithm treats $\exps$ as a worklist. In every step
@@ -326,7 +326,7 @@ variables, $\al[1]$ and $\al[2]$, which will be solved to some $\sigma$ and
 $\tau$ later.
 Step 5 applies Rule $\mathtt{{\le_a}{\to}}$ again. Notice that after the
 split, $\bt$ appears in two judgments. When the first $\bt$ is solved
-during any step of derivation, the next $\bt$ will be substituted by that
+during any step of the derivation, the next $\bt$ will be substituted by that
 solution.  This propagation mechanism ensures the consistent solution of the
 variables, while keeping the context as simple as possible.
 Steps 6 and 7 solve existential variables. The existential

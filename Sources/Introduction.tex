@@ -8,12 +8,13 @@
 Statically typed programming languages are widely used nowadays.
 Programs are categorized by various types before they are compiled and executed.
 Type errors caught before execution usually indicate potential bugs,
-letting the programmers to realize and correct such errors in advance.
+letting the programmers realize and correct such errors in advance.
 
-In early stages, programming languages like Java (before 1.5)
+In the early stages, programming languages like Java (before 1.5)
 are built on a simple type system,
 where only features like
-primitive types, explicitly-typed functions and non-generic classes are supported.
+primitive types, explicitly-typed functions,
+and non-generic classes are supported.
 People soon realize the need to generalize similar programs
 that have different types when used.
 For example, a simple way to define a function that swaps
@@ -25,7 +26,7 @@ the first two items in an integer array is
     arr[1] = t;
   }
 \end{verbatim}
-Similarly, the swap function for float array can be defined as
+Similarly, the swap function for a float array can be defined as
 \begin{verbatim}
   void swap2(float[] arr) {
     float t = arr[0];
@@ -33,8 +34,8 @@ Similarly, the swap function for float array can be defined as
     arr[1] = t;
   }
 \end{verbatim}
-which mostly shares the same body with the above function,
-except that the types changes from \verb|int| to \verb|float|.
+which mostly shares the same body with the above definition for integer array,
+except that the type of element in the array changes from \verb|int| to \verb|float|.
 If such functionality is a commonly used one,
 such as the sorting function,
 we definitely want to define it once and use it on many types,
@@ -48,11 +49,11 @@ provides a way to define a \emph{generic} function that accepts input of differe
     arr[1] = t;
   }
 \end{verbatim}
-where \verb|T| denotes the generic type that programmers may arbitrarily pick.
-The \verb|swap2_generic| function utilize the feature of type system, generics,
+where \verb|T| denotes a generic type that programmers may arbitrarily pick.
+The \verb|swap2_generic| function utilizes the feature of Java's type system, generics,
 to improve modularity.
 The following program invokes the generic function (suppose we defined
-the \verb|swap2_generic| function in a \verb|Utils| class)
+the \verb|swap2_generic| function in a \verb|Utils| class as a static method)
 \begin{verbatim}
   Double[] arr = new Double[2];
   arr[0] = 1.0; arr[1] = 2.0;
@@ -71,13 +72,13 @@ we can simply write
 to call the function.
 When compiling the above code,
 type inference algorithms help programmers to fill in the missing type automatically,
-thus save them from writing redundant code.
+thus saving them from writing redundant code.
 
 From the example above, we learn that the generics of Java
 together with type inference algorithms used in the compiler
 help programmers to write generic functions,
 given that the functionality is generic in nature.
-In other words, introduction of good features of type systems
+In other words, the introduction of good features of type systems
 accepts more meaningful programs.
 
 On the other hand, being able to accept all syntactically correct programs,
@@ -86,25 +87,27 @@ is not desirable as well.
 Ill-typed programs are easy to write by mistake, like \verb|"3" / 3|;
 or even well-typed programs with ambiguous/unexpected meaning like \verb|"3" + 4 + 5|
 (for someone who is not familiar with the conventions, she might think this evaluates to "39").
-Or even more commonly seen in practise,
-an accidental misspelled variable name might lead to a runtime error until
+Or even more commonly seen in practice,
+an accidentally misspelled variable name might cause a runtime error until
 the line of code is actually executed.
-Type systems are designed to prevent such problem from happening,
+Type systems are designed to prevent such problems from happening,
 therefore statically-typed languages
-ensures type-safety, or ``well-typed programs cannot go wrong''.
+ensure type-safety, or ``well-typed programs cannot go wrong''.
 Type inference algorithms that come along with modern type systems
-help eliminate trivial parts and improve conciseness of programs.
+help eliminate trivial or redundant parts of programs to
+improve the conciseness.
 
 \subsection{Functional Programming and System F}
 Nowadays, more and more programming languages adopt the functional programming paradigm,
 where functions are first-class citizens,
 and programs are mostly constructed with function applications.
-Functional programming originates from the lambda calculus~\citep{}.
-The simply typed lambda calculus~\citep{TAPL} extends the lambda calculus with
+Functional programming originates from the
+lambda calculus~\citep{alonzo1932lambda}.
+The simply-typed lambda calculus~\citep{pierce2002types} extends the lambda calculus with
 a simple static type checking algorithm,
-preventing ill-typed program before actual execution.
+preventing ill-typed programs before actual execution.
 However, the system does not allow polymorphic functions and
-thus is quite tedious to express higher-level logics.
+thus is quite tedious to express higher-level logic.
 
 In order to improve the expressiveness of functional programming languages,
 System F~\citep{reynolds1983types} introduces polymorphism
@@ -128,7 +131,7 @@ because the missing type is quite easy to figure out,
 in presence of the argument, which is of type $\text{Int}$ and
 should represent $a$ for the function application at the same time.
 With \emph{implicit parametric polymorphism}~\citep{reynolds1983types},
-type arguments like $@\text{Int}$ is not written by the programmer explicitly,
+type arguments like $@\text{Int}$ are not written by the programmer explicitly,
 in contrast, it is the type inference algorithm's responsibility to guess them.
 
 Practically speaking, in Java we can define the identity function as well,
@@ -157,11 +160,12 @@ resulting in the type $(\all[b] b \to b) \to (\all[b] b \to b)$
 (Note that we cannot express this type in programming languages like Java,
 simply because the $\forall$ quantifiers do not appear at the top level,
 and its type system is already a restricted version of System F).
-However, another type that is also valid is $\all[b] (b \to b) \to (b \to b)$,
-by first instantiating $\text{id}$ with a fresh type variable $b$,
+However, another valid type is $\all[b] (b \to b) \to (b \to b)$,
+which is obtained by first instantiating $\text{id}$ with a fresh type variable $b$,
 and generalizing the type after calculating the type of the application.
 Furthermore, between the two possible types, neither one is better:
-there exist programs that type checks under one of them and fails under the other.
+there exist programs that type check under either one of them and
+fail to type check under the other.
 
 The fact that implicit parametric algorithm for full System F is impossible
 motivates people to discover restrictions on the type system
@@ -170,17 +174,17 @@ under which type inference algorithms are capable of guessing the best types.
 
 \subsection{Hindley-Milner Type System}
 
-The Hindley-Milner (HM) type system~\citep{hindley1969principal,milner1978theory,damas1982principal} restricts System F types to \emph{type schemes},
+The Hindley-Milner (henceforth denoted as HM) type system~\citep{hindley1969principal,milner1978theory,damas1982principal} restricts System F types to \emph{type schemes},
 or \emph{first-order polymorphism},
 where polymorphic types can only have universal quantifiers in the top level.
 For example, $\all[a~b] (a \to b) \to a \to b$ is allowed,
 but not $(\all[b] b \to b) \to (\all[b] b \to b)$.
-The type system of many programminga languages like Java adopt the idea from HM,
+The type system of many programming languages like Java adopts the idea from HM,
 where generics is a syntax to express polymorphic types in HM:
 all the generic variables must be declared
 at the top level before the function return type.
 An important property of the HM type inference algorithm is \emph{principality},
-where any unannotated program can always be inferred to
+where any unannotated program can be inferred to
 a most general type within its type system.
 This supports full type-inference without any type annotations.
 
@@ -202,9 +206,9 @@ $$\begin{aligned}
 In the HM system, $\forall$ quantifiers can appear only on the top level,
 type instantiations will always be \emph{monotypes},
 i.e. types without the $\forall$ quantifier.
-We refer to such system as \emph{predicative}.
+We refer to such a system as \emph{predicative}.
 In contrast, System F does not restrict the types to instantiate,
-thus being a impredicative system.
+thus being an impredicative system.
 An important challenge is that full type inference for impredicative
 polymorphism is known to be undecidable~\citep{wells1999typability}.
 There are works that focus on practical inference of
@@ -220,7 +224,7 @@ HM only have types of rank-1, since all the $\forall$'s appear on the top level.
 Thus one expected feature is to allow 
 \emph{higher-ranked polymorphism} where polymorphic types can
 occur anywhere in a type signature.
-This enables more code reuse and more expressions to type-check, and has
+This enables more code reuse and more expressions to type check, and has
 numerous applications~\citep{jones1995functional,gill1993short,launchbury1995state,lammel2003scrap}.
 
 One of the interesting examples is the ST monad~\citep{94lazyST} of Haskell,
@@ -244,7 +248,7 @@ thus the system remains predicative.
 
 In order to improve the expressiveness for higher-ranked systems,
 some type annotations are necessary to guide type inference.
-In response to this challenge several decidable type systems requiring some annotations 
+In response to this challenge, several decidable type systems requiring some annotations 
 have been proposed~\citep{dunfield2013complete,
 jones2007practical,Serrano2018,le2003ml,leijen2008hmf,vytiniotis2008fph}.
 
@@ -255,10 +259,10 @@ which is a rank-2 type and is not typeable in HM.
 Notably (and unlike Hindley-Milner) the lambda argument $f$ requires a
 \emph{polymorphic} type annotation.
 This annotation is needed because the single universal quantifier
-does not appear at the top-level. Instead it is used to quantify a
+does not appear at the top-level. Instead, it is used to quantify a
 type variable $a$ used in the first argument of the function.
 
-One of the key features that improves type inference algorithms with type annotations
+One of the key features that improve type inference algorithms with type annotations
 is bidirectional typing~\citep{pierce:local}, a technique that combines two modes of typing:
 type checking, which checks an expression against a given type,
 and type synthesis (inference), which infers a type from an expression.
@@ -277,8 +281,10 @@ It is clear that, with less information,
 the synthesis mode is more difficult to implement than the checking mode.
 Therefore, bidirectional type checking with type annotations
 provides a way for the programmer to guide
-the type inference algorithm when the expression is tricky to analyse.
-In addition, bidirectional typing algorithms in practice improve the quality of error messages,
+the type inference algorithm when the expression is tricky to analyse,
+especially in the case where higher-ranked types are involved.
+In addition, bidirectional typing algorithms
+improve the quality of error messages in practice,
 due to the fact that they report errors in a relatively local range,
 compared with global unification algorithms.
 
@@ -296,20 +302,16 @@ based on the declarative system by Odersky and L\"aufer~\citep{odersky1996puttin
 Beyond the existing works, they introduce a third form of judgment,
 the application inference $\appInf{A}{e}{C}$,
 where the function type $A$ and argument expression $e$ are input,
-and the type $C$ is the output return type of the function application.
-One can tell the procedure for type checking application expressions
+and type $C$ is the output representing the result type
+of the function application $(f :: A)~e$.
+Note that $f$ does not appear in this relation,
+and one can tell the procedure for type checking application expressions
 from the shape of the judgment ---
 firstly, the type of the function is inferred to $A$;
-then the application inference judgment calls the checking mode,
+then the application inference judgment is reduced to a checking judgment
 to verify if the argument $e$ checks against the argument part of $A$;
 finally, output the return part of $A$.
-$$\inferrule*[right=$\mathtt{Decl\forall App}$]
-    {\Psi \vdash \tau \quad \Psi\vdash \appInf{[\tau/a]A}{e}{C} }
-    {\Psi\vdash \appInf{\all A}{e}{C}}$$
-The use of application inference judgment avoids implicit instantiations
-of types like HM, instead,
-when the function type $A$ is a polymorphic type,
-it is explicitly instantiated by the application inference until it becomes a function type:
+Formally, the rules implement the procedure we described above:
 $$
 \inferrule*[right=$\mathtt{Decl{\to} E}$]
     {\Psi\vdash e_1\To A \quad \Psi\vdash \appInf{A}{e_2}{C}}
@@ -319,12 +321,18 @@ $$
     {\Psi\vdash e \Lto A}
     {\Psi\vdash \appInf{A \to C}{e}{C}}
 $$
+The use of application inference judgment avoids implicit instantiations
+of types like HM, instead,
+when the function type $A$ is a polymorphic type,
+it is explicitly instantiated by the application inference until it becomes a function type:
+$$\inferrule*[right=$\mathtt{Decl\forall App}$]
+    {\Psi \vdash \tau \quad \Psi\vdash \appInf{[\tau/a]A}{e}{C} }
+    {\Psi\vdash \appInf{\all A}{e}{C}}$$
 As a result, DK is in a more syntax-directed system compared with HM-like systems.
 
 DK also provided an elegant formalization of their sound and complete algorithm,
 which has also inspired implementations of type inference in some polymorphic 
 programming languages (such as PureScript~\citep{PureScript} or DDC~\citep{Disciple}).
-
 
 
 The focus of this thesis is also
@@ -338,7 +346,7 @@ on predicative implicit higher-ranked bidirectional type inference algorithms.
  which compares the degree of polymorphism between types, i.e. the more-general-than relation.
  Chapters \ref{chap:ITP} and \ref{chap:ICFP} only focus on this type of subtyping relation.
  The other one is the subtyping usually seen in object-oriented programming,
- where there are some built-in or user-defined type convertion rules.
+ where there are some built-in or user-defined type conversion rules.
 
 Type system in presence of object-oriented-style subtyping allows
 programmers to abstract functionalities inside a class
@@ -357,34 +365,34 @@ receives a lot of attention in
 academic research, there is little work on mechanically formalizing
 such advanced forms of type inference in theorem provers.
 The remarkable exception is work done on the formalization of 
-certain parts of Hindley-Milner type inference~\cite{naraschewski1999type,
+certain parts of Hindley-Milner type inference~\citep{naraschewski1999type,
 dubois2000proving,dubois1999certification,urban2008nominal,
-garrigue2015certified}. However
+garrigue2015certified}. However,
 there is still no formalization of the higher-ranked type systems
 that are employed by modern languages like Haskell.
 This is at
 odds with the current trend of mechanical formalizations in
-programming language research. In particular both the POPLMark
-challenge~\cite{aydemir2005mechanized} and
-CompCert ~\cite{leroy2012compcert} have significantly promoted
+programming language research. In particular, both the POPLMark
+challenge~\citep{aydemir2005mechanized} and
+CompCert ~\citep{leroy2012compcert} have significantly promoted
 the use of theorem provers to model various aspects of programming
 languages. Today papers in various programming language venues routinely
 use theorem provers to mechanically formalize: \emph{dynamic and
-  static semantics} and their correctness properties~\cite{aydemir2008engineering},
-\emph{compiler correctness}~\cite{leroy2012compcert}, \emph{correctness of
-  optimizations}~\cite{Bertot04}, \emph{program analysis}~\cite{Chang2006}
-or proofs involving \emph{logical relations}~\cite{abel2018}.
+  static semantics} and their correctness properties~\citep{aydemir2008engineering},
+\emph{compiler correctness}~\citep{leroy2012compcert}, \emph{correctness of
+  optimizations}~\citep{Bertot04}, \emph{program analysis}~\citep{Chang2006}
+or proofs involving \emph{logical relations}~\citep{abel2018}.
 
-\paragraph{Motivations for Machanical Formalizations.}
+\paragraph{Motivations for Mechanical Formalizations.}
 The main argument for mechanical formalizations is a simple one.
-Proofs for programming languages tend to be \emph{long}, \emph{tedious} and
-\emph{error-prone}. In such proofs it is very easy to make mistakes
+Proofs for programming languages tend to be \emph{long}, \emph{tedious},
+and \emph{error-prone}. In such proofs, it is very easy to make mistakes
 that may invalidate the whole development.
 Furthermore, readers and reviewers often do not have time to
 look at the proofs carefully to check their correctness.
 Therefore errors can go unnoticed for a long time.
 In fact, manual proofs are commonly observed to have flaws
-which invalidate the claimed properties.
+that invalidate the claimed properties.
 For instance, \citet{KleinRunYourResearch} reproduced the proofs of
 nine ICFP 2009 papers in Redex, and found problems in each one of them.
 We also found false lemmas and incorrect proofs
@@ -409,27 +417,30 @@ proofs that are invalidated after extensions.
 \paragraph{Challenges in Variable Binding and Abella.}
 Handling variable binding is particularly challenging in type inference,
 because the algorithms typically do not rely simply on local environments,
-but instead propagate information across judgements.
+but instead propagate information across judgments.
 Yet, there is little work on
 how to deal with these complex forms of binding in theorem provers.
 We believe that this is the primary reason
 why theorem provers have still not been widely
 adopted for formalizing type-inference algorithms.
 
-The Abella theorem prover~\citep{AbellaDesc} is one
-that specifically ease formalization on binders.
+The Abella theorem prover~\citep{AbellaDesc}
+is one that specifically eases formalization onbinders.
+Different from the two common treatments of binding
+which are to use the De Bruijn index~\citep{DEBRUIJN1972381}
+and the nominal logic frameworkof Pitts~\citep{PITTS2003165},
+Abella uses the abstraction operator in a typed $\lambda$-calculus to encode binding.
 Its $\lambda$-tree syntax, or HOAS, and features including the $\nabla$ quantifier
-and higher-order unification, have better experiences than using Coq libraries.
-Two common treatments of binding are to use the De Bruijn index~\citep{DEBRUIJN1972381}
-and the nominal logic frameworkof Pitts~\citep{PITTS2003165}.
-Abella is based on another approach that uses the abstraction operator in a typed
-$\lambda$-calculus to encode binding.
-In practise, Abella uses the $\nabla$ quantifier and nominal constants to help
+and higher-order unification, have better experiences than using Coq libraries
+utilizing other approaches.
+In practice, Abella uses the $\nabla$ (nabla) quantifier and nominal constants to help
 quantify a ``fresh'' variable during formalization.
 For example, the common type checking rule
 $$\inferrule*{e \Lto A \\ a \text{ fresh}}{e \Lto \all A}$$
 is encoded as
-\abellae{check E (all A) := nabla a, check E (A a)}
+\begin{abella}
+  check E (all A) := nabla a, check E (A a)
+\end{abella}
 in Abella, where the $\nabla$ quantifier introduces a fresh type variable $a$
 and later use it to ``open'' the body of $\all A$.
 
@@ -445,7 +456,7 @@ mechanically formalized in Abella.
 \paragraph{Contributions}
 
 In this thesis, we propose variants of type inference algorithms
-for higher-ranked polymorphic type systems,
+for higher-ranked polymorphic type systems
 and formalize each of them in the Abella theorem prover.
 It is the first work on higher-ranked type inference
 that comes with mechanical formalizations.
@@ -456,7 +467,7 @@ In summary, the main contributions of this thesis are:
   \item {\bf Chapter~\ref{chap:ITP}} presents a predicative polymorphic subtyping algorithm.
   \begin{itemize}
     \item We proved that our algorithm is \emph{sound},
-      \emph{complete} and \emph{decidable}
+      \emph{complete}, and \emph{decidable}
       with respect to OL's higher-ranked subtyping specification
       in the Abella theorem prover.
       And we are the first to formalize the meta-theoretical results of
@@ -480,18 +491,18 @@ In summary, the main contributions of this thesis are:
     \begin{itemize}
       \item We are the first to present a full mechanical formalization for
         a type inference algorithm of higher-ranked type system.
-        The \emph{soundness}, \emph{completeness} and \emph{decidability} are shown
+        The \emph{soundness}, \emph{completeness}, and \emph{decidability} are shown
         in the Abella theorem prover,
         with respect to DK's declarative system.
       \item We propose \emph{worklist judgments},
         a new technique that unifies ordered contexts and judgments.
-        This enables precise scope tracking of variables in judgments,
+        This enables precise scope tracking of variables in judgments
         and avoids the duplication of context information across judgments in worklists.
         Similar to the previous algorithm, partial solutions are propagated across
         judgments in a single list consist of both variable bindings and judgments.
         Nevertheless, the unification of worklists and contexts exploits the fact
         that judgments are usually sharing a large part of common information.
-        And one can easily tell when a variable is no longer referred.
+        And one can easily tell when a variable is no longer referred to.
       \item Furthermore, we support inference judgments so that bidirectional typing can be
         encoded as worklist judgments.
         The idea is to use a continuation passing style to
@@ -502,7 +513,7 @@ In summary, the main contributions of this thesis are:
     further extends the higher-ranked system with object-oriented subtyping.
     \begin{itemize}
       \item We propose a bidirectional declarative system extended with
-        the top and bottom types and relavent subtyping and typing rules.
+        the top and bottom types and relevant subtyping and typing rules.
         Several desirable properties are satisfied and mechanically proven.
       \item A new backtracking-based worklist algorithm is presented and
         proven to be \emph{sound} with respect to our declarative specification

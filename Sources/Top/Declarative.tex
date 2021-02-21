@@ -23,7 +23,8 @@ polymorphic types $\all A$ and function types $A \to B$.
 Additionally, top and bottom types are introduced to the type system.
 % intro of top/bot moved to intro
 
-The well-formedness for the system is standard and almost identical to the previous systems,
+The well-formedness formalization of the system is standard
+and almost identical to the previous systems,
 therefore we omit the formal definitions.
 
 
@@ -71,8 +72,8 @@ originally proposed by \citet{odersky1996putting}
 by adding rules $\mathtt{{\le}Top}$ and $\mathtt{{\le}Bot}$,
 defining the properties of the $\top$ and $\bot$ types, respectively.
 Although the new rules seem quite simple,
-they may increase the uncertainty on polymorphic instantiations.
-For example, the subtyping judgement
+they may increase the uncertainty of polymorphic instantiations.
+For example, the subtyping judgment
 \[\all a \to a \le \bot \to \top\]
 accepts any well-formed instantiation on the polymorphic type $\all a \to a$.
 
@@ -141,14 +142,14 @@ accepts any well-formed instantiation on the polymorphic type $\all a \to a$.
 \paragraph{Declarative Typing}
 
 The declarative typing rules, shown in Figure~\ref{fig:top_decl_typing},
-extends DK's higher-rank type system in order to support the top and bottom types.
+extend DK's higher-rank type system in order to support the top and bottom types.
 Rule $\mathtt{Decl\top}$ allows any well-formed expression to check against $\top$.
 Rule $\mathtt{Decl{\bot}App}$ returns the $\bot$ type
 when a function of $\bot$ type is applied to any argument.
 All other rules remain exactly the same as our previous work.
 
 It's worth mentioning that the design of the two new rules
-are driven by the subsumption property described in Section~\ref{sec:meta:decl}.
+is driven by the subsumption property described in Section~\ref{sec:meta:decl}.
 They maintain the property in presence of a more powerful declarative subtyping,
 and we will discuss further later in that part.
 

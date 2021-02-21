@@ -8,11 +8,11 @@ with mechanical formalizations in the Abella theorem prover.
 There is little work on formalizing type inference algorithms before,
 especially for higher-ranked systems,
 due to the fact that environments and variable bindings are
-tricky to machanize in theorem provers.
+tricky to mechanize in theorem provers.
 In order to overcome the difficulty in formalization,
 we propose the novel algorithm by means of \emph{worklist judgments}.
 Worklist judgments turn complicated
-global propagation of unification contraints into simple local substitutions.
+global propagation of unification constraints into simple local substitutions.
 Moreover, we exploit several ideas in the recent inductive
 formulation of a type-inference algorithm by
 \citet{dunfield2013complete}, which turn out to be useful
@@ -20,7 +20,7 @@ for mechanization in a theorem prover.
 
 Building on these ideas we develop a complete formalization of
 polymorphic subtyping in the Abella theorem prover. Moreover, we
- show that the algorithm is \emph{sound}, \emph{complete} and \emph{decidable} with
+ show that the algorithm is \emph{sound}, \emph{complete}, and \emph{decidable} with
 respect to the well-known declarative formulation of polymorphic subtyping by
 \citet{odersky1996putting}.
 While these meta-theoretical results are not new, as far

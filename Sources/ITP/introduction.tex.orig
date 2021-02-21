@@ -112,7 +112,7 @@ reasons why theorem provers are still not widely adopted to formalize
 type-inference algorithms. Firstly,
 binding is, once again, a challenge because type-inference does not rely
 simply on local environements, but it instead requires some form of
-information propagation across judgements. However there is little 
+information propagation across judgments. However there is little 
 work on how to deal with such, more complex, forms of binding in
 theorem provers.
 Secondly, the structure of many older type-inference
@@ -121,7 +121,7 @@ about constraints or substitutions for unification,
 which is hard to model in a purely inductive style often required by theorem provers.
 
 To address the first problem we propose the use of \emph{worklist
-  judgments}. Worklist judgements are a new form of judgement, 
+  judgments}. Worklist judgments are a new form of judgment, 
 that simplify the global propagation of information required by
 the unification process during subtyping
 \bruno{Any ideas how to explain better?}. To address the second
@@ -137,7 +137,7 @@ While none of the meta-theoretical results is new, as far as we know
 our work is the first to mechanically formalize them. 
 Furthermore our
 algorithmic specification differs from those currently in the
-literature due to the use of \emph{worklist judgements}, which are a
+literature due to the use of \emph{worklist judgments}, which are a
 novel contribution of this work. \tom{This has already been said.}
 Our formlization is conducted using the Abella theorem prover 
 and is available online\footnote{\url{http://}\bruno{fill me}}.
@@ -149,7 +149,7 @@ In summary the contributions of this paper are:
     algorithm.} The algorithm is shown to be \emph{sound},
   \emph{complete} and \emph{decidable} in the Abella theorem prover.
 
-\item {\bf Work list judgements:} a novel kind of judgement which is
+\item {\bf Work list judgments:} a novel kind of judgment which is
   suited for algorithms that require global propagation of
   information, including our higher-order polymorphic subtyping
     algorithm.
