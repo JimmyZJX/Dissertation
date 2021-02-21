@@ -16,22 +16,27 @@ programming languages.  Since full type-inference for System F is
 undecidable~\citep{wells1999typability}, various decidable partial
 type-inference algorithms were developed.
 % No need to cite here: the following text is describing the point.
-The declarative system of this paper,
-proposed by \citet{dunfield2013complete}, is \emph{predicative}: 
+The declarative formulation of subtyping in Chapters~\ref{chap:ITP} and \ref{chap:ICFP}
+(and later extended in Chapter~\ref{chap:Top}),
+originally proposed by \citet{odersky1996putting}, is \emph{predicative}:
 $\forall$'s only instantiate to monotypes.  The monotype restriction
 on instantiation is considered reasonable and practical for most
 programs, except for those that require sophisticated forms of
-higher-order polymorphism.  In those cases, the bidirectional system
-accepts guidance through type annotations, which allow polymorphic types.
-Such annotations also improve
-readability of the program, and are not much of a burden in practice.
+higher-order polymorphism.
+In those cases, type annotations may guide the type system to
+accept lambda functions of higher-ranked types.
 
+In addition to OL's type system,
+the bidirectional system proposed by DK~\citep{dunfield2013complete}
+accepts even better type annotations, which also allow polymorphic types.
+Such annotations also improve readability of the program,
+and are not much of a burden in practice.
 DK's algorithm is shown to be sound, complete and decidable in 70 pages of manual proofs.
 Though carefully written, some of the proofs are incorrect
-(see discussion in Section~\ref{ssec:DK_Algorithm} and \ref{sec:metatheory:non-overlapping}
-),
+(see discussion in Section~\ref{ssec:DK_Algorithm} and
+\ref{sec:metatheory:non-overlapping}),
 which creates difficulties when formalizing them in a proof assistant.
-In their follow-up work \citep{DunfieldIndexed} enrich the bidirectional higher-rank system with
+In their follow-up work \citet{DunfieldIndexed} enrich the bidirectional higher-rank system with
 existentials and indexed types.
 With a more complex declarative system, they developed a proof of over 150 pages.
 It is even more difficult to argue its correctness for every single detail
@@ -43,8 +48,22 @@ the issue in more detail in Section~\ref{ssec:DK_Algorithm}.
 \citet{jones2007practical} developed another higher-rank predicative bidirectional type system.
 Their subtyping relation is enriched with \emph{deep skolemisation},
 which is more general than ours and allows more valid relations.
-In comparison to DK's system, they do not use the application inference judgment,
-resulting in a complicated mechanism for implicit instantiation taken care by the unification process for the algorithm.
+For example,
+$$\all{\all[b] a \to b \to b} \le \all a \to (\all[b] b \to b)$$
+this subtyping relation does not hold in OL's subtyping relation,
+because the instantiation of $b$ in the left-hand-side type
+happends strictly before the introduction of
+the variable $b$ in the right-hand-side type.
+Deep skolemisation can be achieved through
+a pre-processing that extract all the $\forall$'s
+in the return position of a function type to the top level.
+After such pre-processing, the right-hand-side type becomes
+$\all {\all[b] a \to b \to b}$ and the subtyping relation holds.
+
+In terms of handling applications where type parameters are implicit,
+they do not use the application inference judgment as DK's type system.
+Instead, they empoly a complicated mechanism for implicit instantiation
+taken care by the unification process for the algorithm.
 A manual proof is given, showing that the algorithm is sound and
 complete with respect to their declarative specification.
 
@@ -62,11 +81,57 @@ the algorithmic type system are manual.
 
 Impredicative System F allows instantiation with polymorphic types,
 but unfortunately its subtyping system is already undecidable~\citep{tiuryn1996subtyping}.
-Works on partial impredicative type-inference algorithms~\citep{le2003ml,leijen2008hmf,vytiniotis2008fph}
+Works on partial impredicative type-inference algorithms
 navigate a variety of design tradeoffs for a decidable algorithm.
-As a result, such algorithms tend to be more complicated, and thus less adopted in practice.
+Generally speaking, such algorithms tend to be more complicated,
+and thus less adopted in real-world programming languages.
 
-A work proposed \emph{Guarded Impredicative Polymorphism}~\citep{Serrano2018},
+$\text{ML}^\text{F}$~\citep{le2003ml,remy2008from,Botlan2009recasting}
+extends types of System F with a form of bounded quantification
+and propose an impredicative system.
+The type inference algorithm always infers principle types given proper type annotations.
+Through the technique called ``monomorphic abstraction of polymorphic types'',
+polymorphic instantiations are expressed by constraints
+on type variables of type schemes.
+An annotation is only needed when an argument of a lambda function
+is used polymorphically.
+Moreover, their type system is robust against a wide range of program transformations,
+including let-expansion, let-reduction and $\eta$-expansion.
+However, the extended type structure of $\text{ML}^\text{F}$
+introduces non-compatible types with System F,
+and it complicates metatheory and implementation of the type system.
+
+HMF~\citep{leijen2008hmf} takes a slightly different approach
+by not extending types with bounds,
+therefore programmers still work with plain System F types.
+The algorithm works similarly compared to $\text{ML}^\text{F}$,
+except that it does not output richer types.
+Instead, when there are ambiguity and no principal type can be inferred,
+being a conservative algorithm,
+HMF perfers predicative instantiations
+to maintain backward compatibility of HM.
+Soon after HMF, HML~\citep{leijen2009flexible} is proposed as
+an extension of HMF with flexible types.
+The system eliminates rigid quantifications ($\alpha = \sigma$)
+of $\text{ML}^\text{F}$ and only keeps the flexible quantifications ($\alpha \ge \sigma$).
+Furthermore, a variant ``Rigid HML'' is presented
+by restricting let-bindings to System F types only,
+so that type annotations can still stay inside System F.
+Similar to HMF, they both require type annotations at higher-ranked
+types or ambiguous implicit instantiations.
+
+FPH~\citep{vytiniotis2008fph} employ a box notion \framebox{$\sigma$} to
+encapsulate polymorphic instantiations internally in the algorithm.
+A type inside a box indicates that the instantiation is impredicative.
+Therefore a inferred type with a box type in it means that
+incomparable System F types may be produced,
+and that is rejected before entering the environment.
+Although more annotations might be required compared with other approaches,
+the algorithm of FPH is much simpler,
+thanks to the simple syntax and subtyping relation of box types.
+
+
+Guarded Impredicative Polymorphism~\citep{Serrano2018} was recently proposed
 as an improvement on GHC's type inference algorithm with impredicative instantiation.
 They make use of local information in $n$-ary applications to
 infer polymorphic instantiations with a relatively simple specification and unification algorithm.
@@ -78,13 +143,19 @@ takes a more conservative approach.
 The algorithm will try its best to infer impredicative instantiations,
 and only use the instantiation when it is the best one.
 In order to do so,
-the algorithm also need to analyse all the argument types during a function call,
+the algorithm also needs to analyse all the argument types during a function call,
 and make use of the \emph{guardedness} property to decide the principality of
 the inferred instantiation.
 When Quick Look cannot give the best instantiation,
 it will instead try predicative inference as HM.
 This conservative approach makes sure that the algorithm does not infer bad types
-and lead the subsequent type checking in wrong directions.
+and leads the subsequent type checking in wrong directions.
+In the meantime, they treat the function arrow ($\to$)
+as invariant like normal type constructors.
+This change significantly restricts the subtyping relation and thus
+simplifies guesses for implicit parameters.
+Manual $\eta$-expansions is required to regain
+the co- and contravariance of function types.
 
 FreezeML~\citep{FreezeML} is another recent work that extends the ML type system
 with impredicative instantiations.
@@ -99,28 +170,28 @@ This work provides a nice means for programmers to control how type inference al
 deals with impredicative instantiations.
 
 \section{Type Inference Algorithms with Subtyping}
-Type systems in presence of subtyping usually encounters constraints that
-are not simply equality as in HM.
+Type systems in presence of subtyping usually encounter constraints that
+are not simply equalities as in HM.
 Therefore constraint solvers used in HM, where unifications are based on equality,
 cannot be easily extend to support subtyping.
 Instead, constraints are usually collected as subtyping relations
 and may delay resolving as the constraints accumulates.
-\citet{EIFRIG1995,Eifrig1995sound} proposed systems that is based on
+\citet{EIFRIG1995,Eifrig1995sound} proposed systems that are based on
 \emph{constraint types}, i.e. types expressed together with a set of constraints
 $\tau \mid \{\overline{\tau_1 \le \tau_2}\}$.
 Their type checking algorithm checks at each step whether
 each constraint in the closure of constraint set is \emph{consistent},
 which is a set of rules that prevent obvious contradictions appear,
 such as $\text{Int} \le \text{Bool}$.
-Our attempt in Section~\ref{subsec:lazy_subst} is similar to the concept,
+Our attempt in Section~\ref{subsec:lazy_subst} is similar to this idea,
 where we exhaustively check if every subtyping relation derived from the bounds are valid.
 However, our algorithm tries to solve the bounds into concrete types,
-and it turns out that it never terminates in some complicated cases.
+and it turns out that it never terminates in some complex cases.
 
-Constraint types improves the expressiveness of type system,
-yet the type inference algorithm is slow.
-The size of constraint is linear in the program size,
-and the closure would grow to cubic size.
+Constraint types improve the expressiveness of the type system,
+yet the type inference algorithm can be quite slow.
+The size of the constraint is linear in the program size,
+and the closure can grow to cubic size.
 \citet{pottier1998phd} proposed three methods to simplify constraints in his Ph.D. thesis,
 aiming at improving the efficiency of type inference algorithms and
 improving the readability of the resulting types.
@@ -131,8 +202,9 @@ finally, \emph{minimization} shares nodes within the constraint graph.
 
 Inspired by the simplification strategies of Pottier's,
 MLsub~\citep{mlsub} suggest that the data flow on the constraint graph
-can be fully replaced by lattices that directly encode on the types.
-Polar types distinguishes between input types and output types,
+can reflect directly on types extended by a richer type system,
+where lattices operations are used to represent constraints imposed on type varibles.
+Polar types distinguish between input types and output types,
 and poses different restrictions on them.
 As a result, constraints can easily be transformed into canonical forms,
 and the bi-unification algorithm can solve them by simple substitutions.
@@ -144,14 +216,14 @@ and affect the readability.
 Therefore, various simplification algorithms should be used in real applications.
 A more recent work, the Simple-sub~\citep{Parreaux2020simple}, further simplifies
 the algorithm of MLsub and is implemented in 500 lines of code.
-While being equivalent to MLsub, it is a more efficient varient.
+While being equivalent to MLsub, it is a more efficient variant.
 
 \section{Techniques Used in Type Inference Algorithms}
 
 \subsection{Ordered Contexts in Type Inference}
 \citet{gundry2010type} revisit algorithm $\mathcal{W}$ and
 propose a new unification algorithm with the help of ordered contexts.
-Similar to DK's algorithm, information of meta variables flow from input contexts to output contexts.
+Similar to DK's algorithm, information of meta variables flows from input contexts to output contexts.
 Not surprisingly, its information increase relation has a similar role to DK's context extension.
 Our algorithm, in contrast,
 eliminates output contexts and solution records ($\al = \tau$),
@@ -187,10 +259,10 @@ while processing them in a similar way.
 One important difference is that contexts are
 duplicated in their unification judgments, which complicates the unification process,
 since the information of each local context needs to be synchronized.
-Instead we make use of the nature of ordered context to control the scopes of unification variables.
+Instead we make use of the nature of ordered context to control the scope of unification variables.
 While their algorithms focus only on unification,
 our algorithm also deals with other types of judgments like synthesis.
-A detailed discussion is in Section~\ref{sec:overview:list}.
+A detailed discussion is given in Section~\ref{sec:overview:list}.
 
 
 

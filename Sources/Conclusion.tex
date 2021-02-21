@@ -66,10 +66,51 @@ Overall, we developed the following systems and/or type inference algorithms:
 In this section, we discuss several interesting possibilities to explore in the future.
 
 \paragraph{Termination Theorem for Type Inference with Subtyping}
+The algorithm we presented and formalized in Chapter~\ref{chap:Top}
+enjoys several important machine-verified properties,
+including soundness and completeness under a rank-1 restriction.
+However, we have not yet found a proper termination measure
+for the algorithmic subtyping rules.
+What complicates the problem is that
+common measures are not decreasing all the time.
+For example, subtyping between function types may increase the number of judgments;
+and instantiation judgments that split existential variables may increase the number of
+unsolved existential variables.
+We are mostly convinced by the fact that
+a large set of tests performed on random generated
+subtyping judgments do terminate.
+And we hope that a clever termination argument may be proposed in the near future.
 
-\paragraph{Practical Impredicative}
+\paragraph{Practical Impredicative Type Inference}
+Impredicative type inference algorithms are sometimes helpful when dealing with
+higher-ranked types.
+Simple forms of impredicativity can be unambiguous and easy to understand by programmers,
+such as
+\begin{verbatim}
+  head ids
+\end{verbatim}
+where \verb|head| $ :: \all[p] [p] \to p$ and \verb|ids| $ :: [\all a \to a]$.
+The application (\verb|head ids|) should have type $\all a \to a$,
+because $p$ is instantiated to $\all a \to a$ and that is the only choice we can make.
 
-\paragraph{Elaboration}
+Moreover, even though there are programs that have incomparable System F types,
+impredicative system may offer means like type annotation to manually pick the right one.
+For example,
+\begin{verbatim}
+  single id
+\end{verbatim}
+where \verb|single| $ :: \all p \to [p]$ and \verb|id| $ :: \all a \to a$.
+This term has two incomparable types $[\all a \to a]$ and $\all[a] [a \to a]$.
+One might expect that a type annotation might help pick the right case,
+like (\verb|(single id)| $ :: [\all a \to a]$),
+which requires a system that allows impredicative instantiation to do so.
+There are many impredicative systems developed out of various techniques~
+\cite{le2003ml,leijen2008hmf,leijen2009flexible,vytiniotis2008fph,
+Serrano2018,quicklook2020,FreezeML},
+and we leave the extension of impredicativity to our algorithms as a future work.
+
+% \paragraph{Elaboration}
+% \jimmy{Already discussed before... consider removing}
 
 \paragraph{Optimization}
 
