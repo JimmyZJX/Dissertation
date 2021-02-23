@@ -151,7 +151,7 @@ In this thesis, we focus on predicative systems only.
 \subsection{Algorithmic System and Principality}
 
 \paragraph{Syntax-Directed System}
-The declarative system is not syntax-directed due to
+The declarative system is not fully syntax-directed due to
 rules $\mathtt{HM \dash Gen}$ and $\mathtt{HM \dash Inst}$,
 which can be applied to any expression.
 A syntax-directed system can be obtained by
@@ -194,7 +194,9 @@ The following property shows that the new system is (almost) equivalent to the o
 \paragraph{Type Inference Algorithm}
 Although being syntax-directed solves some problems, the rules still require some guessings,
 including rule $\mathtt{HM \dash Abs}$ and $\mathtt{HM \dash Var \dash Inst}$.
-Algorithm W~\citep{milner1978theory}, based on unification,
+Proposed by~\citet{milner1978theory},
+Algorithm W,
+an inference algorithm of the HM type system based on unification,
 is proven to be sound and complete w.r.t the declarative specifications.
 
 \begin{theorem}[Algorithmic Completeness (Principality)]
@@ -272,7 +274,7 @@ The following example illustrates what rank a type belongs to:
 According to the definition, monotypes are types that does not contain any universal quantifier.
 In the HM type system, all polymorphic types have rank 1.
 
-%\jimmy{TODO Background about System F incompleteness, examples about higher-rank types}
+%\jimmy{TODO Background about System F incompleteness, examples about higher-ranked types}
 % covered in the intro part
 
 \subsection{Declarative System}
@@ -416,7 +418,7 @@ we omit that throughout the thesis.
         \inferrule*[right=$\mathtt{OL \dash Let}$]
             {\Psi \vdashOL e_1 : \sigma_1 \\ \Psi, x:\sigma_1 \vdashOL e_2 : \sigma_2}
             {\Psi \vdashOL \letin{e_1}{e_2} : \sigma_2}
-        \qquad
+        \\
         \inferrule*[right=$\mathtt{OL \dash Sub}$]
             {\Psi \vdashOL e : \sigma_1 \\ \Psi \vdashOL \sigma_1 \le \sigma_2}
             {\Psi \vdashOL e : \sigma_2}

@@ -10,3 +10,5 @@ You may refer to the README of [latex-mimosis](
 https://github.com/Submanifold/latex-mimosis)
 for more instructions on the required packages, etc.
 
+> TexLive users might want to install cbfonts: `sudo tlmgr install cbfonts`
+

@@ -21,23 +21,23 @@ well-scopedness.
 \begin{figure}
 \begin{gather*}
 \begin{aligned}
-% \text{Type variables}\qquad&a, b\\
-\text{Existential variables}\qquad&\al, \bt
+% \text{Type variables}\quad&a, b\\
+\text{Existential variables}\quad&\al, \bt
 \\
-%\text{Types}\qquad&A', B', C' &::=&\quad 1 \mid a \mid \forall x. A' \mid A'\to B'\\
-% \text{Mono-types}\qquad&\tau &::=&\quad 1 \mid a \mid \tau_1\to \tau_2\\
-%\text{Context}\qquad&\Psi &::=&\quad \nil \mid \Psi, a \mid \Psi, x:A' \color{red} \\[2mm]
-% \text{Declarative Judgments}\qquad&\jo &::=&\quad \nil \mid \P\vdash A' \le B' \jc \jo\\
+%\text{Types}\quad&A', B', C' &::=&\quad 1 \mid a \mid \forall x. A' \mid A'\to B'\\
+% \text{Mono-types}\quad&\tau &::=&\quad 1 \mid a \mid \tau_1\to \tau_2\\
+%\text{Context}\quad&\Psi &::=&\quad \nil \mid \Psi, a \mid \Psi, x:A' \color{red} \\[2mm]
+% \text{Declarative Judgments}\quad&\jo &::=&\quad \nil \mid \P\vdash A' \le B' \jc \jo\\
 % &&&\quad \mid \P\vdash e\Leftarrow A' \jc \jo \mid \P\vdash e\To A' \jc \jo \mid \P\vdash A' \bullet e\TTo C' \jc \jo\\
 % \noalign{\jimmy{\text{What do the markers do: $\G \vdash,a \vdash,b\vdash \j_1;\j_2;\j_3$ means $\G,a,b\vdash \j_1 \land \G,a\vdash \j_1,\j_2 \land \G\vdash \j_3$}}} \\[2mm]
-\text{Algorithmic types}\qquad&A, B, C &::=& \quad 1 \mid a \mid \all A \mid A\to B \mid \al % \quad 1 \mid a \mid \al \mid \forall a. A \mid A\to B
+\text{Algorithmic types}\quad&A, B, C &::=& \quad 1 \mid a \mid \all A \mid A\to B \mid \al % \quad 1 \mid a \mid \al \mid \forall a. A \mid A\to B
 \\
-% \text{Terms}\qquad&e&::=&\quad x \mid () \mid \lam{e} \mid e_1~e_2 \mid (e:A)
+% \text{Terms}\quad&e&::=&\quad x \mid () \mid \lam{e} \mid e_1~e_2 \mid (e:A)
 % \\[2mm]
-\text{Algorithmic judgment chain}\qquad&\jg &::=&\quad A \le B \mid e\Lto A \mid e\To_{a} \jg \mid \appInfAlg{A}{e}
+\text{Algorithmic judgment chain}\quad&\jg &::=&\quad A \le B \mid e\Lto A \mid e\To_{a} \jg \mid \appInfAlg{A}{e}
 \\
-\text{Algorithmic worklist}\qquad&\Gm &::=&\quad \nil \mid \Gm, a \mid \Gm, \al \mid \Gm, x: A \mid \Gm \Vdash \jg%\\
-% \text{Declarative worklist}\qquad&\Om &::=&\quad \nil \mid \Om, a \mid \Om, x: A \mid \Om \Vdash \jg
+\text{Algorithmic worklist}\quad&\Gm &::=&\quad \nil \mid \Gm, a \mid \Gm, \al \mid \Gm, x: A \mid \Gm \Vdash \jg%\\
+% \text{Declarative worklist}\quad&\Om &::=&\quad \nil \mid \Om, a \mid \Om, x: A \mid \Om \Vdash \jg
 \end{aligned}
 \end{gather*}
 
@@ -51,7 +51,7 @@ well-scopedness.
 \quad
 \inferrule*[right=$\mathtt{wf\_ exvar}$]
     {\al\in\Gm}{\Gm\vdash \al}
-\quad
+\\
 \inferrule*[right=$\mathtt{wf\_{\to}}$]
     {\Gm\vdash A\quad \Gm\vdash B}
     {\Gm\vdash A\to B}
@@ -113,7 +113,7 @@ well-scopedness.
 \inferrule*[right=$\mathtt{wf_{\al}}$]
 {\text{wf }\Gm}
 {\text{wf }\Gm, \al}
-\qquad
+\\
 \inferrule*[right=$\mathtt{wf_{of}}$]
 {\text{wf }\Gm \\ \Gm\vdash A}
 {\text{wf }\Gm, x:A}

@@ -8,7 +8,7 @@ of information.
 
 %-------------------------------------------------------------------------------
 \subsection{Syntax and Well-Formedness of the Algorithmic System}
-Figure~\ref{fig:alg:syntax} shows the
+Figure~\ref{fig:ITP:alg:syntax} shows the
 syntax and the well-formedness judgment.  
 
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -65,7 +65,7 @@ of an existential variable.
   {\Gamma, a\vdash A}
   {\Gamma\vdash \forall a. A}
 \end{gather*}
-\caption{Syntax and Well-Formedness judgment for the Algorithmic System.}\label{fig:alg:syntax}
+\caption{Syntax and Well-Formedness judgment for the Algorithmic System.}\label{fig:ITP:alg:syntax}
 \end{figure}
 
 \begin{comment}
@@ -104,7 +104,7 @@ Hole notations with the same name implicitly share the same $\Gamma_L$ and $\Gam
 %-------------------------------------------------------------------------------
 \subsection{Algorithmic Subtyping}
 
-The algorithmic subtyping judgment, defined in Figure~\ref{fig:alg}, has the form $\Gamma\vdash\exps$, where
+The algorithmic subtyping judgment, defined in Figure~\ref{fig:ITP:alg}, has the form $\Gamma\vdash\exps$, where
 $\exps$ collects multiple subtyping judgments $A\le B$. 
 % \bruno{Text comparing to Dunfield. Maybe mention in RW instead?:
 % In contrast to the
@@ -188,7 +188,7 @@ Logically we can discern 3 groups of rules.
   {\Gamma[\al]\vdash \jcons{1\le \al}{\exps}}
 \end{gather*}
 \caption{Algorithmic Subtyping}
-\label{fig:alg}
+\label{fig:ITP:alg}
 \end{figure}
 
 Firstly, we have five rules that are similar to those in the declarative

@@ -129,13 +129,13 @@ $$
 
 The notion $\{l_i\}^n$ indicates that the bound collection is of length $n$;
 the notion
-$\Vdash_{1 \le i \le n, 1 \le j \le m} l_i \le u_j$
+$$\Vdash_{1 \le i \le n, 1 \le j \le m} l_i \le u_j$$
 is similar to the syntax of list-comprehension, which creates a list of judgments
 $$\Vdash l_1 \le u_1 \cdots \Vdash l_1 \le u_m \cdots \Vdash l_2 \le u_1
 \cdots \Vdash l_n \le u_m$$
 According to the transitivity of subtyping, this rule is sound:
 any valid instantiation of $\al$, denoted $\tau_{\al}$, indicates that
-the instantiation of $\l_i \le \tau_{\al}$ and $\tau_{\al} \le $ holds,
+the instantiation of $l_i \le \tau_{\al}$ and $\tau_{\al} \le u_j$ holds,
 therefore the instantiation of $l_i \le u_j$ holds for any $1 \le i \le n, 1 \le j \le m$.
 
 On the other hand, such check is sufficient. In other words,

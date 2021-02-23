@@ -44,19 +44,20 @@ $$
 \qquad
 $$
 \framebox{$\Gamma \mid \exps \rightsquigarrow \exps'$}
-$$
+
+\begin{gather*}
 \inferrule*[right=$\mathtt{{\rightsquigarrow}\cdot}$]
 	{~}{\cdot \mid \exps\rightsquigarrow \exps}
 \qquad
 \inferrule*[right=$\mathtt{{\rightsquigarrow}var}$]
 	{\Gamma \mid \exps \rightsquigarrow \exps'}
 	{\Gamma, a \mid \exps \rightsquigarrow \exps'}
-\qquad
+\\
 \inferrule*[right=$\mathtt{{\rightsquigarrow}exvar}$]
 	{\Gamma\to \Psi \quad \Psi\vdash \tau\quad
 		\Gamma \mid [\tau/\al]\exps \rightsquigarrow \exps'}
 	{\Gamma, \al \mid \exps \rightsquigarrow \exps'}
-$$
+\end{gather*}
 \caption{Transfer Rules}
 \label{fig:transfer}
 \end{figure}
@@ -160,11 +161,19 @@ The worklist measures $|\cdot|_\forall$ and $|\cdot|_\to$ count the
 number of universal quantifiers and function types respectively.
 \begin{definition}[Worklist Measures]
 \[
-\begin{array}{rcl@{\hspace{-10mm}}rclrcl} 
-|1|_\forall = |a|_\forall = |\al|_\forall &=& 0      &|1|_\to = |a|_\to = |\al|_\to &=& 0        \\
-|A\to B|_\forall &=& |A|_\forall + |B|_\forall  &|A\to B|_\to &=& |A|_\to + |B|_\to + 1\\
-|\forall x. A|_\forall &=& |A|_\forall + 1              &|\forall x. A|_\to &=& |A|_\to                        \\
-|\exps|_\forall &=& \sum_{A \le B\in \exps} |A|_\forall + |B|_\forall       &|\exps|_\to &=& \sum_{A \le B \in \exps} |A|_\to + |B|_\to
+\begin{array}{rcl}
+|1|_\forall &=& 0    \\
+|a|_\forall &=& 0    \\
+|\al|_\forall &=& 0    \\
+|A\to B|_\forall &=& |A|_\forall + |B|_\forall                        \\
+|\forall x. A|_\forall &=& |A|_\forall + 1                            \\
+|\exps|_\forall &=& \sum_{A \le B\in \exps} |A|_\forall + |B|_\forall \\[3mm]
+|1|_\to  &=& 0   \\
+|a|_\to &=& 0   \\
+|\al|_\to &=& 0   \\
+|A\to B|_\to &=& |A|_\to + |B|_\to + 1                       \\
+|\forall x. A|_\to &=& |A|_\to                               \\
+|\exps|_\to &=& \sum_{A \le B \in \exps} |A|_\to + |B|_\to
 \end{array}
 \]
 \end{definition}
@@ -188,7 +197,7 @@ $$\exps_i := \cdot \mid \jcons{\al\le A}{\exps_i'} \mid \jcons{A\le \al}{\exps_i
 \quad\text{where } \al\notin FV(A)\cup FV(\exps_i')$$
 \end{definition}
 These instantiation judgments are these ones consumed and
-produced by the Rules $\mathtt{{\le_a}instL}$ and $\mathtt{{\le_a}instR}$.
+produced by rules $\mathtt{{\le_a}instL}$ and $\mathtt{{\le_a}instR}$.
 The following lemma handles their decidability.
 \begin{lemma}[Instantiation Decidability]
 	For any context $\Gamma$ and judgment list $\exps_i, \exps$, it is decidable whether $\Gamma\vdash \exps_i,\exps$ if both of the conditions hold

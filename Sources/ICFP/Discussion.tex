@@ -72,7 +72,7 @@ $$
 \inferrule*[right=$\mathtt{DK\_{\to}I{\To}}$]
 {\Gamma, \al, \bt, x:\al \vdash e \Lto \bt \dashv \Delta, x:\al, \Theta}
 {\Gamma \vdash \lam e \To \al \to \bt \dashv \Delta}
-\qquad
+\\
 \inferrule*[right=$\mathtt{DK\_\forall App}$]
 {\Gamma, \al \vdash [\al/a] \appInf{A}{e}{C} \dashv \Delta}
 {\Gamma \vdash \appInf{\all A}{e}{C} \dashv \Delta}
@@ -155,7 +155,7 @@ we can pick any well-formed monotype as its solution.
 The unit type $1$, as the simplest type in the system, is a good choice.
 
 \subsection{Lexically-Scoped Type Variables}
-We have further extended the type system with support for
+We have further extended the type system with the support for
 lexically-scoped type variables~\citep{scoped-type-variables}.
 Our Abella formalization for this extension proves
 all the metatheory we discuss in Section~\ref{sec:metatheory}.
