@@ -1,61 +1,77 @@
 %
 \noindent
-%
-% Programs are hard to write. It was so 50 years ago at the time of the so-called
-% software crisis; it still remains so nowadays. Over the years, we have
-% learned---the hard way---that software should be constructed in a
-% \emph{modular} way, i.e., as a network of smaller and loosely connected
-% modules. To facilitate writing modular code, researchers and software
-% practitioners have developed new methodologies; new programming paradigms;
-% stronger type systems; as well as better tooling support. Still, this is not
-% enough to cope with today's needs. Several reasons have been raised for the lack
-% of satisfactory solutions, but one that is constantly pointed out is the
-% inadequacy of existing programming languages for the construction of
-% modular software.
 
-% This thesis investigates \emph{disjoint intersection types}, a variant of
-% intersection types. Disjoint intersections types have great potential to serve
-% as a foundation for powerful, flexible and yet type-safe and easy to reason OO
-% languages, suitable for writing modular software. On the theoretical side, this
-% thesis shows how to significantly increase the expressiveness of disjoint
-% intersection types by adding support for \emph{nested composition}, along with
-% \emph{parametric polymorphism}. Nested composition extends inheritance to work
-% on a whole family of classes, enabling high degrees of modularity and code
-% reuse. The combination with parametric polymorphism further improves the
-% state-of-art encodings of extensible designs. However, the extension with nested
-% composition and parametric polymorphism is challenging, for two different
-% reasons. Firstly, the subtyping relation that supports these features is
-% non-trivial. Secondly, the syntactic method used to prove coherence for previous
-% calculi with disjoint intersection types is too inflexible. This thesis
-% addresses the first problem by adapting and extending the well-known BCD
-% subtyping with records, universal quantification and coercions. To address the
-% second problem, this thesis proposes a powerful proof method to establish
-% coherence. Hence, this thesis puts disjoint intersection types on a solid
-% footing by thoroughly exploring their meta-theoretical properties.
+Modern functional programming languages, such as Haskell or OCaml,
+use sophisticated forms of type inference.
+In the meantime, more and more object-oriented programming languages
+implement advanced type inference algorithms,
+which greatly reduces the number of redundant and uninteresting types
+written by programmers,
+including C++11, Java 10, and C\# 3.0.
+While being an important topic in the Programming Languages research,
+there is little work on the mechanization of
+the metatheory of type inference in theorem provers.
 
-% On the pragmatic side, this thesis proposes a new language design with support
-% for \emph{first-class traits}, \emph{dynamic inheritance} and nested
-% composition. First-class traits allow two objects of statically unknown types
-% to be composed without conflicts. Dynamic inheritance allows a class to inherit
-% from other classes at \emph{run time}. To address the challenges of typing
-% first-class traits and detecting conflicts statically, this thesis shows how to
-% model source language constructs for first-class traits and dynamic inheritance
-% by leveraging the fine-grained expressiveness of disjoint intersection types. To
-% illustrate the applicability of the new design, this thesis conducts a case
-% study that modularizes programming language features using a highly modular form
-% of \visitor.
+In particular, we are unaware of any complete formalization of
+the type inference algorithms that are the backbone of modern programming languages.
+This thesis presents the \emph{first} full mechanical formalizations
+of the metatheory for three higher-ranked polymorphic type inference algorithms.
+Higher-ranked polymorphism is an advanced feature that enables more code reuse
+and has numerous applications, which is already implemented in languages like Haskell.
+All three systems are based on the bidirectional type system
+by Dunfield and Krishnaswami (DK).
+The DK type system has two variants, a declarative and an algorithmic one,
+that have been manually proven sound, complete, and decidable.
+While DK's original formalization comes with very well-written manual proofs,
+there are several missing details and some incorrect proofs,
+which motivates us to fully formalize the metatheory in proof assistants.
+% which complicate the task of writing a mechanized proof.
 
-% All the results and metatheory presented (unless otherwise indicated) in this
-% thesis are mechanized in Coq in order to show the rigorousness of the approach.
-% This thesis unifies ideas that are seemingly unrelated but powerful on their
-% own---dynamic inheritance, first-class traits, nested composition---by a
-% lightweight mechanism, thus providing new insights into software modularity and
-% extensibility.
+Our first system focuses on the core problem in higher-ranked type inference algorithms
+---the subtyping relation.
+Our algorithm differs from those currently in the literature
+by using a novel approach based on \emph{worklist judgments}.
+Worklist judgments simplify the propagation of information
+required by the unification process during subtyping.
+Furthermore, they enable a simple formulation of the meta-theoretical
+properties, which can be easily encoded in theorem provers.
+We formally prove soundness, completeness, and decidability of the subtyping algorithm
+w.r.t DK's declarative specification.
+
+The second system extends the first one with a type system.
+We present a mechanical formalization of
+DK's declarative type system with a novel algorithmic system.
+This system further unifies contexts with judgments,
+which precisely captures the scope of variables and
+simplifies the formalization of scoping in a theorem prover.
+Besides, the use of continuation-passing-style judgments allows
+simple formalization for inference judgments.
+We formally prove soundness, completeness, and decidability of the type inference algorithm.
+Despite the use of a different algorithm, we prove the same results as DK,
+although with significantly different proofs and proof techniques.
+
+The third system is based on the second one and extended with object-oriented subtyping.
+In presence of object-oriented subtyping,
+meta-variables usually have multiple different solutions.
+Therefore we present a backtracking-based algorithm that
+non-deterministically checks against each possibility.
+We prove soundness w.r.t our specification,
+and also completeness under the rank-1 restriction.
+
+Since such type inference algorithms are quite subtle and have a complex metatheory,
+mechanical formalizations are an important advance in type-inference research.
+With machine-checked proofs, there is little chance that any logical derivation goes wrong.
+In this thesis, all the properties we declare are fully formalized in the Abella theorem prover.
+
+
 
 \vspace{1.5\baselineskip}
 
 \noindent\makebox[\linewidth]{\rule{0.7\textwidth}{0.4pt}}
 
+\begin{center}
+    \emph{\textbf{An abstract of exactly 483 words}}
+\end{center}
 
 % \newpage
 
