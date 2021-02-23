@@ -11,11 +11,11 @@ Type errors caught before execution usually indicate potential bugs,
 letting the programmers realize and correct such errors in advance.
 
 In the early stages, programming languages like Java (before 1.5)
-are built on a simple type system,
+were built on a simple type system,
 where only features like
 primitive types, explicitly-typed functions,
 and non-generic classes are supported.
-People soon realize the need to generalize similar programs
+People soon realized the need to generalize similar programs
 that have different types when used.
 For example, a simple way to define a function that swaps
 the first two items in an integer array is
@@ -78,8 +78,8 @@ From the example above, we learn that the generics of Java
 together with type inference algorithms used in the compiler
 help programmers to write generic functions,
 given that the functionality is generic in nature.
-In other words, the introduction of good features of type systems
-accepts more meaningful programs.
+In other words, good features introduced to type systems
+accept more meaningful programs.
 
 On the other hand, being able to accept all syntactically correct programs,
 as dynamically-typed programming languages do,
@@ -271,7 +271,7 @@ because those ``hints'' are handled with the checking mode.
 With bidirectional type-checking the typing judgment has two modes.
 In the checking mode $\Gm \vdash e \Lto A$ both $e$ and $A$ are inputs:
 i.e. we check whether expression $e$ has some type $A$.
-In the synthesis mode $\Gm \vdash e \To A$ only $e$ is input:
+In the synthesis mode $\Gm \vdash e \To A$ only $e$ is an input:
 we need to calculate the output type $A$ from the input expression $e$.
 % For the typing judgment $\Gm \vdash e : A$,
 % the input of checking mode ($e \Lto A$) both $e$ and $A$,
@@ -376,7 +376,7 @@ programming language research. In particular, both the POPLMark
 challenge~\citep{aydemir2005mechanized} and
 CompCert ~\citep{leroy2012compcert} have significantly promoted
 the use of theorem provers to model various aspects of programming
-languages. Today papers in various programming language venues routinely
+languages. Today, papers in various programming language venues routinely
 use theorem provers to mechanically formalize: \emph{dynamic and
   static semantics} and their correctness properties~\citep{aydemir2008engineering},
 \emph{compiler correctness}~\citep{leroy2012compcert}, \emph{correctness of
@@ -426,12 +426,13 @@ adopted for formalizing type-inference algorithms.
 
 The Abella theorem prover~\citep{AbellaDesc}
 is one that specifically eases formalization onbinders.
-Different from the two common treatments of binding
-which are to use the De Bruijn index~\citep{DEBRUIJN1972381}
-and the nominal logic frameworkof Pitts~\citep{PITTS2003165},
-Abella uses the abstraction operator in a typed $\lambda$-calculus to encode binding.
+Two common treatments of binding
+are to use the De Bruijn indices~\citep{DEBRUIJN1972381}
+and the nominal logic framework of Pitts~\citep{PITTS2003165}.
+In contrast, Abella uses the abstraction operator
+in a typed $\lambda$-calculus to encode binding.
 Its $\lambda$-tree syntax, or HOAS, and features including the $\nabla$ quantifier
-and higher-order unification, have better experiences than using Coq libraries
+and higher-order unification, allow for better experiences than using Coq libraries
 utilizing other approaches.
 In practice, Abella uses the $\nabla$ (nabla) quantifier and nominal constants to help
 quantify a ``fresh'' variable during formalization.

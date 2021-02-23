@@ -13,8 +13,8 @@ and also mechanical formalizations.
 By collecting all judgments in a single worklist,
 the algorithm performs unification with a bird's-eye view of all the judgments,
 therefore propagation between judgments is as simple as a global substitution.
-Compared with classical HM unification procedure,
-Our algorithm does not need separated relations (or fixpoints) for unification.
+Compared with the classical HM unification procedure,
+our algorithm does not need separated relations (or fixpoints) for unification.
 From the formalization point of view,
 eager substitutions are also easier to state and reason in a proof assistant.
 Therefore, we obtained fully formalized properties for all our developments
@@ -105,7 +105,7 @@ One might expect that a type annotation might help pick the right case,
 like (\verb|(single id)| $ :: [\all a \to a]$),
 which requires a system that allows impredicative instantiation to do so.
 There are many impredicative systems developed out of various techniques~
-\cite{le2003ml,leijen2008hmf,leijen2009flexible,vytiniotis2008fph,
+\citep{le2003ml,leijen2008hmf,leijen2009flexible,vytiniotis2008fph,
 Serrano2018,quicklook2020,FreezeML},
 and we leave the extension of impredicativity to our algorithms as future work.
 
@@ -133,7 +133,7 @@ Efficient implementations will model meta-variables as mutable references
 and apply the results if they are solved by the constraint solver.
 DK's algorithm~\citep{dunfield2013complete} requires output contexts,
 which are likely to be implemented in a state monad or other stateful approaches.
-Solved existential variable is encoded in their algorithmic context different from ours.
+Solved existential variables encoded in their algorithmic context are different from ours.
 Instead of removing the declaration of the variable and propagate its solution to
 all the rest judgments, they extend the entry in the context with its solution,
 $\al = \tau$, and pass it to the output context.
@@ -148,7 +148,7 @@ the relative positions in which they are declared in the context.
 Some algorithmic rules are designed to use the position information,
 where swapping positions might lead to unsound implementation.
 For example, the algorithmic system of Chapter~\ref{chap:Top}
-include these rules:
+includes these rules:
 \begin{gather*}
 \begin{aligned}
     \Gm[a][\bt] \Vdash a \le \bt &\rrule{16} \{\bt := a\}~\Gm[a][\bt]\\
@@ -162,7 +162,7 @@ relative positions of variable declarations.
 
 Moreover, there are also reduction rules that \emph{remove}
 and/or \emph{insert} variables from(to) the middle of the ordered context,
-as occurred in the following rules:
+as in the following rules:
 \begin{gather*}
 \begin{aligned}
 \Gm[\al] \Vdash \al \le A\to B &\rrule{14}
