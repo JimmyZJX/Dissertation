@@ -169,9 +169,9 @@ For the type system, there are also interesting changes to
 both the declarative system and algorithmic system.
 Two algorithmic typing rules also adopt the backtracking approach:
 \begin{itemize}
-    \item Checking judgment $e \Lto \al$ now has a trivial solution $\al := \top$,
+    \item The checking judgment $e \Lto \al$ now has a trivial solution $\al := \top$,
         because $e \Lto \top$ should be accepted for any (well-formed) expression.
-    \item The introduction of top and bottom types come with another new declarative rule
+    \item The introduction of top and bottom types comes with another new declarative rule
         $\appInf{\bot}{e}{\bot}$.
         Therefore the application inference judgment $\appInfAlg{\al}{e}$
         can be satisfied by $\al := \bot$,

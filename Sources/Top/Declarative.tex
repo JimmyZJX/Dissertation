@@ -146,7 +146,8 @@ extend DK's higher-ranked type system in order to support the top and bottom typ
 Rule $\mathtt{Decl\top}$ allows any well-formed expression to check against $\top$.
 Rule $\mathtt{Decl{\bot}App}$ returns the $\bot$ type
 when a function of $\bot$ type is applied to any argument.
-All other rules remain exactly the same as our previous work.
+All other rules remain exactly the same as the system of
+Chapters~\ref{chap:ITP} and \ref{chap:ICFP}.
 
 It's worth mentioning that the design of the two new rules
 is driven by the subsumption property described in Section~\ref{sec:meta:decl}.

@@ -2,11 +2,13 @@
 LATEX_ITR_MODE ?= errorstopmode
 LATEXMK_OPTS = -pdflatex="xelatex -synctex=1 -interaction=$(LATEX_ITR_MODE) -file-line-error" -pdf
 
+TEX_SOURCES := $(shell find . -name '*.tex')
+
 .PHONY: all
 
 all: Thesis.pdf
 
-Thesis.pdf: Thesis.tex
+Thesis.pdf: Thesis.tex $(TEX_SOURCES)
 	latexmk $(LATEXMK_OPTS) -jobname=$(@:.pdf=) $<
 
 clean:

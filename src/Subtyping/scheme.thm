@@ -1,0 +1,1113 @@
+Import "dcl".
+
+Define scheme : olist -> ty -> prop by
+	scheme E M := mono E M;
+	scheme E (all S) := nabla x, scheme (tyvar x :: E) (S x).
+
+Define monoA : olist -> ty -> prop by
+	monoA E i;
+	monoA E top;
+	monoA E bot;
+	nabla x, monoA (E x) x := nabla x, member (tyvar x) (E x);
+	nabla x, monoA (E x) x := nabla x, member (exvar x) (E x);
+	monoA E (arrow A B) := monoA E A /\ monoA E B.
+
+Define schemeA : olist -> ty -> prop by
+	schemeA E M := monoA E M;
+	schemeA E (all S) := nabla x, schemeA (tyvar x :: E) (S x).
+
+
+Define r1sub : olist -> ty -> ty -> prop by
+	r1sub E A B := mono E A /\ schemeA E B;
+	r1sub E A B := scheme E B /\ schemeA E A.
+
+Define wl_ext_ex : olist -> olist -> prop by
+	wl_ext_ex E E;
+	nabla x, wl_ext_ex FE (Eo x) := exists F E FxE, nabla x,
+		append F E FE /\ append F (exvar x :: E) (FxE x) /\ wl_ext_ex (FxE x) (Eo x).
+
+
+Define wftm1 : olist -> tm -> prop by
+	wftm1 E unit;
+	nabla x, wftm1 (E x) x := exists A, nabla x, member (of x A) (E x);
+	wftm1 E (lam X) := exists A, nabla x, schemeA E A /\ wftm1 (of x A :: E) (X x);
+	wftm1 E (app X Y) := notLam_ X /\ wftm1 E X /\ wftm1 E Y;
+	wftm1 E (anno X A) := wftm1 E X /\ scheme E A.
+
+Define wfjg1 : olist -> judgment -> prop by
+	wfjg1 E (subty A B) := r1sub E A B.
+%	wfjg1 E (check X A) := scheme E A /\ wftm1 E X;
+%	wfjg1 E (inferC X J) := notLam_ X /\ wftm1 E X /\ forall Ext A,
+%		wl_ext_ex E Ext -> schemeA Ext A -> wfjg1 Ext (J A);
+%	wfjg1 E (inferAppC A X J) := schemeA E A /\ wftm1 E X /\ forall Ext B,
+%		wl_ext_ex E Ext -> schemeA Ext B -> wfjg1 Ext (J B).
+
+Define wfr1 : olist -> prop by
+	wfr1 nil;
+	nabla x, wfr1 (tyvar x :: E) := wfr1 E;
+	nabla x, wfr1 (exvar x :: E) := wfr1 E;
+	nabla x, wfr1 (of x A :: E) := wfr1 E /\ scheme E A;
+	wfr1 (j J :: E) := wfjg1 E J /\ wfr1 E.
+
+
+Theorem mono_is_monoA : forall E M,
+	mono E M -> monoA E M.
+induction on 1. intros. case H1.
+	search. search. search. search.
+	applys IH H2. applys IH H3. search.
+
+Theorem mono_is_scheme : forall E M,
+	mono E M -> scheme E M.
+induction on 1. intros. case H1.
+	search. search. search. search.
+	applys IH H2. applys IH H3. search.
+
+Theorem monoA_is_schemeA : forall E M,
+	monoA E M -> schemeA E M.
+induction on 1. intros. case H1.
+	search. search. search. search. search.
+	applys IH H2. applys IH H3. search.
+
+Theorem scheme_is_schemeA : forall E M,
+	scheme E M -> schemeA E M.
+induction on 1. intros. case H1.
+	applys mono_is_monoA. backchain monoA_is_schemeA.
+	applys IH. search.
+
+Theorem mono_is_schemeA : forall E M,
+	mono E M -> schemeA E M.
+intros. applys mono_is_monoA. applys monoA_is_schemeA. search.
+
+Theorem mono_is_wft : forall E S,
+	mono E S -> wft E S.
+induction on 1. intros. case H1.
+	search. search. search. search.
+	applys IH H2. applys IH H3. search.
+
+Theorem scheme_is_wft : forall E S,
+	scheme E S -> wft E S.
+induction on 1. intros. case H1.
+	backchain mono_is_wft.
+	applys IH. search.
+
+Theorem monoA_is_wfta : forall E S,
+	monoA E S -> wfta E S.
+induction on 1. intros. case H1.
+	search. search. search. search. search.
+	applys IH H2. applys IH H3. search.
+
+Theorem schemeA_is_wfta : forall E S,
+	schemeA E S -> wfta E S.
+induction on 1. intros. case H1.
+	backchain monoA_is_wfta.
+	applys IH. search.
+
+
+Theorem scheme_prune_ex : forall E S, nabla x,
+	wfj (E x) -> member (exvar x) (E x) -> scheme (E x) (S x) -> exists Sr, S = x\ Sr.
+induction on 3. intros. case H3.
+	applys mono_prune_exvar. search.
+	applys IH. search.
+
+Theorem r1sub_prune_exvar_l : forall E A, nabla x,
+	r1sub (E x) x (A x) -> wfj (E x) ->
+	member (exvar x) (E x) -> exists Ar, A = x\ Ar.
+intros. case H1.
+	applys mono_prune_exvar.
+	applys scheme_prune_ex. search.
+
+Theorem r1sub_prune_exvar_r : forall E A, nabla x,
+	r1sub (E x) (A x) x -> wfj (E x) ->
+	member (exvar x) (E x) -> exists Ar, A = x\ Ar.
+intros. case H1.
+	applys mono_prune_exvar. search.
+	applys scheme_prune_ex.
+
+Theorem r1sub_prune_exvar_xy : forall E, nabla x y,
+	r1sub (E x y) x y -> wfj (E x y) ->
+	member (exvar x) (E x y) -> member (exvar y) (E x y) -> false.
+intros. case H1.
+	applys mono_prune_exvar H5 with x = n1.
+	applys scheme_prune_ex H5 with x = n2.
+
+
+
+%%%%%%%%%%%% weakening %%%%%%%%%%%%
+
+Theorem monoA_weaken : forall E F G T EG EFG,
+	append E G EG -> split3 E F G EFG ->
+	monoA EG T -> monoA EFG T.
+induction on 3. intros. case H3.
+	search.
+	search. search.
+	unfold. intros.
+		assert (member (tyvar n1) (EFG n1)). backchain split3_mem.
+		apply append_mem_inv to _ H4. case H5. search. search. search.
+	unfold 5. intros.
+		assert (member (exvar n1) (EFG n1)). backchain split3_mem.
+		apply append_mem_inv to _ H4. case H5. search. search. search.
+	unfold. apply IH to _ _ H4. search. apply IH to _ _ H5. search.
+
+Theorem monoA_weaken_f : forall E F EF T,
+	append E F EF -> monoA F T -> monoA EF T.
+intros. backchain monoA_weaken with E = nil, F = E, G = F.
+Theorem monoA_weaken_ex : forall E T, nabla x,
+	monoA E T -> monoA (exvar x :: E) T.
+intros. backchain monoA_weaken_f with E = exvar n1 :: nil.
+Theorem monoA_weaken_ty : forall E T, nabla x,
+	monoA E T -> monoA (tyvar x :: E) T.
+intros. backchain monoA_weaken_f with E = tyvar n1 :: nil.
+Theorem monoA_weaken_of : forall E T A, nabla x,
+	monoA E T -> monoA (of x A :: E) T.
+intros. backchain monoA_weaken_f with E = of n1 A :: nil.
+Theorem monoA_weaken_j : forall E T J,
+	monoA E T -> monoA (j J :: E) T.
+intros. backchain monoA_weaken_f with E = j J :: nil.
+
+
+Theorem schemeA_weaken : forall E F G T EG EFG,
+	append E G EG -> split3 E F G EFG ->
+	schemeA EG T -> schemeA EFG T.
+induction on 3. intros. case H3.
+	applys monoA_weaken. search.
+	unfold 2. intros.
+		backchain IH with E = (tyvar n1 :: E), F = F, EFG = (tyvar n1 :: EFG).
+		backchain split3_cons.
+
+Theorem schemeA_weaken_f : forall E F EF T,
+	append E F EF -> schemeA F T -> schemeA EF T.
+intros. backchain schemeA_weaken with E = nil, F = E, G = F.
+Theorem schemeA_weaken_ex : forall E T, nabla x,
+	schemeA E T -> schemeA (exvar x :: E) T.
+intros. backchain schemeA_weaken_f with E = exvar n1 :: nil.
+Theorem schemeA_weaken_ty : forall E T, nabla x,
+	schemeA E T -> schemeA (tyvar x :: E) T.
+intros. backchain schemeA_weaken_f with E = tyvar n1 :: nil.
+Theorem schemeA_weaken_of : forall E T A, nabla x,
+	schemeA E T -> schemeA (of x A :: E) T.
+intros. backchain schemeA_weaken_f with E = of n1 A :: nil.
+Theorem schemeA_weaken_j : forall E T J,
+	schemeA E T -> schemeA (j J :: E) T.
+intros. backchain schemeA_weaken_f with E = j J :: nil.
+
+
+Theorem scheme_weaken : forall E F G T EG EFG,
+	append E G EG -> split3 E F G EFG ->
+	scheme EG T -> scheme EFG T.
+induction on 3. intros. case H3.
+	applys mono_weaken. search.
+	unfold 2. intros.
+		backchain IH with E = (tyvar n1 :: E), F = F, EFG = (tyvar n1 :: EFG).
+		backchain split3_cons.
+
+Theorem scheme_weaken_f : forall E F EF T,
+	append E F EF -> scheme F T -> scheme EF T.
+intros. backchain scheme_weaken with E = nil, F = E, G = F.
+Theorem scheme_weaken_ex : forall E T, nabla x,
+	scheme E T -> scheme (exvar x :: E) T.
+intros. backchain scheme_weaken_f with E = exvar n1 :: nil.
+Theorem scheme_weaken_ty : forall E T, nabla x,
+	scheme E T -> scheme (tyvar x :: E) T.
+intros. backchain scheme_weaken_f with E = tyvar n1 :: nil.
+Theorem scheme_weaken_of : forall E T A, nabla x,
+	scheme E T -> scheme (of x A :: E) T.
+intros. backchain scheme_weaken_f with E = of n1 A :: nil.
+Theorem scheme_weaken_j : forall E T J,
+	scheme E T -> scheme (j J :: E) T.
+intros. backchain scheme_weaken_f with E = j J :: nil.
+
+Theorem wftm1_weaken : forall E F G T EG EFG,
+	append E G EG -> split3 E F G EFG ->
+	wftm1 EG T -> wftm1 EFG T.
+induction on 3. intros. case H3.
+	search.
+	unfold. intros.
+		assert (member (of n1 A) (EFG n1)). backchain split3_mem.
+		apply append_mem_inv to _ H4. case H5. search. search. search.
+	case H2. assert split3 (of n1 A :: E) F G (of n1 A :: EFG).
+		apply schemeA_weaken to _ _ H4. apply IH to _ H8 H5. search.
+	unfold. search. apply IH to _ _ H5. search. apply IH to _ _ H6. search.
+	apply split3_cons to H2 with X = tyvar n1.
+	apply IH to _ _ H4. apply scheme_weaken to _ _ H5. search.
+
+Theorem wftm1_weaken_f : forall E F EF T,
+	append E F EF -> wftm1 F T -> wftm1 EF T.
+intros. backchain wftm1_weaken with E = nil, F = E, G = F.
+Theorem wftm1_weaken_ex : forall E T, nabla x,
+	wftm1 E T -> wftm1 (exvar x :: E) T.
+intros. backchain wftm1_weaken_f with E = exvar n1 :: nil.
+Theorem wftm1_weaken_ty : forall E T, nabla x,
+	wftm1 E T -> wftm1 (tyvar x :: E) T.
+intros. backchain wftm1_weaken_f with E = tyvar n1 :: nil.
+Theorem wftm1_weaken_of : forall E T A, nabla x,
+	wftm1 E T -> wftm1 (of x A :: E) T.
+intros. backchain wftm1_weaken_f with E = of n1 A :: nil.
+Theorem wftm1_weaken_j : forall E T J,
+	wftm1 E T -> wftm1 (j J :: E) T.
+intros. backchain wftm1_weaken_f with E = j J :: nil.
+
+Theorem monoA_subst : forall E T X m,
+	monoA E (T X) -> monoA E m -> monoA E (T m).
+induction on 1. intros. case H1.
+	case H3. search. search.
+	case H3. search. search.
+	case H3. search. search.
+	case H3. search. search.
+	case H3. search. search.
+	case H3.
+		applys IH H4 with T = T1.
+		applys IH H5 with T = T2.
+		search. search.
+
+Theorem schemeA_subst_monoA : forall E T X m,
+	schemeA E (T X) -> monoA E m -> schemeA E (T m).
+induction on 1. intros. case H1.
+	applys monoA_subst with T = T. search.
+	case H3.
+		applys monoA_weaken_ty H2.
+		applys IH H4 H5 with T = x\ T1 x n1. search.
+		search.
+
+
+Theorem monoA_subst_exvar_fresh : forall F E FE FxE A T, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) ->
+	monoA (FxE x) T -> wfta E A -> monoA (FE A) T.
+induction on 3. intros. case H3.
+	search. search. search.
+	assert member (tyvar n2) (FE n2 n1).
+			apply append_mem_inv to H1 H5. case H6. backchain append_mem.
+			case H7. backchain append_mem.
+		apply mem_tyvar_subst to H6 with A = A. search.
+	assert member (exvar n2) (FE n2 n1).
+			apply append_mem_inv to H1 H5. case H6. backchain append_mem.
+			case H7. backchain append_mem.
+		apply mem_exvar_subst to H6 with A = A. search.
+	apply IH to H1 H2 H5 _. apply IH to H1 H2 H6 _. search.
+
+Theorem monoA_subst_exvar : forall F E FE FxE A m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) -> wfj (FxE x) ->
+	monoA (FxE x) (A x) ->
+	monoA E m -> monoA (FE m) (A m).
+induction on 4. intros A A W M M. M: case M (keep).
+	search. search. search.
+	M: assert member (tyvar n2) (FE n2 n1).
+		M: applys append_mem_inv M2. M: case M3.
+			backchain append_mem. case M3. backchain append_mem.
+		applys mem_tyvar_subst M3 with A = m. search.
+	A: applys append_subst A1 with A = m. backchain monoA_weaken_f.
+	M: assert member (exvar n2) (FE n2 n1).
+		M: applys append_mem_inv M2. M: case M3.
+			backchain append_mem. case M3. backchain append_mem.
+		applys mem_exvar_subst M3 with A = m. search.
+	A: applys append_subst A1 with A = m. backchain monoA_weaken_f.
+	applys IH M2 M1. applys IH M3 M1. search.
+
+Theorem schemeA_subst_monoA_exvar : forall F E FE FxE A m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) ->
+	wfj (FxE x) ->
+	schemeA (FxE x) (A x) -> monoA E m ->
+	schemeA (FE m) (A m).
+induction on 4. intros A A W R M. R: case R (keep).
+	applys monoA_subst_exvar A A1 R1 M. search.
+	A: assert append (tyvar n2 :: F n1) (exvar n1 :: E) (tyvar n2 :: FxE n1).
+		applys IH A2. search.
+
+Theorem scheme_subst_monoA_exvar : forall F E FE FxE A m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) ->
+	wfj (FxE x) ->
+	scheme (FxE x) (A x) -> monoA E m ->
+	scheme (FE m) (A m).
+induction on 4. intros A A W R M. R: case R (keep).
+	applys mono_prune_exvar R1. backchain append_mem.
+		applys mono_strenthen_exvar A1 A R1 with A = m.
+		backchain monoA_is_wfta.
+		search.
+	A: assert append (tyvar n2 :: F n1) (exvar n1 :: E) (tyvar n2 :: FxE n1).
+		applys IH A2. search.
+
+
+Theorem r1sub_solve_exvar : forall F E FE FxE A B m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) ->
+	wfj (FxE x) ->
+	r1sub (FxE x) (A x) (B x) ->
+	monoA E m -> r1sub (FE m) (A m) (B m).
+intros A A W R M. R: case R.
+	applys mono_prune_exvar R. backchain append_mem.
+		W: applys monoA_is_wfta M.
+		M: applys mono_strenthen_exvar A1 A.
+		applys schemeA_subst_monoA_exvar A A1.
+		search.
+	applys scheme_prune_ex R. backchain append_mem.
+		W: applys monoA_is_wfta M.
+		M: applys scheme_subst_monoA_exvar A A1.
+		applys schemeA_subst_monoA_exvar A A1.
+		search.
+
+
+Theorem monoA_weaken_exvar :
+  forall F E FE FxE A m, nabla x, append (F x) E (FE x) ->
+    append (F x) (exvar x :: E) (FxE x) -> wfj (FxE x) ->
+    monoA (FE A) m -> monoA (FxE x) m.
+induction on 4. intros. case H4 (keep).
+	search. search. search.
+	applys member_tyvar_nabla_subst_inv with A = A. search.
+		assert member (tyvar n2) (FxE n2 n1).
+		M: applys append_mem_inv H6. M: case M.
+			backchain append_mem. backchain append_mem.
+		search.
+	applys member_exvar_nabla_subst_inv with A = A. search.
+		assert member (exvar n2) (FxE n2 n1).
+		M: applys append_mem_inv H6. M: case M.
+			backchain append_mem. backchain append_mem.
+		search.
+	applys IH H5 with FE = FE. applys IH H6 with FE = FE.
+		search.
+
+Theorem schemeA_weaken_exvar :
+  forall F E FE FxE A m, nabla x,
+  	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) -> wfj (FxE x) ->
+    schemeA (FE A) m -> schemeA (FxE x) m.
+induction on 4. intros. case H4 (keep).
+	applys monoA_weaken_exvar with FE = FE. search.
+	A: assert append (tyvar n1 :: F n2) (exvar n2 :: E) (tyvar n1 :: FxE n2).
+		A: assert append (tyvar n1 :: F n2) E (tyvar n1 :: FE n2).
+		S: applys IH A A1 with x = n2.
+		search.
+
+
+Theorem app_unsubst : forall FE E1 E2 m,
+	append E1 E2 (FE m) ->
+	exists e1 e2, nabla (x : ty),
+		append (e1 x) (e2 x) (FE x) /\ E1 = e1 m /\ E2 = e2 m.
+induction on 1. intros A A A. A: case A (keep).
+	case A. search.
+	A: case A. A: case A1. A: case A.
+		applys IH with FE = FE2. search.
+
+Theorem app_unsubst_AB : forall A B ABm m,
+	append (A m) (B m) ABm ->
+	exists ab, nabla (x : ty),
+		append (A x) (B x) (ab x) /\ ABm = ab m.
+induction on 1. intros A. A: case A.
+	case A. exists B. search.
+	A: case A.
+		applys IH with A = A2, B = B.
+		exists x\ A1 x :: ab x. search.
+
+Theorem append_decompose : forall A B C D AB,
+	append A B AB -> append C D AB ->
+	exists M, split3 A M D AB \/ split3 C M B AB.
+induction on 1. intros A A. A: case A (keep).
+	case A. search.
+	A: case A1. search.
+		S: applys IH A1. S: case S.
+			applys split3_cons S with X = N. search.
+			applys split3_cons S with X = N. search.
+
+Theorem append_det_B : forall A B C AB,
+	append A B AB -> append A C AB -> B = C.
+induction on 1. intros A A. A: case A (keep).
+	case A1. search.
+	A: case A1. S: applys IH A1. search.
+
+Theorem append_det_A_single : forall A N C AB,
+	append A (N :: nil) AB -> append C (N :: nil) AB -> A = C.
+induction on 1. intros. case H1.
+	case H2. search. case H3.
+	case H2. case H3.
+		applys IH H4. search.
+
+Theorem append_det_A : forall A B C AB,
+	is_olist B -> append A B AB -> append C B AB -> A = C.
+induction on 1. intros L A A. L: case L.
+	A: applys append_nil_E A. A: applys append_nil_E A1.
+		applys append_det A2. applys append_det A3.
+		search.
+	A: applys append_assoc_inv _ A with C = L.
+		A: applys append_assoc_inv _ A1 with C = L.
+		applys IH *A5.
+		applys append_det_A_single A4. search.
+
+Theorem wfj_is_olist : forall E, wfj E -> is_olist E.
+induction on 1. intros. case H1. search.
+	applys IH. search.
+	applys IH. search.
+	applys IH. search.
+	applys IH. search.
+
+Theorem mem_FxE_FE : forall F E FxE (X:o) FE Y,
+	append F (X :: E) FxE -> append F E FE -> member Y FxE ->
+	(X = Y -> false) -> member Y FE.
+induction on 1. intros. case H1.
+	case H3. applys H4. case H2. search.
+	case H3. case H2. search.
+		case H2. applys IH H5. search.
+
+Theorem mem_FE_FxE : forall F E FxE (X:o) FE Y,
+	append F (X :: E) FxE -> append F E FE -> member Y FE ->
+	(X = Y -> false) -> member Y FxE.
+induction on 1. intros. case H1.
+	case H2. search.
+	case H2. case H3. search.
+		applys IH. search.
+
+Theorem mem_FxE_FyE : forall F E FxE (X:o) FyE Y M,
+	append F (X :: E) FxE -> append F (Y :: E) FyE -> member M FxE ->
+	(X = M -> false) -> (Y = M -> false) -> member M FyE.
+induction on 1. intros. case H1.
+	case H3. applys H4. case H2. search.
+	case H3. case H2. search.
+		case H2. applys IH H8. search.
+
+Theorem mem_GE_GFE : forall G F E GFE GE (X:o),
+	split3 G F E GFE -> append G E GE -> member X GE -> member X GFE.
+induction on 1. intros. case H1.
+	M: applys append_mem_inv H3. M: case M.
+		applys append_mem H4. backchain append_mem.
+		backchain append_mem.
+
+Theorem monoA_subst_exvar_insert : forall F E FE FxE A m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) -> wfj (FxE x) ->
+	monoA (FE m) (A m) ->
+	monoA E m -> monoA (FxE x) (A x).
+induction on 4. intros A A W M M. M: case M (keep).
+	case M2. search. applys append_mem A. search.
+	case M2. search. applys append_mem A. search.
+	case M2. search. applys append_mem A. search.
+	case M2.
+		permute (n1 n2) M3.
+			M: applys member_tyvar_nabla_subst_inv A with A = m. search.
+			M: applys mem_FE_FxE M2. search.
+		M: applys append_mem A. search.
+	case M2.
+		permute (n1 n2) M3.
+			M: applys member_exvar_nabla_subst_inv A with A = m. search.
+			M: applys mem_FE_FxE M2. search.
+		M: applys append_mem A. search.
+	case M2.
+		M: applys IH A A1 M3 with A = A2.
+		M: applys IH A A1 M4 with A = A3.
+		search.
+		M: applys append_mem A. search.
+
+Theorem mono_subst_exvar_insert : forall F E FE FxE A m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) -> wfj (FxE x) ->
+	mono (FE m) A ->
+	monoA E m -> mono (FxE x) A.
+induction on 4. intros A A W M M. M: case M (keep).
+	search. search. search.
+	permute (n1 n2) M2.
+		M: applys member_tyvar_nabla_subst_inv A with A = m. search.
+		M: applys mem_FE_FxE M3. search.
+	M: applys IH A A1 M2. M: applys IH A A1 M3.
+		search.
+
+Theorem scheme_subst_exvar_insert : forall F E FE FxE A m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) -> wfj (FxE x) ->
+	scheme (FE m) A ->
+	monoA E m -> scheme (FxE x) A.
+induction on 4. intros A A W M M. M: case M (keep).
+	applys mono_subst_exvar_insert A A1 M2. search.
+	permute (n1 n2) M2.
+	applys IH with FE = x\ tyvar n2 :: FE x, FxE = x\ tyvar n2 :: FxE x.
+	search.
+
+Theorem schemeA_subst_monoA_exvar_insert : forall F E FE FxE A m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) ->
+	wfj (FxE x) ->
+	schemeA (FE m) (A m) -> monoA E m ->
+	schemeA (FxE x) (A x).
+induction on 4. intros A A W R M. R: case R (keep).
+	M: applys monoA_subst_exvar_insert A A1 with A = A. search.
+	case R1.
+		permute (n1 n2) R2.
+			A: assert append (tyvar n2 :: F n1) (exvar n1 :: E) (tyvar n2 :: FxE n1).
+			A: assert append (tyvar n2 :: F n1) E (tyvar n2 :: FE n1).
+			S: applys IH A2 A3 with A = m\ A1 m n2. search.
+		M: applys append_mem A. search.
+
+Theorem scheme_subst_monoA_exvar_insert : forall F E FE FxE A m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) ->
+	wfj (FxE x) ->
+	scheme (FE m) A -> monoA E m ->
+	scheme (FxE x) A.
+induction on 4. intros A A W R M. R: case R (keep).
+	S: applys scheme_subst_exvar_insert A A1. search.
+	permute (n1 n2) R1.
+		applys IH with FE = x\ tyvar n2 :: FE x, FxE = x\ tyvar n2 :: FxE x.
+		search.
+
+Theorem wfta_Exm : forall E A (m : ty) Ar, nabla (x : ty),
+	wfta E Ar -> A x m = Ar -> exists Af, A = x\ Af.
+induction on 1. intros. case H1.
+	case H2. search. search.
+	case H2. search. search.
+	case H2. search. search.
+	case H2. search. search.
+	case H2. search. search.
+	case H2.
+		applys IH H3 with A = A2.
+		applys IH H4 with A = A3.
+		search. search.
+	case H2.
+		permute (n1 n2) H4.
+		Aux: assert forall A (B : ty -> ty), nabla x, A = B -> A x = B x.
+		apply Aux to H4.
+		apply IH to H3 H5 with A = x\ m\ A2 x m n1.
+		search. search.
+
+Theorem wftm_Exm : forall E A (m : ty) Ar, nabla (x : ty),
+	wftm E Ar -> A x m = Ar -> exists Af, A = x\ Af.
+induction on 1. intros. case H1.
+	case H2. search.
+	case H2. search.
+	case H2.
+		permute (n1 n2) H5.
+		Aux: assert forall A (B : tm -> tm), nabla x, A = B -> A x = B x.
+		apply Aux to H5.
+		apply IH to H4 H6 with A = x\ m\ A2 x m n1.
+		search.
+	case H2.
+		applys IH H3 with A = A1.
+		applys IH H4 with A = A2.
+		search.
+	case H2.
+		applys IH with A = A2.
+		applys wfta_Exm H4 with A = A3.
+		search.
+
+Theorem wfjg_Exm : forall E J (m : ty) Jr, nabla (x : ty),
+	wfjg E Jr -> J x m = Jr -> exists Jf, J = x\ Jf.
+induction on 1. intros. case H1.
+	case H2.
+		applys wfta_Exm H3 with A = J1.
+		applys wfta_Exm H4 with A = J2.
+		search.
+	case H2.
+		applys wfta_Exm H4 with A = J2.
+		applys wftm_Exm H3 with A = J1.
+		search.
+	case H2.
+		applys wftm_Exm H3 with A = J2.
+		permute (n1 n2) H5.
+		Aux: assert forall A (B : ty -> judgment), nabla x, A = B -> A x = B x.
+		apply Aux to H5.
+		apply IH to H4 H7 with J = x\ m\ J3 x m n1.
+		search.
+	case H2.
+		applys wftm_Exm H3 with A = J3.
+		applys wfta_Exm H4 with A = J2.
+		permute (n1 n2) H6.
+		Aux: assert forall A (B : ty -> judgment), nabla x, A = B -> A x = B x.
+		apply Aux to H6.
+		apply IH to H5 H9 with J = x\ m\ J4 x m n1.
+		search.
+
+Theorem wfj_Exm : forall E (m : ty) Er, nabla (x : ty),
+	wfj Er -> E x m = Er -> exists Ef, E = x\ Ef.
+induction on 1. intros. case H1.
+	case H2. search.
+	case H2. case H5. case H6.
+		applys IH H3 with E = x\ m\ E3 n2 x m. search.
+		case H4. search.
+	case H2. case H5. case H6.
+		applys IH H3 with E = x\ m\ E3 n2 x m. search.
+		case H4. search.
+	case H2. case H5. case H6. case H9.
+		applys IH H3 with E = x\ m\ E3 n2 x m.
+		applys wfta_Exm H4 with A = x\ m\ E5 n2 x m.
+		search.
+	case H2. case H5. case H6.
+		applys wfjg_Exm with J = E4.
+		applys IH with E = E3.
+		search.
+
+/*
+Theorem append_FEx_decompose : forall F E FE m A B, nabla (x : ty),
+	append (F x) (E x) (FE x) -> append A B (FE m) ->
+	exists Ax Bx, nabla x, A = Ax m /\ B = Bx m /\ append (Ax x) (Bx x) (FE x).
+induction on 2. intros. case H2.
+	exists x\ nil, FE. search.
+	case H3. case H1.
+*/
+
+Theorem wl_ext_FxE : forall F E FxE FE m FExt A, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) ->
+	wl_ext_ex (FE m) FExt -> schemeA FExt A -> monoA E m -> wfj (FxE x) ->
+	exists FExt' FxExt F' E', nabla x, FExt = FExt' m /\
+		append (F' x) E' (FExt' x) /\ append (F' x) (exvar x :: E') (FxExt x) /\
+		wl_ext_ex (FxE x) (FxExt x) /\ schemeA (FxExt x) A /\ monoA E' m.
+induction on 3. intros A A Ext S M W.
+	W: applys monoA_is_wfta.
+	W: applys wfj_remove_exvar_nabla.
+	Ext: case Ext (keep).
+		S: applys schemeA_subst_monoA_exvar_insert A A1 with A = x\ A.
+			exists FE, FxE, F, E. search.
+		A: applys append_subst A1 with A = m n2.
+			Aux: assert forall A B AB ABr, nabla (x : ty),
+				append (A x) (B x) (AB x) -> ABr = AB x -> exists Br, B = x\ Br.
+				intros. case H2. applys append_prune H1. search.
+			applys Aux A2.
+			applys wfta_prune W1.
+			Aux: assert forall A B, wfj A -> B = A -> wfj B /\ A = B.
+			W: applys Aux1 W2 with B = FE1.
+			applys wfj_Exm W3 with E = FE. case Ext1.
+			applys append_prune A1. applys append_prune_AB A.
+			clear Aux Aux1 W3 W4. % pruning finished
+
+			permute (n1 n2) Ext3. permute (n1 n2) Ext4.
+			rename Ar to m.
+			W: applys wfj_insert_exvar_raw W2.
+			S: applys append_decompose Ext2 A2.
+			S: case S1.
+				% F1 ++ M ++ Br
+					A: case S1 (keep).
+					applys append_det_A *A4. W: applys wfj_weaken A2. backchain wfj_is_olist.
+					A: applys app_unsubst A3 with FE = FA.
+					A: applys split3_alt_inv S1.
+					applys append_det_B *A6.
+					A: applys app_unsubst_AB A5 with A = e2, B = x\ Br.
+					A: applys append_assoc A4 A1. applys append_det *A7.
+					A: applys append_total_E A4 with B = exvar n2 :: ab n1.
+					A: applys append_subst A7 with A = m. applys append_det *A9.
+					A: applys append_assoc_inv _ A7 with C = Br.
+					A: applys append_total_E A10 with B = exvar n1 :: Br.
+					% ext
+					A: applys append_assoc A4 A.
+					A: applys append_assoc A9 A11.
+					A: case A14. applys append_det *A14.
+					W: applys wfj_insert_exvar_raw A13 A15.
+					I: applys IH A11 A10.
+					Ext: assert 2 wl_ext_ex (FAB n1) (FxExt n2 n1).
+					exists FExt' n2. search.
+				% FA ++ M ++ E1
+					A: applys split3_alt_inv S1.
+					applys append_det_B *A4.
+					A: case S1 (keep).
+					applys append_det_A *A5. W: applys wfj_weaken Ext2. backchain wfj_is_olist.
+					A: applys append_total_E A1 with B = M.
+					A: applys append_subst A5 with A = m.
+					applys append_det *A6.
+					A: applys append_assoc_inv A3 A1. applys append_det *A6.
+					A: applys append_total_E A7 with B = exvar n2 :: E1.
+					A: applys append_subst A6 with x = n1, A = m. applys append_det *A8.
+					A: applys append_assoc A5 A6.
+					applys append_prune_AB A8.
+					A: applys append_total_E A9 with B = exvar n1 :: BC1 n2 n1.
+					% ext
+					A: applys append_assoc_inv _ A10 with C = exvar n2 :: E1.
+					A: applys append_assoc_inv _ A with C = E1.
+					applys append_det *A13 A11.
+					W: applys wfj_insert_exvar_raw A14 A12.
+					I: applys IH A10 A9.
+						W: applys wfj_weaken A2.
+						W: applys wfj_insert_exvar_raw A3 A8.
+						M: applys monoA_subst_exvar_insert A8 A3 M with FE = x\ Br, A = x\ m.
+						search.
+					Ext: assert 2 wl_ext_ex (FAB n1) (FxExt n2 n1).
+					exists FExt' n2. search.
+
+Theorem wl_ext_FxE_scheme : forall F E FxE FE m FExt A, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) ->
+	wl_ext_ex (FE m) FExt -> scheme FExt A -> monoA E m -> wfj (FxE x) ->
+	exists FExt' FxExt F' E', nabla x, FExt = FExt' m /\
+		append (F' x) E' (FExt' x) /\ append (F' x) (exvar x :: E') (FxExt x) /\
+		wl_ext_ex (FxE x) (FxExt x) /\ scheme (FxExt x) A /\ monoA E' m.
+induction on 3. intros A A Ext S M W.
+	W: applys monoA_is_wfta.
+	W: applys wfj_remove_exvar_nabla.
+	Ext: case Ext (keep).
+		S: applys scheme_subst_monoA_exvar_insert A A1.
+			exists FE, FxE, F, E. search.
+		A: applys append_subst A1 with A = m n2.
+			Aux: assert forall A B AB ABr, nabla (x : ty),
+				append (A x) (B x) (AB x) -> ABr = AB x -> exists Br, B = x\ Br.
+				intros. case H2. applys append_prune H1. search.
+			applys Aux A2.
+			applys wfta_prune W1.
+			Aux: assert forall A B, wfj A -> B = A -> wfj B /\ A = B.
+			W: applys Aux1 W2 with B = FE1.
+			applys wfj_Exm W3 with E = FE. case Ext1.
+			applys append_prune A1. applys append_prune_AB A.
+			clear Aux Aux1 W3 W4. % pruning finished
+
+			permute (n1 n2) Ext3. permute (n1 n2) Ext4.
+			rename Ar to m.
+			W: applys wfj_insert_exvar_raw W2.
+			S: applys append_decompose Ext2 A2.
+			S: case S1.
+				% F1 ++ M ++ Br
+					A: case S1 (keep).
+					applys append_det_A *A4. W: applys wfj_weaken A2. backchain wfj_is_olist.
+					A: applys app_unsubst A3 with FE = FA.
+					A: applys split3_alt_inv S1.
+					applys append_det_B *A6.
+					A: applys app_unsubst_AB A5 with A = e2, B = x\ Br.
+					A: applys append_assoc A4 A1. applys append_det *A7.
+					A: applys append_total_E A4 with B = exvar n2 :: ab n1.
+					A: applys append_subst A7 with A = m. applys append_det *A9.
+					A: applys append_assoc_inv _ A7 with C = Br.
+					A: applys append_total_E A10 with B = exvar n1 :: Br.
+					% ext
+					A: applys append_assoc A4 A.
+					A: applys append_assoc A9 A11.
+					A: case A14. applys append_det *A14.
+					W: applys wfj_insert_exvar_raw A13 A15.
+					I: applys IH A11 A10.
+					Ext: assert 2 wl_ext_ex (FAB n1) (FxExt n2 n1).
+					exists FExt' n2. search.
+				% FA ++ M ++ E1
+					A: applys split3_alt_inv S1.
+					applys append_det_B *A4.
+					A: case S1 (keep).
+					applys append_det_A *A5. W: applys wfj_weaken Ext2. backchain wfj_is_olist.
+					A: applys append_total_E A1 with B = M.
+					A: applys append_subst A5 with A = m.
+					applys append_det *A6.
+					A: applys append_assoc_inv A3 A1. applys append_det *A6.
+					A: applys append_total_E A7 with B = exvar n2 :: E1.
+					A: applys append_subst A6 with x = n1, A = m. applys append_det *A8.
+					A: applys append_assoc A5 A6.
+					applys append_prune_AB A8.
+					A: applys append_total_E A9 with B = exvar n1 :: BC1 n2 n1.
+					% ext
+					A: applys append_assoc_inv _ A10 with C = exvar n2 :: E1.
+					A: applys append_assoc_inv _ A with C = E1.
+					applys append_det *A13 A11.
+					W: applys wfj_insert_exvar_raw A14 A12.
+					I: applys IH A10 A9.
+						W: applys wfj_weaken A2.
+						W: applys wfj_insert_exvar_raw A3 A8.
+						M: applys monoA_subst_exvar_insert A8 A3 M with FE = x\ Br, A = x\ m.
+						search.
+					Ext: assert 2 wl_ext_ex (FAB n1) (FxExt n2 n1).
+					exists FExt' n2. search.
+
+Theorem wl_ext_wfj : forall E F, wl_ext_ex E F -> wfj E -> wfj F.
+induction on 1. intros. case H1. search.
+	applys wfj_insert_exvar_raw H3 H4.
+	applys IH. search.
+
+
+Theorem wftm1_subst_monoA_exvar : forall F E FE FxE A m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) ->
+	wfj (FxE x) ->
+	wftm1 (FxE x) (A x) -> monoA E m ->
+	wftm1 (FE m) (A m).
+induction on 4. intros A A W R M. R: case R (keep).
+	search.
+	M: applys mem_FxE_FE A A1 R1.
+		M: applys mem_of_subst M1 with A = m.
+		W: applys monoA_is_wfta M. applys wfta_prune_tm W1.
+		search.
+	W: applys schemeA_is_wfta R1.
+		A: assert append (of n2 (A1 n1) :: F n1)
+			(exvar n1 :: E) (of n2 (A1 n1) :: FxE n1).
+		R: applys IH A2.
+		S: applys schemeA_subst_monoA_exvar A.
+		search.
+	W: applys IH R2. applys IH R3.
+		unfold. case R1. unfold. intros. case H3. applys H2. search. search.
+	W: applys IH R1.
+		S: applys scheme_subst_monoA_exvar A.
+		search.
+
+Theorem wfjg1_solve_exvar : forall F E FxE FE m J, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) ->
+	wfj (FxE x) ->
+	wfjg1 (FxE x) (J x) -> monoA E m ->
+	wfjg1 (FE m) (J m).
+induction on 4. intros A A W W M. M: applys append_mem A. W: case W1.
+	applys r1sub_solve_exvar. search.
+%	applys scheme_prune_ex W1.
+%		applys scheme_subst_monoA_exvar.
+%		applys wftm1_subst_monoA_exvar.
+%		search.
+%	W: applys wftm1_subst_monoA_exvar.
+%		unfold.
+%			case W2. search. search. case W1. applys H3. search. search.
+%			search. intros A S.
+%		Ext: applys wl_ext_FxE A A1 A2.
+%		W: applys W3 Ext3.
+%		applys IH Ext1 Ext with m = m. backchain wl_ext_wfj.
+%		search.
+%	W: applys wftm1_subst_monoA_exvar.
+%		W: applys schemeA_subst_monoA_exvar. unfold. search. search.
+%		intros A S.
+%		Ext: applys wl_ext_FxE A A1 A2.
+%		W: applys W3 Ext3.
+%		applys IH Ext1 Ext with m = m. backchain wl_ext_wfj.
+%		search.
+
+
+Theorem schemeA_prune : forall E S, nabla (x : ty),
+	schemeA E (S x) -> exists Sr, S = x\ Sr.
+intros. W: applys schemeA_is_wfta H1.
+	applys wfta_prune. search.
+
+Theorem monoA_prune : forall E S, nabla (x : ty),
+	monoA E (S x) -> exists Sr, S = x\ Sr.
+intros. W: applys monoA_is_wfta H1.
+	applys wfta_prune. search.
+
+Theorem scheme_prune : forall E S, nabla (x : ty),
+	scheme E (S x) -> exists Sr, S = x\ Sr.
+intros. W: applys scheme_is_wft H1.
+	applys wft_prune. search.
+
+
+Theorem wfr1_solve_exvar : forall F E FxE FE m, nabla x,
+	append (F x) (exvar x :: E) (FxE x) -> append (F x) E (FE x) -> wfj (FxE x) ->
+	wfr1 (FxE x) -> monoA E m ->
+	wfr1 (FE m).
+induction on 4. intros A A WJ W S. W: case W (keep).
+	case A.
+	A: case A. A: case A1. applys append_prune A. applys append_prune_AB A1.
+		applys schemeA_prune.
+		case WJ. applys IH. search.
+	case A. applys append_prune.
+	A: case A. A: case A1. applys append_prune A. applys append_prune_AB A1.
+		applys schemeA_prune.
+		case WJ. applys IH. search.
+	case A. case A1. search.
+		applys append_prune.
+	A: case A. A: case A1. applys append_prune_tm A. applys append_prune_AB_tm A1.
+		applys monoA_is_wfta S. applys wfta_prune_tm.
+		case WJ. applys IH.
+		S: applys scheme_subst_monoA_exvar.
+		search.
+	A: case A. A: case A1. applys append_prune A. applys append_prune_AB A1.
+		WJ: case WJ.
+		applys wfjg1_solve_exvar.
+		applys IH.
+		search.
+
+
+%%%%% insertion
+Theorem r1sub_insert_exvar_raw : forall F E FE FxE A B, nabla x,
+	append F (exvar x :: E) (FxE x) -> append F E FE -> wfj (FxE x) ->
+	r1sub FE A B -> r1sub (FxE x) A B.
+intros A A W R.
+	S: applys split3_alt _ A with C = E.
+	R: case R.
+		M: applys mono_weaken S R.
+			S: applys schemeA_weaken S R1.
+			search.
+		S: applys scheme_weaken S R.
+			S: applys schemeA_weaken S R1.
+			search.
+
+
+Theorem wl_ext_wftm1 : forall E F X, wl_ext_ex E F -> wftm1 E X -> wftm1 F X.
+induction on 1. intros. case H1. search.
+	S: applys split3_alt _ H4 with C = E1.
+	R: applys wftm1_weaken S.
+	backchain IH.
+
+Theorem wfjg1_insert_exvar_raw : forall F E FxE FE J, nabla x,
+	append F (exvar x :: E) (FxE x) -> append F E FE -> wfj (FxE x) ->
+	wfjg1 FE J -> wfjg1 (FxE x) J.
+induction on 4. intros A A W W M. M: applys append_mem A.
+	S: applys split3_alt _ A with C = E. W: case W1.
+		applys r1sub_insert_exvar_raw. search.
+%		applys scheme_weaken S. applys wftm1_weaken S. search.
+%		W: applys wftm1_weaken S.
+%			unfold. search. search. intros Ext S.
+%			Ext: assert 2 wl_ext_ex FE (Ext n1).
+%			applys W3 S1.
+%			search.
+%		S: applys schemeA_weaken S. W: applys wftm1_weaken S.
+%			unfold. search. search. intros Ext S.
+%			Ext: assert 2 wl_ext_ex FE (Ext n1).
+%			applys W3 S2.
+%			search.
+
+Theorem wfr1_insert_exvar_raw : forall F E FxE FE, nabla x,
+	append F (exvar x :: E) (FxE x) -> append F E FE -> wfj (FxE x) ->
+	wfr1 FE -> wfr1 (FxE x).
+induction on 4. intros A A WJ W S. W: case W (keep).
+	case A1. case A. search.
+	A: case A1. A: case A. search.
+		A: case A.
+		applys append_prune A1. applys append_prune_AB A.
+		WJ: case WJ.
+		applys IH A. search.
+	A: case A1. A: case A. search.
+		A: case A.
+		applys append_prune A1. applys append_prune_AB A.
+		WJ: case WJ.
+		applys IH A. search.
+	A: case A1. A: case A. search.
+		A: case A.
+		applys append_prune A1. applys append_prune_AB A.
+		WJ: case WJ.
+		applys IH A.
+		S: applys split3_alt _ A with C = FB n2.
+		W: applys scheme_weaken S.
+		search.
+	A: case A1. A: case A. search.
+		A: case A.
+		applys append_prune A1. applys append_prune_AB A.
+		WJ: case WJ.
+		applys IH A.
+		applys wfjg1_insert_exvar_raw.
+		search.
+
+Theorem wfr1_insert_exvar_raw_intros : forall F E FE,
+	append F E FE -> wfj FE -> wfr1 FE ->
+	exists FxE, nabla x,
+		append F (exvar x :: E) (FxE x) /\ wfr1 (FxE x) /\ wfj (FxE x).
+intros A W W.
+	A: applys append_total_E A with B = (exvar n1 :: E).
+	W: applys wfj_insert_exvar_raw.
+	applys wfr1_insert_exvar_raw A1.
+	search.
+
+Theorem wfr1_insert_xy : forall F E FxE FxyE, nabla x y z,
+	append (F x) (exvar x :: E) (FxE x) ->
+	append (F (arrow y z)) (exvar z :: exvar y :: E) (FxyE y z) ->
+	wfj (FxE x) -> wfr1 (FxE x) -> wfr1 (FxyE y z).
+intros A A W WR.
+	A: applys append_assoc_inv _ A with C = E.
+	R: applys wfr1_insert_exvar_raw_intros A3.
+	R: applys wfr1_insert_exvar_raw_intros R.
+	A: applys append_assoc A2 R3. case A4. case H1.
+	A: applys append_total_E A5 with B = exvar n3 :: exvar n2 :: E.
+	R: applys wfr1_solve_exvar A5 with m = arrow n2 n3.
+	A: applys append_subst A4 with A = arrow n2 n3.
+	applys append_det A1 A6.
+	search.
+
+Theorem r1sub_schemeA : forall E A B,
+	r1sub E A B -> schemeA E A /\ schemeA E B.
+intros R. R: case R.
+	applys mono_is_schemeA. search.
+	applys scheme_is_schemeA. search.
+
+%%%%%%%%%%% open on scheme/schemeA
+
+Theorem monoA_open_equiv_var : forall F E FbE FxE A, nabla x,
+	append (F x) (tyvar x :: E) (FbE x) -> append (F x) (exvar x :: E) (FxE x) ->
+	wfj (FbE x) -> monoA (FbE x) (A x) -> monoA (FxE x) (A x).
+induction on 4. intros. case H4. search.
+	search. search.
+	apply append_mem_inv to H1 H5. case H6.
+		apply append_mem to H2 _. search.
+		case H7. apply append_mem to H2 _ with X = tyvar n2. search.
+	apply append_mem to H2 _. search.
+	apply append_mem_inv to H1 H5. case H6.
+		apply append_mem to H2 _. search.
+		case H7. apply append_mem to H2 _ with X = exvar n2. search.
+	apply append_mem to H2 _. search.
+	apply IH to _ _ _ H5. apply IH to _ _ _ H6. search.
+
+Theorem schemeA_open_equiv_var : forall F E FbE FxE A, nabla x,
+	append (F x) (tyvar x :: E) (FbE x) -> append (F x) (exvar x :: E) (FxE x) ->
+	wfj (FbE x) -> schemeA (FbE x) (A x) -> schemeA (FxE x) (A x).
+induction on 4. intros. case H4.
+	applys monoA_open_equiv_var. search.
+	apply IH to _ _ _ H5 with F = x\ tyvar n2 :: F x. search.
+
+Theorem schemeA_open_exvar : forall E A, nabla x,
+	wfj E -> schemeA E (all A) -> schemeA (exvar x :: E) (A x).
+intros W S. S: case S. case S.
+	S: applys schemeA_open_equiv_var.
+	search.
+
+Theorem schemeA_open : forall E A, nabla x,
+	wfj E -> schemeA E (all A) -> schemeA (tyvar x :: E) (A x).
+intros W S. S: case S. case S. search.
+
+Theorem scheme_open : forall E A, nabla x,
+	wfj E -> scheme E (all A) -> scheme (tyvar x :: E) (A x).
+intros W S. S: case S. case S. search.
+
+%%%%%%%%%%% END open on scheme/schemeA
+
+Theorem wfr1_of_scheme :
+	forall E A, nabla x, wfr1 (E x) -> member (of x A) (E x) -> scheme (E x) A.
+induction on 2. intros W M. M: case M.
+	W: case W. backchain scheme_weaken_of.
+	W: assert wfr1 (L n1). case W. search. search. search. search. search.
+		S: applys IH.
+		S: applys scheme_weaken_f S with E = B n1 :: nil.
+		search.
+
+Theorem wfr1_of_schemeA :
+	forall E A, nabla x, wfr1 (E x) -> member (of x A) (E x) -> schemeA (E x) A.
+intros. applys wfr1_of_scheme. backchain scheme_is_schemeA.
+
+
+Theorem monoA_anyof : forall F E FAE FBE A B T, nabla x,
+	append (F x) (of x A :: E) (FAE x) -> append (F x) (of x B :: E) (FBE x) ->
+	monoA (FAE x) (T x) -> monoA (FBE x) (T x).
+induction on 3. intros. case H3. search.
+	search. search.
+	apply append_mem_inv to H1 _. case H5.
+		apply append_mem to H2 _. search.
+		case H6. apply append_mem to H2 _ with X = tyvar n2. search.
+	apply append_mem_inv to H1 _. case H5.
+		apply append_mem to H2 _. search.
+		case H6. apply append_mem to H2 _ with X = exvar n2. search.
+	apply IH to _ _ H4 with B = B. apply IH to _ _ H5 with B = B. search.
+
+Theorem schemeA_anyof : forall F E FAE FBE A B T, nabla x,
+	append (F x) (of x A :: E) (FAE x) -> append (F x) (of x B :: E) (FBE x) ->
+	schemeA (FAE x) (T x) -> schemeA (FBE x) (T x).
+induction on 3. intros. case H3.
+	applys monoA_anyof H1 H2. search.
+	A: assert append (tyvar n2 :: F n1) (of n1 A :: E) (tyvar n2 :: FAE n1).
+		A: assert append (tyvar n2 :: F n1) (of n1 B :: E) (tyvar n2 :: FBE n1).
+		applys IH A A1.
+		search.
+
+Theorem mono_anyof : forall F E FAE FBE A B T, nabla x,
+	append (F x) (of x A :: E) (FAE x) -> append (F x) (of x B :: E) (FBE x) ->
+	mono (FAE x) (T x) -> mono (FBE x) (T x).
+induction on 3. intros. case H3. search.
+	search. search.
+	apply append_mem_inv to H1 _. case H5.
+		apply append_mem to H2 _. search.
+		case H6. apply append_mem to H2 _ with X = tyvar n2. search.
+	apply IH to _ _ H4 with B = B. apply IH to _ _ H5 with B = B. search.
+
+Theorem scheme_anyof : forall F E FAE FBE A B T, nabla x,
+	append (F x) (of x A :: E) (FAE x) -> append (F x) (of x B :: E) (FBE x) ->
+	scheme (FAE x) (T x) -> scheme (FBE x) (T x).
+induction on 3. intros. case H3.
+	applys mono_anyof H1 H2. search.
+	A: assert append (tyvar n2 :: F n1) (of n1 A :: E) (tyvar n2 :: FAE n1).
+		A: assert append (tyvar n2 :: F n1) (of n1 B :: E) (tyvar n2 :: FBE n1).
+		applys IH A A1.
+		search.
+
+Theorem wftm1_anyof : forall F E FAE FBE A B X, nabla x,
+	append (F x) (of x A :: E) (FAE x) -> append (F x) (of x B :: E) (FBE x) ->
+	wftm1 (FAE x) (X x) -> schemeA E B -> wftm1 (FBE x) (X x).
+induction on 3. intros A A W S. W: case W. search.
+	M: apply append_mem_inv to A _. M: case M.
+		apply append_mem to A1 _. search.
+		case M. apply append_mem to A1 _ with X = of n2 (A1 n1). search.
+	apply append_mem to A1 _. search.
+	applys IH with F = x\ of n2 (A1 x) :: F x, B = B.
+		applys schemeA_anyof A A1. search.
+	applys IH W1. applys IH W2.
+		unfold. unfold. intros. case H3. applys notLam_false W.
+		search. search.
+	applys IH W. applys scheme_anyof A A1. search.
+
+Theorem wftm1_anyA : forall E A X, nabla x,
+	wftm1 E (lam X) -> schemeA E A -> wftm1 (of x A :: E) (X x).
+intros. case H1. applys wftm1_anyof with B = A. search.
+
+
+Theorem wl_ext_ex_trans : forall E F G,
+	wl_ext_ex E F -> wl_ext_ex F G -> wl_ext_ex E G.
+induction on 1. intros. case H1. search.
+	applys IH. search 2.
+
+Theorem wl_ext_scheme : forall E F A, wl_ext_ex E F -> scheme E A -> scheme F A.
+induction on 1. intros. case H1. search.
+	S: applys split3_alt _ H4 with C = E1.
+	R: applys scheme_weaken S.
+	backchain IH.
