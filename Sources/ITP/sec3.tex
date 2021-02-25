@@ -307,15 +307,15 @@ judgment list with only one element.
 % \end{center}
 
 In step 1, we have only one judgment, and that one has a top-level $\forall$ on
-the left hand side. So the only choice is rule $\mathtt{{\le_a}\forall L}$, which
+the left hand side. So the only choice is Rule $\mathtt{{\le_a}\forall L}$, which
 opens the universally quantified type with an unknown existential variable
 $\al$. Variable $\al$ will be solved later to some monotype that is well-formed
 within the context before $\al$. That is, the empty context $\cdot$ in this
 case.
-In step 2, rule $\mathtt{{\le_a}{\to}}$ is applied to the worklist,
+In step 2, Rule $\mathtt{{\le_a}{\to}}$ is applied to the worklist,
 splitting the first judgment into two.
 Step 3 is similar to step 1, where the left-hand-side $\forall$ of the first
-judgment is opened according to rule $\mathtt{{\le_a}\forall L}$ with a fresh
+judgment is opened according to Rule $\mathtt{{\le_a}\forall L}$ with a fresh
 existential variable.
 In step 4, the first judgment has an arrow on the left hand side, but the
 right-hand-side type is an existential variable. It is obvious

@@ -121,7 +121,7 @@ The typing relation $\Psi \vdash_{HM} e:\sigma$ synthesizes a type $\sigma$ for
 an expression $e$ under the context $\Psi$.
 Rule $\mathtt{HM \dash Var}$ looks up the binding of a variable $x$ in the context.
 Rule $\mathtt{HM \dash Unit}$ always gives the unit type $1$ to the unit expression $()$.
-For a lambda abstraction $\lam e$, rule $\mathtt{HM \dash Abs}$ guesses its input type ($\tau_1$)
+For a lambda abstraction $\lam e$, Rule $\mathtt{HM \dash Abs}$ guesses its input type ($\tau_1$)
 and computes the type of its body ($\tau_2$) as the return type.
 Rule $\mathtt{HM \dash App}$ eliminates a function type by an application $e_1~e_2$,
 where the argument type must be the same as the input type of the function,
@@ -140,7 +140,7 @@ Rule $\mathtt{HM \dash Inst}$, as opposed to generalization, specializes a type
 according to the type instantiation relation.
 
 The type system of HM supports \emph{implicit instantiation} through
-rule $\mathtt{HM \dash Inst}$.
+Rule $\mathtt{HM \dash Inst}$.
 This means that any expression (function) that has a polymorphic type
 can be automatically instantiated with a proper monotype for any reasonable application.
 The fact that only monotypes are guessed indicates that the system is \emph{predicative}.
@@ -152,10 +152,10 @@ In this thesis, we focus on predicative systems only.
 
 \paragraph{Syntax-Directed System}
 The declarative system is not fully syntax-directed due to
-rules $\mathtt{HM \dash Gen}$ and $\mathtt{HM \dash Inst}$,
+Rules $\mathtt{HM \dash Gen}$ and $\mathtt{HM \dash Inst}$,
 which can be applied to any expression.
 A syntax-directed system can be obtained by
-replacing rules $\mathtt{HM \dash Var}$ and $\mathtt{HM \dash Let}$
+replacing Rules $\mathtt{HM \dash Var}$ and $\mathtt{HM \dash Let}$
 by the following rules:
 \begin{gather*}
     \inferrule*[right=$\mathtt{HM \dash Var \dash Inst}$]
@@ -172,12 +172,12 @@ by the following rules:
 \end{gather*}
 
 A generalization on $\sigma$, the synthesized type of $e_1$,
-is added to rule $\mathtt{HM \dash Let}$,
+is added to Rule $\mathtt{HM \dash Let}$,
 since it is the source place where a polymorphic type is generated.
 However, a too generalized type might reject applications due to its shape,
 therefore, an instantiation procedure is added to eliminate all the universal quantifiers
-on rule $\mathtt{HM \dash Var}$.
-We omit rules $\mathtt{HM \dash Unit}$, $\mathtt{HM \dash Abs}$, and $\mathtt{HM \dash App}$
+on Rule $\mathtt{HM \dash Var}$.
+We omit Rules $\mathtt{HM \dash Unit}$, $\mathtt{HM \dash Abs}$, and $\mathtt{HM \dash App}$
 for the syntax-directed system $\Psi\vdash_{HM}^S$.
 The following property shows that the new system is (almost) equivalent to the original declarative system.
 
@@ -193,7 +193,7 @@ The following property shows that the new system is (almost) equivalent to the o
 
 \paragraph{Type Inference Algorithm}
 Although being syntax-directed solves some problems, the rules still require some guessings,
-including rule $\mathtt{HM \dash Abs}$ and $\mathtt{HM \dash Var \dash Inst}$.
+including Rules $\mathtt{HM \dash Abs}$ and $\mathtt{HM \dash Var \dash Inst}$.
 Proposed by~\citet{milner1978theory},
 Algorithm W,
 an inference algorithm of the HM type system based on unification,
@@ -373,7 +373,7 @@ shown in Figure~\ref{fig:ol_decl_wft}.
 The subtyping relation, defined in Figure~\ref{fig:ol_decl_sub},
 is more powerful than that (type instantiation) of HM.
 In contrast to HM's subtyping, higher-ranked types can be compared thanks to
-rule $\mathtt{OL \dash SUB \dash Arr}$.
+Rule $\mathtt{OL \dash SUB \dash Arr}$.
 Functions are contravariant on argument types and covariant on return types.
 Rule $\mathtt{OL \dash SUB \dash \forall L}$ instantiates a polymorphic type
 by a monotype $\tau$.

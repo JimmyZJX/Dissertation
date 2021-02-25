@@ -45,7 +45,7 @@ As a concrete example, our declarative context and well-formedness rules are enc
 \end{abella}
 
 We use the type \abellae{olist} just as normal list of \abellae{o} with two constructors, namely \abellae{nil : olist} and \abellae{(::) : o -> olist -> olist}, where \abellae{o} purely means ``the element type of \abellae{olist}''. The \abellae{member : o -> olist -> prop} relation is also pre-defined.
-The second case of the relation \abellae{wft} states rule $\mathtt{wf_d var}$.
+The second case of the relation \abellae{wft} states Rule $\mathtt{wf_d var}$.
 The encoding \abellae{(E x)} basically means that the context \emph{may} contain \abellae{x}.
 If we write \abellae{(E x)} as \abellae{E}, then the context should not contain \abellae{x}, and both \abellae{wft E x} and \abellae{member (bound x) E} make no sense.
 Instead, we treat \abellae{E : ty -> olist} as an \emph{abstract structure} of a context, such as \abellae{x\ bound x :: bound a :: nil}.

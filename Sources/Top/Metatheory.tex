@@ -1,7 +1,7 @@
 
 \section{Metatheory}
 
-In this section we present several properties formally verified.
+In this section we present several properties that are formally verified.
 For the declarative system, the typing subsumption and subtyping
 transitivity lemmas are discussed in detail.
 The algorithmic system is proven to be sound with respect
@@ -102,7 +102,7 @@ $\Psi \vdash \appInf{C}{e}{A}$, $\Psi \vdash \bot \le C$ and $\Psi \vdash \bot \
 
 With the addition of Rules $\mathtt{Decl\top}$ and $\mathtt{Decl{\bot}App}$,
 we can prove the typing subsumption lemma.
-To the best of the authors' knowledge,
+To the best of the author's knowledge,
 they are the minimal set of rules that make the lemma hold.
 
 
@@ -300,12 +300,12 @@ $$\begin{aligned}
 \end{aligned}$$
 
 In this derivation, we begin from a judgment of the form $\sigma \le \sigma$.
-After rule 8 is applied, the judgment becomes $\sigma \le \tau$,
+After Rule 8 is applied, the judgment becomes $\sigma \le \tau$,
 since the right-hand-side polymorphic type is reduced to a declarative mono-type.
-Then, rule 7 introduces existential variables to the left-hand-side,
+Then, Rule 7 introduces existential variables to the left-hand-side,
 resulting in a judgment like $\tau_A \le \tau$,
 or $\sigma_A \le \tau$ in a more general case.
-Finally, rule 6 breaks a judgment between functions into two sub-judgments,
+Finally, Rule 6 breaks a judgment between functions into two sub-judgments,
 which swaps the positions of the argument types
 and creates a judgment like $\tau \le \tau_A$.
 Notice that $\sigma_A$ is not possible to occur to the right
