@@ -16,7 +16,7 @@ But we give another step-by-step instruction here, in case the reader is not fam
 - Install Ocaml with OPAM: <https://opam.ocaml.org/doc/Install.html>
 - Install [findlib](http://projects.camlcity.org/projects/findlib.html) (via opam or manual build)
     and [ocamlbuild](https://github.com/ocaml/ocamlbuild) (via opam)
-- Build and install Abella (master branch of the git repo: <https://github.com/abella-prover/abella>)
+- Build and install Abella (master branch of the git repo: <https://github.com/JimmyZJX/abella>)
 - Run the abella executable and you should see: `Welcome to Abella 2.0.7-dev.`
 
 How to Compile/Re-check the Proofs
