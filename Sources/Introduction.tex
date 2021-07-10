@@ -88,7 +88,7 @@ Ill-typed programs are easy to write by mistake, like \verb|"3" / 3|;
 or even well-typed programs with ambiguous/unexpected meaning like \verb|"3" + 4 + 5|
 (for someone who is not familiar with the conventions, she might think this evaluates to "39").
 Or even more commonly seen in practice,
-an accidentally misspelled variable name might cause a runtime error until
+an accidentally misspelled variable name does not cause a runtime error until
 the line of code is actually executed.
 Type systems are designed to prevent such problems from happening,
 therefore statically-typed languages
@@ -103,15 +103,15 @@ where functions are first-class citizens,
 and programs are mostly constructed with function applications.
 Functional programming originates from the
 lambda calculus~\citep{alonzo1932lambda}.
-The simply-typed lambda calculus~\citep{pierce2002types} extends the lambda calculus with
+The simply-typed lambda calculus~\citep{church1941calculi} extends the lambda calculus with
 a simple static type checking algorithm,
 preventing ill-typed programs before actual execution.
 However, the system does not allow polymorphic functions and
 thus is quite tedious to express higher-level logic.
 
 In order to improve the expressiveness of functional programming languages,
-System F~\citep{reynolds1983types} introduces polymorphism
-via the universal quantifier $\forall$ for types
+System F~\citep{GIRARD1971UseExt,girard1972interpretation,reynolds1974towards}
+introduces polymorphism via the universal quantifier $\forall$ for types
 and the $\Lambda$ binder (to introduce type-level functions) for expressions.
 For example, the identity function that can range over any type of the form $A \to A$
 can be encoded in System F:
@@ -130,7 +130,7 @@ It feels a bit silly to write $\text{id}~@\text{Int}~3$ compared with $\text{id}
 because the missing type is quite easy to figure out,
 in presence of the argument, which is of type $\text{Int}$ and
 should represent $a$ for the function application at the same time.
-With \emph{implicit parametric polymorphism}~\citep{reynolds1983types},
+With \emph{implicit parametric polymorphism}~\citep{milner1978theory},
 type arguments like $@\text{Int}$ are not written by the programmer explicitly,
 in contrast, it is the type inference algorithm's responsibility to guess them.
 

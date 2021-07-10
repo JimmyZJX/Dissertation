@@ -30,8 +30,10 @@ many modern functional programming languages are still using HM as their base,
 including the ML family and Haskell.
 The system is also known as Damas–Milner or Damas–Hindley–Milner.
 Hindley~\citep{hindley1969principal} and Milner~\citep{milner1978theory}
-independently discovered equivalent algorithms for the polymorphic typing problem
-and also proved the soundness of their algorithms.
+independently discovered algorithms for the polymorphic typing problem
+and also proved the soundness of their algorithms,
+despite that there are slight differences in the expressiveness---
+Milner's system supports let-generalization.
 Later on, \citet{damas1982principal} proved the completeness of their
 algorithm.
 
@@ -207,7 +209,9 @@ is proven to be sound and complete w.r.t the declarative specifications.
     \end{enumerate}
 \end{theorem}
 
-
+Note that both the above theorems are not formalized by the author.
+The reader may refer to an existing formalization of algorithm W,
+for example, ~\citep{naraschewski1999type}.
 
 
 \section{Odersky-L\"aufer Type System}\label{sec:bg:ol}
@@ -372,16 +376,47 @@ shown in Figure~\ref{fig:ol_decl_wft}.
 
 The subtyping relation, defined in Figure~\ref{fig:ol_decl_sub},
 is more powerful than that (type instantiation) of HM.
+It compares the degree of polymorphism between two types.
+Essentially, if $A$ can always be instantiated to match any instantiation of $B$,
+then A is ``at least as polymorphic as'' $B$. We also 
+say that $A$ is ``more polymorphic than'' $B$ and write $A \le B$.
 In contrast to HM's subtyping, higher-ranked types can be compared thanks to
-Rule $\mathtt{OL \dash SUB \dash Arr}$.
-Functions are contravariant on argument types and covariant on return types.
-Rule $\mathtt{OL \dash SUB \dash \forall L}$ instantiates a polymorphic type
-by a monotype $\tau$.
-Rule $\mathtt{OL \dash SUB \dash \forall R}$ picks a fresh type variable
-for the right-hand-side polymorphic type,
+Rule $\mathtt{OL \dash SUB \dash Arr}$;
+functions are contravariant on argument types and covariant on return types.
+
+Subtyping rules $\mathtt{OL\dash SUB\dash Var}$,
+$\mathtt{OL\dash SUB\dash Unit}$
+handle simple cases that do not involve universal quantifiers.
+Rule $\mathtt{OL\dash SUB\dash \forall R}$ states that if $A$ is a subtype of $B$
+in the context $\Psi, a$, where $a$ is fresh in $A$, then $A\le\all B$.
+Intuitively, if $A$ is more general than $\all B$ (where the universal quantifier
+already indicates that $\all B$ is a general type),
+then $A$ must instantiate to $[\tau/a]B$ for every $\tau$.
+
+The most interesting rule is $\mathtt{OL\dash SUB\dash \forall L}$.
+If some instantiation of $\all A$, $[\tau/a]A$, is a subtype of $B$,
+then $\all A \le B$.
+The monotype $\tau$ we used to instantiate $a$ is \emph{guessed} in this
+declarative rule, but the algorithmic system does not guess and defers the
+instantiation until it can determine the monotype deterministically.
+The fact that $\tau$ is a monotype rules out the possibility of
+polymorphic (or impredicative) instantiation.
+However this restriction ensures that the subtyping relation remains
+decidable. Allowing an arbitrary type (rather than a monotype) in
+rule $\mathtt{OL\dash SUB\dash \forall L}$
+is known to give rise to an undecidable
+subtyping relation~\citep{chrzaszcz1998poly}.
+% \citep{tiuryn1996subtyping}. the distributivity rule
+\citet{jones2007practical} also impose the restriction of
+predicative instantiation in their type system.
+Both systems are adopted by several practical programming languages.
+
+
+Note that when we introduce a new binder in the premise, we implicitly pick a fresh one,
 which is made possible by renaming according to alpha-equivalence.
-Given that such implicit freshness condition is widely adopted,
-we omit that throughout the thesis.
+This applies to rules $\mathtt{OL\dash SUB\dash \forall R}$ here.
+We follow this implicit freshness condition and omit it
+throughout the whole thesis.
 
 \paragraph{Typing}
 
@@ -472,8 +507,12 @@ every typed expression in HM is also typed in OL.
 In the meantime, all the ``guessing'' jobs OL needs to do
 remains in instantiating monotypes,
 thus the algorithm can be extended directly from any one for HM.
-In other words, it is the typing rules that help the type system to reason about
-higher-ranked types, without actually complicating the type inference algorithm.
+Formally speaking, type inference for both systems can be reduced to a problem
+of solving certain forms of unification constraints,
+including equalities, conjunctions, universal and existential quantifiers,
+and let-generalizations.
+% In other words, it is the typing rules that help the type system to reason about
+% higher-ranked types, without actually complicating the type inference algorithm.
 
 
 \section{Dunfield-Krishnaswami Bidirectional Type System}\label{sec:bg:dk}
@@ -597,42 +636,12 @@ Declarative Well-formedness and Subtyping}\label{fig:decl:sub}
 %The DK subtyping relation was adopted from \citet{odersky1996putting}.
 
 \paragraph{Declarative Subtyping}
-The bottom of Figure~\ref{fig:decl:sub} shows DK's declarative subtyping judgment $\Psi \vdash A \le B$,
-which was adopted from \citet{odersky1996putting}. It compares the
-degree of polymorphism between $A$ and $B$ in DK's implicit polymorphic type system. 
-Essentially, if $A$ can always be instantiated to match any instantiation of $B$,
-then A is ``at least as polymorphic as'' $B$. We also 
-say that $A$ is ``more polymorphic than'' $B$ and write $A \le B$.
+The bottom of Figure~\ref{fig:decl:sub} shows DK's
+declarative subtyping judgment $\Psi \vdash A \le B$,
+which was adopted from \citet{odersky1996putting}.
+Since it is exactly the same with OL's subtyping relation,
+we refer to Section~\ref{sec:bg:ol} for detailed discussion.
 
-Subtyping rules $\mathtt{{\le}Var}$, $\mathtt{{\le}Unit}$ and $\mathtt{{\le}{\to}}$
-handle simple cases that do not involve universal quantifiers.
-The subtyping rule for function types $\mathtt{{\le}{\to}}$ is standard,
-being covariant on the return type and contravariant on the argument type.
-Rule $\mathtt{{\le}\forall R}$ states that if $A$ is a subtype of $B$
-in the context $\Psi, a$, where $a$ is fresh in $A$, then $A\le\all B$.
-Intuitively, if $A$ is more general than $\all B$ (where the universal quantifier
-already indicates that $\all B$ is a general type),
-then $A$ must instantiate to $[\tau/a]B$ for every $\tau$.
-
-The most interesting rule is $\mathtt{{\le}\forall L}$.
-If some instantiation of $\all A$, $[\tau/a]A$, is a subtype of $B$,
-then $\all A \le B$.
-The monotype $\tau$ we used to instantiate $a$ is \emph{guessed} in this
-declarative rule, but the algorithmic system does not guess and defers the
-instantiation until it can determine the monotype deterministically.
-The fact that $\tau$ is a monotype rules out the possibility of
-polymorphic (or impredicative) instantiation.
-However this restriction ensures that the subtyping relation remains
-decidable. Allowing an arbitrary type (rather than a monotype) in rule $\mathtt{{\le}\forall L}$
-is known to give rise to an undecidable subtyping relation~\citep{tiuryn1996subtyping}.
-\citet{jones2007practical} also impose the restriction of
-predicative instantiation in their type system.
-Both systems are adopted by several practical programming languages.
-
-% \jimmy{Mention the implicit freshness conditions in the premises}
-Note that when we introduce a new binder in the premise, we implicitly pick a fresh one.
-This applies to rules such as $\mathtt{wf_d\forall}$, $\mathtt{wf_dabs}$, $\mathtt{{\le}\forall R}$,
-throughout the whole text.
 
 \begin{figure}[t]
 \begin{tabular}{rl}
@@ -733,7 +742,9 @@ We will continue to discuss DK's algorithm in Chapters~\ref{chap:ITP} and \ref{c
 
 \section{MLsub}\label{sec:mlsub}
 
-MLsub~\citep{mlsub} extends the HM type system with object-oriented subtyping.
+Besides extending the HM type system with higher-ranked types and bidirectional type checking,
+another invaluable direction is to support object-oriented subtyping.
+MLsub~\citep{mlsub} is one of such systems.
 In presence of subtyping, type inference does not simply handle equality during unification.
 Therefore, types are extended with lattice operations to express bounds properly.
 Furthermore, polar types are introduced to help separate input and output types,
@@ -858,7 +869,8 @@ keeping polar types properly ``polarized''.
 For example, a positive type $\al \to \al$ becomes $(\al \sqcap \tau^-) \to \al$
 under such substitution and remains a positive type.
 A more important fact is that this type is equivalent to
-the original type with the constraint $\al \le \tau^-$.
+the constrained type scheme $\al \to \al$ with the constraint $\al \le \tau$.
+% the original type with the constraint $\al \le \tau^-$.
 Similarly, a constraint like $\tau^+ \le \al$ is reduced to
 a substitution $[\al \sqcup \tau^+/\al^+]$.
 

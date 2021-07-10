@@ -156,6 +156,14 @@ processing the first judgment should be transfered to the second judgment.
 %types and discovering information. The solutions for those existential
 %variables are then propagated across branches of derivation.
 
+It is worth mentioning that the problem of deciding subtyping of OL's type system
+can be reduced to first-order unification
+under a mixed prefix~\cite{MILLER1992unification},
+where universal and existential quantifiers appears at the top level of
+constraints (equations).
+We further discuss another simpler algorithm by DK and present ours afterwards.
+
+
 %- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 \paragraph{Dunfield and Krishnaswami's Approach}
 An elegant algorithmic solution to computing the monotypes is 

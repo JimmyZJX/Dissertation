@@ -214,6 +214,9 @@ of the worklist, $\al$ is substituted for $\al[1] \to \al[2]$ in $\Omega$.
 The \emph{occurs-check} side-condition is necessary to prevent a diverging
 infinite instantiation. For example
 $1 \to \al \le \al$ would diverge with no such check.
+Note that the algorithm does not choose to instantiate $\al$ directly with
+$A \to B$, since the type is not guaranteed to be a monotype,
+and such instantiation will be inconsistent with our predicative declarative system.
 
 Thirdly, in the remaining six rules an existential variable can be immediately
 solved. Each of the six similar rules removes an existential variable from the

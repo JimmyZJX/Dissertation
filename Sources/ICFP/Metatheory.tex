@@ -177,7 +177,10 @@ If $\Psi \vdash e \Lto \all A$ then $\Psi, a \vdash e \Lto A$.
 \begin{lemma}[Invertibility of $\mathtt{Decl{\to}I}$]\label{lem:inv_chkLam}
 If $\Psi \vdash \lam e \Lto A \to B$ then $\Psi, x:A \vdash e \Lto B$.
 \end{lemma}
-These lemmas express that applying the more specific rules, rather than the more general rule $\mathtt{DeclSub}$, does not reduce the expressive power.
+These lemmas express that applying the more specific rules,
+rather than the more general rule $\mathtt{DeclSub}$, does not reduce the expressive power.
+The is required by the completeness lemma,
+as the algorithmic system explicitly prioritize the more specific rules.
 
 The proofs of the above two lemmas rely on an important property of the
 declarative system, the \emph{subsumption lemma}. To be able to formulate this
@@ -242,8 +245,11 @@ and $|A|_\forall$ counts the number of $\forall$'s in a type.
 \begin{proof}
 The proof is by a nested mutual induction on the lexicographical order of the measures
 $$\langle |e|_e, |\cdot|_\Leftrightarrow, |A|_\forall + |A'|_\forall \rangle,$$
-where the second measure is 2 for checking (1), 1 for inference (2) and 3 for application inference (3);
-and the third measure does not apply to case (2) since no $A$ is used.
+where the second measure simple give an natural number for each type of judgment:
+(1) checking judgments ($\Psi \vdash e \Lto A$) count as 2;
+(2) inference judgments ($\Psi \vdash e \To A$) count as 1; and
+(3) application inference judgments ($\Psi \vdash \appInf{e}{A}{C}$) count as 3;
+and the third measure does not apply to (case 2) since no $A$ is used.
 Compared with DK's, our third measure that counts the degree of polymorphism
 fixes problems that occurred in DK's proof: in both places,
 our new induction hypothesis is more generalized.

@@ -2,12 +2,11 @@
 
 We have chosen the Abella (v2.0.5) proof assistant~\citep{AbellaDesc} to
 develop our formalization.
-Our development is only based on the reasoning logic of Abella, and does not make use of its specification logic.
-%Although Abella takes a two-level logic approach,
-%where the specification logic can be expressed separately from the
-%reasoning logic, we only make use of its reasoning logic, due to the
-%difficulty of expressing our algorithmic rules with only the
-%specification.
+% Our development is only based on the reasoning logic of Abella, and does not make use of its specification logic.
+Although Abella takes a two-level logic approach,
+where the specification logic can be expressed separately from the
+reasoning logic, we only make use of its reasoning logic, due to the
+difficulty of expressing our algorithmic rules with only the specification.
 Abella is particularly helpful due to its built-in support for variable bindings, and
 its $\lambda$-tree syntax~\citep{miller2000abstract} is a form of HOAS,
 which helps with the encoding and reasoning about substitutions.  For
@@ -25,7 +24,8 @@ type may contain an unlimited number of such atomic nominal constants.
 %\subsection{Encoding of Declarative System}
 
 \paragraph{Encoding of the Declarative System}
-As a concrete example, our declarative context and well-formedness rules are encoded as follows.
+As a concrete example, our declarative context (well-formedness relation)
+and well-formedness rules are encoded as follows.
 \begin{abella}
 	Kind ty     type.
 	Type i      ty.                % the unit type
@@ -35,20 +35,30 @@ As a concrete example, our declarative context and well-formedness rules are enc
 	
 	Define env : olist -> prop by
 		env nil;
-		nabla x, env (bound x :: E) := env E.
+		nabla x, env (bound x ::E) := env E.
 	
 	Define wft : olist -> ty -> prop by
 		wft E i;
 		nabla x, wft (E x) x := nabla x, member (bound x) (E x);
 		wft E (arrow A B) := wft E A /\ wft E B;
-		wft E (all A) := nabla x, wft (bound x :: E) (A x).
+		wft E (all A) := nabla x, wft (bound x ::E) (A x).
 \end{abella}
 
-We use the type \abellae{olist} just as normal list of \abellae{o} with two constructors, namely \abellae{nil : olist} and \abellae{(::) : o -> olist -> olist}, where \abellae{o} purely means ``the element type of \abellae{olist}''. The \abellae{member : o -> olist -> prop} relation is also pre-defined.
+In the above code, we first define the syntax of types and contexts in our type system.
+A type of our system has type \abellae{ty}, and the context is of type \abellae{olist}.
+We use the type \abellae{olist} just as normal list of \abellae{o} with two constructors,
+namely \abellae{nil : olist} and \abellae{(::) : o -> olist -> olist},
+where \abellae{o} purely means ``the element type of \abellae{olist}'',
+and both are built-in types of Abella.
+The \abellae{member : o -> olist -> prop} relation is also pre-defined.
+
+Note that in Abella, the symbol (\abellae{:=}) used in definitions
+is similar to the (\abellae{:-}) symbol in Prolog,
+where we write the condition to its right and the conclusion to its left.
 The second case of the relation \abellae{wft} states Rule $\mathtt{wf_d var}$.
 The encoding \abellae{(E x)} basically means that the context \emph{may} contain \abellae{x}.
 If we write \abellae{(E x)} as \abellae{E}, then the context should not contain \abellae{x}, and both \abellae{wft E x} and \abellae{member (bound x) E} make no sense.
-Instead, we treat \abellae{E : ty -> olist} as an \emph{abstract structure} of a context, such as \abellae{x\ bound x :: bound a :: nil}.
+Instead, we treat \abellae{E : ty -> olist} as an \emph{abstract structure} of a context, such as \abellae{x\ bound x ::bound a ::nil}.
 For the fourth case of the relation \abellae{wft}, the type $\forall x. A$ in our target language is expressed as \abellae{(all A)}, and its opening $A$, \abellae{(A x)}.
 
 \paragraph{Encoding of the Algorithmic System}
@@ -58,16 +68,19 @@ $\mathtt{{\le_a}instL}$ and $\mathtt{{\le_a}instR}$ rules in a nice way:
 	% sub_alg_list : enva -> [subty_judgment] -> prop
 	Define subal : olist -> olist -> prop by
 		subal E nil;
-		subal E (subt i i :: Exp) := subal E Exp;
+		subal E (subt i i ::Exp) := subal E Exp;
 		% some cases omitted ...
 		% <: instL
-		nabla x, subal (E x) (subt x (arrow A B) :: Exp x) :=
-			exists E1 E2 F, nabla x y z, append E1 (exvar x :: E2) (E x) /\
-				append E1 (exvar y :: exvar z :: E2) (F y z) /\
-				subal (F y z) (subt (arrow y z) (arrow A B) :: Exp (arrow y z));
+		nabla x, subal (E x) (subt x (arrow A B) ::Exp x) :=
+			exists E1 E2 F, nabla x y z, append E1 (exvar x ::E2) (E x) /\
+				append E1 (exvar y ::exvar z ::E2) (F y z) /\
+				subal (F y z) (subt (arrow y z) (arrow A B) ::Exp (arrow y z));
 		% <: instR is symmetric to <: instL, omitted here
 		% other cases omitted ...
 \end{abella}
+In this piece of code, we use \abellae{Exp} to denote the worklist $\Om$.
+An algorithmic existential variable $\al$ is constructed by applying 
+the Abella term \abellae{exvar} to an actual nabla quantified variable.
 Thanks to the way Abella deals with nominal constants, the pattern 
 \abellae{subt x (arrow A B)} implicitly states that $x\notin FV(A) \land x\notin FV(B)$.
 If the condition were not required, we would have encoded the pattern as 
