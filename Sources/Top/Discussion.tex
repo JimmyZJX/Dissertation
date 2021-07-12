@@ -14,7 +14,8 @@ and stop reducing because the judgment involves a self-reference.
 In fact, there are infinitely many valid solutions just in our type system,
 including $\al := \top \to \bot$ and $\al := \top \to 1$.
 The problem can be solved by introducing recursive types,
-so that recursive constraints can be solved.
+which may be used to represent a whole class of solutions,
+and recursive constraints can be solved with a single recursive type.
 However, the other type of incompleteness that comes from
 $$\al \le \bt$$
 is still not addressed.
@@ -75,7 +76,8 @@ A natural idea is to delay the solving procedure until all the corresponding
 constraints are collected.
 Constraint collection can be implemented by the following new worklist definition,
 where the existential variables also come with a set of upper bounds
-and a set of lower bounds. Both of the bounds consist of algorithmic mono-types.
+and a set of lower bounds. Both of the bounds consist of algorithmic mono-types
+that does not contain $\al$ (similar to the occurs-check condition).
 
 \begin{gather*}
     \begin{aligned}
@@ -126,6 +128,7 @@ we need to further check if it can actually be solved,
 by ensuring that lower bounds are indeed subtypes of upper bounds:
 any type that is a subtype of $\al$ should be a subtype of
 any super type of $\al$.
+Note that the bounds should not contain $\al$.
 
 $$
 \Gm, \{l_i\}^n \le \al \le \{u_j\}^m \rrule{2'} \Gm \Vdash_{1 \le i \le n, 1 \le j \le m} l_i \le u_j
@@ -155,7 +158,7 @@ This is supported by the following property on declarative monotypes:
 
 \paragraph{Impact of the New Algorithm.}
 
-The new algorithm addresses the incompleteness issue throughly by
+The new algorithm addresses the incompleteness issue thoroughly by
 re-designing in a lazy-substitution style.
 However, the algorithm might loop forever due to the
 new version of instantiation rules.

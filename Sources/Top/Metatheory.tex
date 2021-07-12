@@ -14,8 +14,8 @@ Lastly, proof statistics of Abella are discussed.
 
 \paragraph{The Typing Subsumption Lemma.}
 An important desired property for a type system is \emph{checking subsumption},
-which basically says that any expression can
-check against any super type of its actual type.
+which says that any expression $e$ can
+check against $B$ if $e$ checks against $A$ and $A \le B$.
 Since our bidirectional type system defines the checking mode, inference mode and
 application inference mode mutually,
 we formalize the generalized \emph{typing subsumption}.
@@ -91,6 +91,10 @@ Given the typing and subtyping judgments $\Psi \vdash e \Lto A$ and $\Psi \vdash
 we should derive $\Psi \vdash e \Lto \top$ from the lemma,
 therefore Rule $\mathtt{Decl\top}$ is required,
 saying that any expression can be checked against the top type.
+Note that here we do not include the condition $e \Lto A$,
+since we may elaborate the term to the top term
+which no longer refers to the original term.
+
 Similarly, the most general type $\bot$,
 being able to convert to any type due to Rule $\mathtt{{\le}Bot}$,
 can be converted to any function type,

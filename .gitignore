@@ -28,6 +28,7 @@ TODO/*
 *.sav
 *.swp
 *.toc
+*.synctex
 
 *.run.xml
 *-blx.bib

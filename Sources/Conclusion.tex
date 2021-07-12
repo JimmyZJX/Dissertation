@@ -159,6 +159,8 @@ The hole notation $\Gm[a][\bt]$ is used to ensure that $a$ is declared before $\
 therefore it is fine for the monotype represented by $\bt$ to be $a$.
 In a naive implementation, frequent iteration is required to look up the
 relative positions of variable declarations.
+We may address the problem for a more efficient algorithm following the idea
+of~\cite{Remy92extensionof}.
 
 Moreover, there are also reduction rules that \emph{remove}
 and/or \emph{insert} variables from(to) the middle of the ordered context,
@@ -223,7 +225,8 @@ $$\mu x.~x \to \text{Int} \le (\mu x.~x \to \text{Int}) \to Int$$
 holds since the unfolding of $\mu x.~x \to \text{Int}$
 is $(\mu x.~x \to \text{Int}) \to \text{Int}$.
 In other words, if we extend our type system by including recursive types,
-we would accept such judgment instead of rejecting it.
+we would accept such judgment with a principal recursive type,
+instead of rejecting it because we cannot find such a type.
 The MLsub~\citep{mlsub} already accepts recursive types,
 and it deals with recursive constraints in the way we described above.
 It is an interesting question

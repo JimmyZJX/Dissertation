@@ -23,12 +23,13 @@ $\forall$'s only instantiate to monotypes.  The monotype restriction
 on instantiation is considered reasonable and practical for most
 programs, except for those that require sophisticated forms of
 higher-order polymorphism.
-In those cases, type annotations may guide the type system to
+In predicative higher-ranked settings, type annotations may guide the type system to
 accept lambda functions of higher-ranked types.
 
 In addition to OL's type system,
 the bidirectional system proposed by DK~\citep{dunfield2013complete}
-accepts even better type annotations, which also allow polymorphic types.
+accepts even better type annotations via bidirectional type checking,
+which also allow higher-ranked function types to check against an unannotated lambda.
 Such annotations also improve readability of the program,
 and are not much of a burden in practice.
 DK's algorithm is shown to be sound, complete and decidable in 70 pages of manual proofs.
@@ -48,6 +49,7 @@ the issue in more detail in Section~\ref{ssec:DK_Algorithm}.
 \citet{jones2007practical} developed another higher-ranked predicative bidirectional type system.
 Their subtyping relation is enriched with \emph{deep skolemisation},
 which is more general than ours and allows more valid relations.
+The concept is also known as the distributivity rule~\citep{Mitchell1984}.
 For example,
 $$\all{\all[b] a \to b \to b} \le \all a \to (\all[b] b \to b)$$
 this subtyping relation does not hold in OL's subtyping relation,
@@ -89,7 +91,7 @@ and thus less adopted in real-world programming languages.
 $\text{ML}^\text{F}$~\citep{le2003ml,remy2008from,Botlan2009recasting}
 extends types of System F with a form of bounded quantification
 and proposes an impredicative system.
-The type inference algorithm always infers principle types given proper type annotations.
+The type inference algorithm always infers principal types given proper type annotations.
 Through the technique called ``monomorphic abstraction of polymorphic types'',
 polymorphic instantiations are expressed by constraints
 on type variables of type schemes.

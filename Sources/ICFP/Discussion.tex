@@ -138,12 +138,13 @@ We take Rule 18 as an example, rewriting small-step reduction in a relational st
 $$
 \inferrule*[right=$\mathtt{Translation\_18}$]
 {\Gamma \Vdash e \To_a a \le B \hookrightarrow \Phi, f, t}
-{\Gamma \Vdash e \Lto B \hookrightarrow \Phi, f t}
+{\Gamma \Vdash e \Lto B \hookrightarrow \Phi, f~t}
 $$
 As is shown in the conclusion of the rule,
 a checking judgment at the top of the worklist corresponds to a top element for elaboration.
 The premise shows that one judgment chain may relate to more than one elaboration elements,
-and that the outer judgment, being processed before inner ones,
+instead, one single judgment relates to one elaborated term.
+The outer judgment, being processed before inner ones,
 elaborates to the top element in the elaboration list.
 
 Moreover, existential variables need special treatment, since they may be solved at any point,

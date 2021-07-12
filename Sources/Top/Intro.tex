@@ -35,14 +35,19 @@ and thus can be considered as an instance of type $\top$.
 In typical object-oriented programming languages, the \texttt{Object} class,
 as the base class of any class, is the $\top$ type.
 In contrast, the bottom type, $\bot$, is dual to $\top$.
-An instance of $\bot$ can be casted to a value of any type, which is usually impossible,
-except when that is a \texttt{null pointer} value (\texttt{(void *)} in C++, for example).
+An instance of $\bot$ can be cast to a value of any type,
+which is also viewed as the uninhabited type therefore
+one cannot find any value that has the $\bot$ type.
+However, there are few exceptions.
+One of them is a \texttt{null pointer} value (\texttt{(void *)} in C++, for example).
 Another practical use for bottom types is for exceptions.
 The type $\text{Exception} \to \bot$ given to the \texttt{raise}
 function may pass type checkers naturally.
 The type $\text{Exception} \to \all a$ is also a reasonable choice,
 which in fact reveals that $\bot$ behaves almost identically as $\all a$.
 From the theoretical point of view, both of them represent ``falsity''.
+
+
 
 A number of systems and algorithms are proposed for type inference with subtyping.
 Since subtyping constraints cannot be easily reduced in presence of subtyping,
@@ -56,7 +61,8 @@ is inferred to have the type
 $$(\alpha \to \text{bool}) \to \alpha \to \beta \to \gamma \mid \alpha \le \gamma, \beta \le \gamma$$
 However, this representation usually contains a large set of constraints,
 which might confuse programmers.
-Besides, subtyping comparison between constraint types is also not easy.
+Besides, subtyping comparison between constraint types may introduce additional
+difficulty for programmers to understand, which weakens its practical use.
 
 \paragraph{MLsub}
 MLsub~\citep{mlsub}, as introduced in Section~\ref{sec:mlsub},
@@ -77,12 +83,11 @@ meaning that the type must be able to convert to all these types.
 
 Nevertheless, there are still drawbacks in practice.
 Firstly, the type inference algorithm produces types that
-have comparable sizes to
-previous systems with constraint types.
+have comparable sizes to previous systems with constraint types.
 Although a simplification algorithm is provided,
 it is not guaranteed to produce the most simple form.
 
-Secondly, MLsub always infers an expression and returns its principle type,
+Secondly, MLsub always infers an expression and returns its principal type,
 but some of the types are not easy to understand.
 For example, the \verb|twice| function defined as
 \begin{verbatim}
@@ -112,7 +117,7 @@ but unfortunately, MLsub accepts it without giving any warnings.
 \subsection{Judgment List and Eager Substitution}
 
 The judgment list algorithm we discussed in the last chapter treats subtyping
-judgments mainly as equality unification.
+judgments mainly as unification.
 However, the algorithm may lose some solutions
 when top and bottom types are introduced.
 For example,
@@ -144,6 +149,13 @@ including $\text{Int} \to \top$, $\bot \to \text{Int}$ or $\bot \to \top$.
 What's worse, given only this single subtyping judgment $\al \le \bt$,
 we have no assumption on both existential variables.
 
+Theoretically speaking, if we extend the type system with $\top$ and $\bot$ types,
+the definition of monotypes becomes
+\[ \tau ::= 1 \mid \bot \mid \top \mid \tau \to \tau \mid a\]
+, which causes the subtyping problem to be undecidable~\cite{su2002firstorder}.
+Therefore, it is impossible to derive a complete algorithm for the declarative system,
+and we try to keep the algorithm complete for common usages of polymorphism,
+but pose restrictions in some higher-ranked cases.
 
 % \subsection{Lazy Substitution and Non-terminating Loops}
 % discussed later
@@ -162,6 +174,7 @@ we first assign $\al := \bot$ and continue to check other judgments.
 If the judgment reduction succeeds, then we know that $\al := \bot$ is a possible solution.
 If the reduction failed, we continue to try the other possibility according to the
 previous instantiation rule by splitting $\al$ into two existential variables $\al[1]$ and $\al[2]$.
+The procedure must keep track of all backtracking points until type-checking the whole program.
 Note that for the reduced judgment $\al[1] \to \al[2] \le A \to B$,
 $\al[1]$ and $\al[2]$ might be solved to $\top$ or $\bot$.
 
@@ -185,14 +198,17 @@ obtaining a more complete algorithm.
 Furthermore, we formally verified that the subtyping algorithm
 is complete under the rank-1 restriction.
 However, for rank-2 judgments like $\al \le \bt$,
-completeness is impossible for any algorithm that reduces eagerly.
+a naive complete algorithm would traverse an infinitely large tree of possibilities
+and diverge for some set of constraints.
+% completeness is impossible for any algorithm that reduces eagerly.
 
 Following the formal statements, we conclude that the backtracking algorithm
-is complete in most cases other than those where higher-ranked
-subtyping judgments are involved.
-In those cases, we only consider the equality case and ignore any other possibilities,
-and we believe that this is a practical tradeoff.
+is complete under a rank-1 restriction, but not always on the general higher-ranked settings.
+In those settings, our algorithm only consider the equality case and ignore any other possibilities.
 In another perspective, our algorithm does not try to solve completely when
 parametric polymorphism and subtyping polymorphism occur at the same time.
+This is not theoretically satisfactory, but we argue that
+this handles most common programs, and the programmer may use annotation to guide
+the inference algorithm with the real type he intends to instantiate.
 
 
