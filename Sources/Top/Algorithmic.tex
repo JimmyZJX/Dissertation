@@ -133,8 +133,10 @@ We categorize them into 7 groups according to their behavior:
         However, we argue that comparing $\al$ with a function type
         that contains $\al$ itself is hardly useful in practice,
         and most of the solutions are meaningless.
-        Therefore, in our algorithm, only the $\bot$ solution is considered
-        with Rule 13.
+        It would be nice if we may develop a complete algorithm or
+        weaken the specification to reject such cases,
+        but in this work, we choose to simply propose an incomplete algorithm,
+        where in this example, only the $\bot$ solution is considered with Rule 13.
         The condition of Rule 14 rejects the judgment for further analysis
         and thus does not produce more solutions.
         This is one source of incompleteness of our algorithm with respect to the declarative specification.

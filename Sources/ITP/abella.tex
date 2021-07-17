@@ -105,7 +105,10 @@ If the condition were not required, we would have encoded the pattern as
 
 Some basic statistics on our proof script are shown in Figure~\ref{fig:SLOC}.
 The proof consists of 3627 lines of code with a total of 33 definitions and 267 theorems.
-We have to mention that Abella provides few built-in tactics and does not support user-defined ones, and we would reduce significant lines of code if Abella provided more handy tactics.
+We have to mention that Abella provides few built-in tactics and does not support user-defined ones, and we would reduce significant lines of code if Abella provided more handy tactics%
+\footnote{We do extend Abella with some handy tactics after this work,
+which boosts our development and reduce some boilerplate codes.
+One may find the modified version in \url{https://github.com/JimmyZJX/abella}.}
 Moreover, the definition of natural numbers, the plus operation and less-than relation are defined within our proof due to Abella's lack of packages.
 However, the way Abella deals with name bindings
 is very helpful for type system formalizations and substitution-intensive formalizations, such as this one.

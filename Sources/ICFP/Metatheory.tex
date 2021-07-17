@@ -327,6 +327,23 @@ Given \emph{wf }$\Gm$:
 \end{enumerate}
 \end{corollary}
 
+
+It is also possible to express a even simpler form of corollary,
+where the judgments consist of declarative expressions and types.
+% This can be viewed as the initial judgment of the algorithm.
+
+\begin{corollary}[Soundness, declarative form]
+Given \emph{wf }$\Psi$:
+\begin{enumerate}
+    \item If $\Psi \Vdash A \le B \redto \nil$ then $\Psi \vdash A \le B$;
+    \item If $\Psi \Vdash e \Lto A \redto \nil$ then $\Psi \vdash e \Lto A$;
+    \item If $\Psi \Vdash e \To_a \jg \redto \nil$ then
+        there exists $A$ s.t. $\Psi \vdash e \To A$;
+    \item If $\Psi \Vdash \appInfAlg{A}{e} \redto \nil$ then
+        there exists $C$ s.t. $\Psi \vdash \appInf{A}{e}{C}$.
+\end{enumerate}
+\end{corollary}
+
 %-------------------------------------------------------------------------------
 \subsection{Completeness}
 
@@ -391,6 +408,22 @@ Given \emph{wf }$\Gm$ containing no judgments:
         \\then $\Gm \Vdash \appInfAlg{A}{e}[a][1 \le 1] \redto \nil$.
 \end{enumerate}
 \end{corollary}
+
+Similar to soundness, we also provide a simpler corollary of completeness
+for declarative types and expressions.
+
+\begin{corollary}[Completeness, declarative form]
+Given \emph{wf }$\Psi$:
+\begin{enumerate}
+    \item If $\Psi \vdash A \le B$ then $\Psi \Vdash A \le B \redto \nil$;
+    \item If $\Psi \vdash e \Lto A$ then $\Psi \Vdash e \Lto A \redto \nil$;
+    \item If $\Psi \vdash e \To A$ then $\Psi \Vdash e \To_a 1 \le 1 \redto \nil$;
+    \item If $\Psi \vdash \appInf{A}{e}{C}$
+        then $\Psi \Vdash \appInfAlg{A}{e}[a][1 \le 1] \redto \nil$.
+\end{enumerate}
+\end{corollary}
+
+
 
 %-------------------------------------------------------------------------------
 \subsection{Decidability}

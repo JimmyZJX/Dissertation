@@ -284,6 +284,24 @@ $$
 $$
 \end{comment}
 
+One may suggest that the marker $\blacktriangleright_{\al}$ is somewhat redundant,
+since $\al$ already declares the scope.
+However, in the following rule,
+\[
+\inferrule*[right=$\mathtt{DK\_InstLArr}$]
+  {\Gamma[\al[2], \al[1], \al = \al[1] \to \al[2]] \vdash A_1 \le \al[1] \dashv \Theta \\
+    \Theta \vdash \al[2] \le [\Theta]A_2 \dashv \Delta
+  }
+  {\Gamma[\al] \vdash \al \le A_1 \to A_2 \dashv \Delta}
+\]
+the algorithm introduces new existential variables right before $\al$.
+In such case, the marker $\blacktriangleright_{\al}$ still appears
+to the left of them.
+Without the marker, it will be difficult to recycle the new existential variables
+$\al[1]$ and $\al[2]$ properly, which should have the same scope of $\al$
+and thus should be recycled together with $\al$.
+
+
 %Due to the complication of its scoping control method,
 %it is hard to argue the preciseness of scoping for each variable when designing algorithms.
 
@@ -314,6 +332,13 @@ Lemma 29 (Parallel Admissibility)\footnote{Ningning Xie found the issue with Lem
   formalize DK's algorithm. The authors acknowledged the problem after we contacted them through email.
   Although they briefly mentioned that it should be possible to use a weaker lemma instead they did
   not go into details.}.
+%
+This lemma is used to relate the algorithmic system and declarative system
+before and after the instantiation procedure.
+We believe that the general idea of the lemma is correct,
+but the statement may fail when the sensitive ordering of variables
+breaks the ``parallelism'' in some corner cases.
+%
 This lemma is a cornerstone of the two metatheoretical results 
 of the algorithm, soundness, and completeness with respect to the declarative system.
 In particular, both instantiation soundness (i.e. a part of subtyping
